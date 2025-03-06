@@ -47,16 +47,6 @@ const routes = [
           import("pages/financial/payments/pages/PaymentSettings.vue"),
       },
      /* Routas de calendario academico  */
-     {
-      path: "/academic-calendar",
-      name: "academic-calendar",
-      component: () => import("pages/calendar/pages/List.vue"),
-    },
-      {
-        path: "/academic-calendar/create",
-        name: "academic-calendar-create",
-        component: () => import("pages/academic-calendar/pages/Create.vue"),
-      },
 
 
       {
@@ -273,35 +263,7 @@ const routes = [
         component: () => import("src/pages/attendance/pages/Student.vue"),
       },
 
-      /* Rotas de Relatorios */
-      {
-        path: "/reports",
-        name: "reports",
-        component: () => import("pages/report/pages/List.vue"),
-      },
-      {
-        path: "/report/create",
-        name: "report-create",
-        component: () => import("pages/report/pages/Create.vue"),
-      },
-      /* Rotas de Usuários */
-      {
-        path: "/users",
-        name: "users",
-        component: () => import("pages/user/pages/List.vue"),
-      },
-      {
-        path: "/user/create",
-        name: "user-create",
-        component: () => import("pages/user/pages/Create.vue"),
-      },
-
       /* Rotas de Horarios */
-      {
-        path: "/schedule",
-        name: "schedule",
-        component: () => import("pages/schedule/pages/List.vue"),
-      },
       {
         path: "/schedule/create",
         name: "schedule-create",
