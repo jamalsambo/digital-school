@@ -1,0 +1,46 @@
+<q-page padding>
+  <div class="row q-col-gutter-sm">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+      <q-card class="text-grey-8 no-shadow" bordered>
+        <q-card-section class="q-pa-none">
+          <q-table
+            class="no-shadow"
+            :rows="students"
+            title="Estudantes"
+            :columns="columns"
+            row-key="id"
+            :filter="filter"
+            v-model:pagination="pagination"
+          >
+            <template v-slot:top-right="">
+              <q-input
+                borderless
+                dense
+                debounce="300"
+                v-model="filter"
+                placeholder="Pesquisar"
+              >
+                <template v-slot:append>
+                  <q-icon name="search" />
+                </template>
+              </q-input>
+
+              <q-btn
+                color="primary"
+                icon="add"
+                label="Adicionar"
+                no-caps
+                class="q-ml-sm"
+              />
+            </template>
+
+            <template v-slot:body-cell-actions="">
+              <q-btn flat round icon="edit" color="primary" />
+              <q-btn flat round icon="delete" color="negative" />
+            </template>
+          </q-table>
+        </q-card-section>
+      </q-card>
+    </div>
+  </div>
+</q-page>
