@@ -1,6 +1,5 @@
 import authGuard from "./authGuard";
-import { internshipRoutes, activitiesRoutes, developmentAreaRoutes, childhoodClasseRoutes } from "../pages/childhood/routes"
-
+import { courseRoutes } from "./pageRoutes"
 const routes = [
   {
     path: "/",
@@ -291,10 +290,7 @@ const routes = [
 
       /* Rotas de Configurações do sistema infantil*/
 
-      ...internshipRoutes,
-      ...activitiesRoutes,
-      ...developmentAreaRoutes,
-      ...childhoodClasseRoutes
+      ...courseRoutes
 
     ],
   },

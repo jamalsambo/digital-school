@@ -1,26 +1,38 @@
 import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
 
+import { useAuthStore } from "src/pages/auth/store";
+
 export const useCourseStores = defineStore("course", {
   state: () => ({
     courses: [],
     course: {},
-    classe: {}
+    classe: {},
   }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
   },
   actions: {
-    async list() {
-      const { data, error } = await api.get("/course");
+    async list(params) {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
+      const { data, error } = await api.get("/course", { params: {...params,  institutionId: institutionId}});
       if (error) throw error;
       this.courses = data;
     },
 
     async create(params) {
-      const { data, error } = await api.post("/course", params);
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
+      const { data, error } = await api.post("/course", {...params, institutionId: institutionId });
       if (error) throw error;
       return data;
+    },
+
+    async update(id, params) {
+      const { data, error } = await api.put(`/course/${id}`, params);
+      if (error) throw error;
+      this.course = data;
     },
 
     async findOne(id) {
@@ -51,8 +63,8 @@ export const useCourseStores = defineStore("course", {
       if (error) throw error;
       this.classe = data;
     },
-    async editClasse(id,params) {
-      const { data, error } = await api.put(`/class/${id}`,params);
+    async editClasse(id, params) {
+      const { data, error } = await api.put(`/class/${id}`, params);
       if (error) throw error;
       return data;
     },

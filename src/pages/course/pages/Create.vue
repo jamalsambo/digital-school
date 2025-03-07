@@ -1,77 +1,100 @@
 <template>
   <q-page padding>
-    <q-card>
+    <q-card class="q-pa-md">
       <q-card-section>
-        <div class="text-h6">Criar {{ entity }}</div>
+        <div class="text-h6" v-if="!internshipId">Criar novo {{getProgramName(program)}}</div>
+        <div class="text-h6" v-else>Editar {{getProgramName(program)}}</div>
       </q-card-section>
-
+      <q-separator spaced />
       <q-card-section>
-        <q-form @submit.prevent="handleSubmitCourse">
-          <div class="row q-col-gutter-sm">
+        <q-form @submit.prevent="submitForm" class="q-gutter-md">
+          <!-- Nome -->
+          <q-input
+            v-model="form.name"
+            label="Nome *"
+            outlined
+            maxlength="255"
+            :rules="[(val) => !!val || 'Campo obrigatório']"
+            dense
+          />
+
+          <!-- Idade Mínima/Máxima -->
+          <div class="row q-col-gutter-sm" v-if="applyAge">
             <q-input
-              class="col-md-6 col grow col-sm-12 col-xs-12"
-              v-model="form.name"
-              label="Nome do Curso"
-              placeholder="Digite o nome do Curso"
+              v-model="form.minimumAge"
+              label="Idade Mínima *"
               outlined
-              :rules="[(val) => !!val || 'O nome é obrigatório.']"
-              dense
-            />
-            <q-input
-              class="col-md-3 col grow col-sm-12 col-xs-12"
-              v-model="form.tuitionFee"
               type="number"
-              label="Mensalidade"
-              placeholder="Digite o valor da mensalidade"
-              outlined
+              class="col-md-6 col-sm-12 col-xs-12"
               :rules="[
-                (val) => !!val || 'O valor da mensalidade é obrigatório.',
+                (val) => val >= 0 || 'Idade mínima não pode ser negativa',
+                (val) => !!val || 'Campo obrigatório',
               ]"
               dense
             />
 
-            <q-select
-              class="col-md-3 col-sm-12 col-xs-12"
-              outlined
-              v-model="form.applyToAll"
-              label="Aplicação da mensalidade"
-              option-value="id"
-              option-label="name"
-              :options="feesOptions"
-              emit-value
-              map-options=""
-              dense=""
-            />
             <q-input
-              class="col-md-3 col grow col-sm-12 col-xs-12"
-              v-model="form.academicRegime"
-              type="number"
-              label="Regime"
-              placeholder="Digite o regime"
+              v-model="form.maximumAge"
+              label="Idade Máxima *"
               outlined
+              type="number"
+              class="col-md-6 col-sm-12 col-xs-12"
               :rules="[
-                (val) => !!val || 'O regime e obrigatorio.',
+                (val) => val >= 1 || 'Idade mínima é 1',
+                (val) => !!val || 'Campo obrigatório',
+                (val) =>
+                  val > form.minimumAge || 'Deve ser maior que idade mínima',
               ]"
               dense
+            />
+            </div>
+
+            <div class="row q-col-gutter-sm">
+            <!-- Taxa de Mensalidade -->
+            <q-input
+              v-model="form.tuitionFee"
+              label="Taxa de Mensalidade *"
+              outlined
+              type="number"
+              step="0.01"
+              class="col-md-4 col-sm-12 col-xs-12"
+              :rules="[
+                (val) => !!val || 'Campo obrigatório',
+                (val) => val >= 0 || 'Valor não pode ser negativo',
+              ]"
+              dense
+            />
+
+            <!-- Regime -->
+            <q-select
+              v-model="form.academicRegime"
+              :options="regimeOptions"
+              label="Regime *"
+              outlined
+              class="col-md-4 col-sm-12 col-xs-12"
+              :rules="[(val) => !!val || 'Campo obrigatório']"
+              dense
+              emit-value=""
+              map-options
+            />
+
+            <!-- Aplicar para Todos -->
+            <q-toggle
+              class="col-md-4 col-sm-12 col-xs-12"
+              v-model="form.applyToAll"
+              label="Aplicar para todos os alunos"
             />
           </div>
-          <div class="row justify-end q-gutter-sm">
+
+          <div class="row q-mt-md justify-end">
             <q-btn
-              label="Cancelar"
+              label="voltar"
               color="negative"
-              icon="close"
-              outline
-              @click="cancel"
-              class="q-mr-sm"
               flat
+              type="reset"
+              @click="router.back()"
             />
-            <q-btn
-              label="Guardar"
-              color="positive"
-              icon="save"
-              type="submit"
-              flat
-            />
+            <q-btn label="Salvar" color="green" flat type="submit" />
           </div>
         </q-form>
       </q-card-section>
@@ -80,57 +103,86 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref, watchEffect } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { useCourseStores } from "src/pages/course/store";
+import { useCourseStores } from "../store";
 import useNotify from "src/composables/UseNotify";
+import scripts from "src/composables/Scripts";
 
-// use store
-const route = useRoute();
+/* setup store */
+const courseStores = useCourseStores();
 const router = useRouter();
-const courseStore = useCourseStores();
-const { notifyError, notifySuccess } = useNotify();
+const route = useRoute();
+const { notifySuccess, notifyError } = useNotify();
+const { getProgramName} = scripts()
 
-// data
-const { entity, institution, education } = route.params;
+/* setup data */
+const { educationId, courseId, program } = route.params;
+const course = ref();
+const applyAge = ref(false)
 const form = ref({
+  educationId: educationId,
   name: "",
-  tuitionFee: "",
-  applyToAll: "",
+  tuitionFee: 0,
+  minimumAge: 0,
+  maximumAge: 1,
   academicRegime: "",
+  applyToAll: false,
 });
-const feesOptions = [
-  { id: true, name: "Todos" },
-  { id: false, name: "Parcial" },
-];
-// Methods
-const handleSubmitCourse = async () => {
+
+// Exemplo de opções - substituir com dados reais
+const regimeOptions = ref([
+  { label: "Semestral", value: 6 },
+  { label: "Trimestral", value: 3 },
+]);
+
+/* Methods */
+const submitForm = async () => {
   const payload = {
     ...form.value,
-    institutionId: institution,
-    educationId: education,
-    academicRegime: parseInt(form.value.academicRegime)
+    minimumAge: parseInt(form.value.minimumAge),
+    maximumAge: parseInt(form.value.maximumAge),
+    academicRegime: form.value.academicRegime,
   };
 
-  console.log(payload);
   try {
-    await courseStore.create(payload);
-    notifySuccess(`${entity} criado com sucesso!`);
-    router.push("/courses");
+    if (!courseId) {
+      await courseStores.create(payload);
+      notifySuccess("Estagio criado com sucesso");
+    } else {
+      await courseStores.update(courseId, payload);
+      notifySuccess("Estagio editado com sucesso");
+    }
+    router.back();
   } catch (error) {
-    notifyError("Erro ao criar curso");
+    console.error(error);
+    notifyError("Erro ao salvar o estágio");
   }
 };
 
-// Cancelar e voltar para a lista
-const cancel = () => {
-  router.push("/course");
+/* Fetch data */
+const fetchProgram = async () => {
+  try {
+    await courseStores.findOne(courseId);
+    course.value = courseStores.course;
+  } catch (error) {
+    notifyError("Erro ao carregar dados");
+  }
 };
-</script>
 
-<style scoped>
-.text-h6 {
-  font-size: 18px;
-  font-weight: bold;
-}
-</style>
+/* wacth data */
+watchEffect(() => {
+  if (course.value) {
+    form.value = { ...course.value };
+  }
+});
+
+onMounted(async () => {
+  if (program === 'internships') {
+    applyAge.value = true;
+  }
+  if (courseId) {
+    await fetchProgram();
+  }
+});
+</script>

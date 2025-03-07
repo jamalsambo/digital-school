@@ -260,6 +260,21 @@ export default function scripts() {
     return value.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' });
   }
 
+  const getProgramName = (name) => {
+    switch (name) {
+      case "internships":
+        return "Estagios";
+      case "classes":
+        return "classes";
+      case "classes":
+        return "classes";
+      case "courses":
+        return "Cursos";
+      default:
+        return "help_outline";
+    }
+  };
+
   return {
     determineRegime,
     addMinutes,
@@ -270,6 +285,7 @@ export default function scripts() {
     numberForExtension,
     getFirstAndLastName,
     getNotasPorRegime,
-    formatToMZN
+    formatToMZN,
+    getProgramName,
   };
 }
