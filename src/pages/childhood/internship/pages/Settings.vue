@@ -92,8 +92,8 @@ import { useRoute, useRouter } from "vue-router";
 import { useInternshipStores } from "../stores";
 import Tables from "src/components/Tables.vue";
 import useNotify from "src/composables/UseNotify";
-import columns from "../components/DevelopmentAreaColumns";
-import ClasseColumns from "../components/ClasseColumns";
+import columns from "../../../course/components/DevelopmentAreaColumns";
+import ClasseColumns from "../../../course/components/ClasseColumns";
 
 /* setup route */
 const route = useRoute();

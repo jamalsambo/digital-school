@@ -2,9 +2,6 @@ import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
 import { useAuthStore } from "src/pages/auth/store";
 
-const authStore = useAuthStore();
-const { institutionId } = authStore.user.userDetails;
-
 export const useStudentStores = defineStore("student", {
   state: () => ({
     students: [],
@@ -28,6 +25,8 @@ export const useStudentStores = defineStore("student", {
     },
 
     async create() {
+      const authStore = useAuthStore();
+const { institutionId } = authStore.user.userDetails;
       const { data, error } = await api.post("/student", {
         institutionId: institutionId,
       });

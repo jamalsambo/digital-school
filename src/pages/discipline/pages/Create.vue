@@ -2,7 +2,7 @@
   <q-page padding>
     <q-card class="q-pa-md">
       <q-card-section>
-        <div class="text-h6">Criar Nova Disciplina</div>
+        <div class="text-h6">Criar nova {{ getNameForDiscipline(module) }}</div>
       </q-card-section>
 
       <q-card-section>
@@ -20,8 +20,8 @@
           <div class="row q-mt-md justify-end">
             <q-btn
               label="Cancelar"
-              @click="cancel"
-              color="warning"
+              @click="router.back()"
+              color="negative"
               flat
               type="reset"
             />
@@ -34,29 +34,41 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useQuasar } from "quasar";
-import { useRouter } from "vue-router";
+import { onMounted, ref, watchEffect } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useDisciplineStores } from "src/pages/discipline/store";
 import useNotify from "src/composables/UseNotify";
+import scripts from "src/composables/Scripts";
 
-/* use stores */
+/* setup route */
 const router = useRouter();
+const route = useRoute();
+
+/* setup store */
 const disciplineStores = useDisciplineStores();
 const { notifyError, notifySuccess } = useNotify();
+const { getNameForDiscipline } = scripts();
 
-/* use reactive data */
+/* setup data */
+const { module, educationId, moduleId } = route.params;
+const discipline = ref();
 const isLoading = ref(false);
 const formData = ref({
+  educationId: educationId,
   name: "",
 });
 
-// Função para submeter o formulário
+/* methods */
 const submitForm = async () => {
   try {
-    await disciplineStores.create(formData.value);
-    notifySuccess("Disciplina criada com sucesso!");
-    router.push("/discipline");
+    if (!moduleId) {
+      await disciplineStores.create(formData.value);
+      notifySuccess(`${getNameForDiscipline(module)} criada com sucesso!`);
+    } else {
+      await disciplineStores.update(moduleId, formData.value);
+      notifySuccess(`${getNameForDiscipline(module)} editado com sucesso!`);
+      router.back();
+    }
   } catch (error) {
     notifyError("Error ao criar disciplina!");
   } finally {
@@ -72,7 +84,21 @@ const resetForm = () => {
   };
 };
 
-const cancel = () => {
-  router.push("/discipline");
+const fetchDiscipline = async () => {
+  if (moduleId) {
+    try {
+      await disciplineStores.findOne(moduleId);
+      discipline.value = disciplineStores.discipline;
+      watchEffect(() => {
+        formData.value = {...discipline.value };
+      })
+    } catch (error) {
+      notifyError("Erro no carregamento de dados...");
+    }
+  }
 };
+
+onMounted(async() => {
+  await fetchDiscipline()
+})
 </script>

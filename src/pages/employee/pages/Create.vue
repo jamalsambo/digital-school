@@ -157,7 +157,8 @@
                 <UserComponent ref="userChild"
                 :data="employee"
                 :entity="entity"
-                :userTypeId="'4d90c961-05f6-4963-a94c-dad53cc360a7'">
+                :userTypeId="'5bc90aeb-0034-4b84-80ce-fa1b60225ce3'">
+                
                   <template #actions>
                     <div class="row justify-end q-gutter-sm">
                       <q-btn

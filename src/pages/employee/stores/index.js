@@ -27,10 +27,8 @@ export const useEmployeeStores = defineStore("employee", {
       this.employee = data;
     },
 
-    async create() {
-      const { data, error } = await api.post("/employee", {
-        institutionId: institutionId,
-      });
+    async create(params) {
+      const { data, error } = await api.post("/employee", params);
       if (error) throw error;
       this.employee = data;
     },

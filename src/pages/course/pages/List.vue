@@ -25,7 +25,7 @@
                   icon="settings"
                   label="Configuração"
                   no-caps
-                  @click="settingsInternship(props)"
+                  @click="settingsProgram(props)"
                   flat
                   dense
                 />
@@ -76,12 +76,12 @@ const { notifyError, notifySuccess } = useNotify();
 const { program, educationId } = route.params;
 const educationIdUpdated = ref(route.params.educationId || educationId);
 const courses = ref([]);
-const programUpdated = ref(route.params.program || program)
+const programUpdated = ref(route.params.program || program);
 const title = ref(programUpdated);
 
 const fetchCourses = async () => {
   try {
-    await courseStores.list({educationId: educationIdUpdated.value});
+    await courseStores.list({ educationId: educationIdUpdated.value });
     courses.value = courseStores.courses;
   } catch (error) {
     notifyError("Erro ao buscar cursos");
@@ -104,18 +104,22 @@ const editCourse = (row) => {
 
 const deleteCourse = async (course) => {};
 
-const settingsCourse = (item) => {
+const settingsProgram = (item) => {
   router.push({
-    name: "course-settings",
-    params: { id: item.id },
+    name: "settings-program",
+    params: {
+      educationId: educationIdUpdated.value,
+      program: programUpdated.value,
+      internshipId: item.key,
+    },
   });
 };
 
-onBeforeRouteUpdate( (to) => {
+onBeforeRouteUpdate((to) => {
   educationIdUpdated.value = to.params.educationId || educationId;
   programUpdated.value = to.params.program || program;
   fetchCourses();
-  getProgram(programUpdated.value)
+  getProgram(programUpdated.value);
 });
 
 const getProgram = (name) => {

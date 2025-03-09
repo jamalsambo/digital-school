@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
+import { useAuthStore } from "src/pages/auth/store";
 
 export const useDevelopmentAreaStores = defineStore("development-area", {
   state: () => ({
@@ -11,7 +12,7 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
   },
   actions: {
     async list(params) {
-      const { data, error } = await api.get(`/childhood-development-area`, {
+      const { data, error } = await api.get(`development-area`, {
         params: params,
       });
       if (error) throw error;
@@ -19,8 +20,11 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
     },
 
     async create(params) {
-      const { data, error } = await api.post("/childhood-development-area", {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore?.user?.userDetails;
+      const { data, error } = await api.post("development-area", {
         ...params,
+        institutionId: institutionId,
       });
       if (error) throw error;
       return data;
@@ -28,22 +32,22 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
 
     async findOne(id) {
       const { data, error } = await api.get(
-        `/childhood-development-area/${id}`
+        `development-area/${id}`
       );
       if (error) throw error;
       this.developmentArea = data;
     },
     async update(id, params) {
       const { data, error } = await api.put(
-        `/childhood-development-area/${id}`,
+        `development-area/${id}`,
         params
       );
       if (error) throw error;
       this.developmentArea = data;
     },
-    async addDevelopmentActivity(params) {
+    async addDevelopmentActivity(dAreaId,params) {
       const { data, error } = await api.post(
-        `/childhood-development-area/${params}/activities`,
+        `development-area/${dAreaId}/activities`,
         params
       );
       if (error) throw error;
@@ -51,7 +55,7 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
     },
     async deleteDevelopmentActivity(developmentAreaId, activityId) {
       const { data, error } = await api.delete(
-        `/childhood-development-area/${developmentAreaId}/${activityId}`
+        `development-area/${developmentAreaId}/${activityId}`
       );
       if (error) throw error;
       return data;

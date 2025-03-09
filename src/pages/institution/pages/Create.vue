@@ -3,7 +3,7 @@
     <q-card flat bordered class="q-pa-md shadow-2">
       <div class="text-h6 text-primary">
         {{
-          id
+          institutionId
             ? "Editar Instituição"
             : parent
             ? `Nova Instituição Sucursal de ${institution.name}`
@@ -71,7 +71,7 @@
           </q-select>
 
           <q-input
-            class="col-md-6 col grow col-xs-12"
+            class="col-md-4 col grow col-xs-12"
             label="Nome da Bairro"
             placeholder="Digite o nome do bairro"
             v-model="form.neighborhood"
@@ -80,13 +80,25 @@
             dense
           />
           <q-input
-            class="col-md-6 col grow col-xs-12"
+            class="col-md-4 col grow col-xs-12"
             label="Endereço (Rua/Av Edificio Numero de Edificio)"
             placeholder="Digite o edereço"
             v-model="form.address"
             outlined
             required
             dense
+          />
+          <!-- Regime -->
+          <q-select
+            v-model="form.regime"
+            :options="regimeOptions"
+            label="Regime *"
+            outlined
+            class="col-md-4 col-sm-12 col-xs-12"
+            :rules="[(val) => !!val || 'Campo obrigatório']"
+            dense
+            emit-value=""
+            map-options
           />
         </div>
         <div class="text-h7 text-primary q-mt-lg">Contactos</div>
@@ -189,7 +201,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watchEffect } from "vue";
 import axios from "axios";
 import { useRouter, useRoute } from "vue-router";
 import { useInstitutionStores } from "src/pages/institution/store";
@@ -206,32 +218,53 @@ const { filterFn } = scripts();
 
 // data
 const institution = ref({});
-const { id, parent } = route.params;
+const { institutionId, parent } = route.params;
 const isLoading = ref(false);
 const file = ref();
 const form = ref({
   name: "",
   districtId: "",
+  neighborhood: "",
+  address: "",
+  regime: "",
+  mainContact: "",
+  alternativeContact: "",
+  fixed: "",
+  email: "",
+  nuit: "",
+  tax: "",
 });
+const regimeOptions = ref([
+  { label: "Semestral", value: 6 },
+  { label: "Trimestral", value: 3 },
+  { label: "Livre", value: 0 },
+]);
 
 const province = ref("");
 const provinces = ref([]);
 const districts = ref([]);
 const options = ref(provinces.value);
 const optionsDistricts = ref(districts.value);
-const educationLevel = ref([]);
 
 // Methods
 const saveInstitution = async () => {
   isLoading.value = true;
   try {
-    if (id) {
+    if (institutionId) {
       const payload = {
-        ...form.value,
+        neighborhood: form.value.neighborhood,
+        address: form.value.address,
+        regime: form.value.regime,
+        mainContact: form.value.mainContact,
+        alternativeContact: form.value.alternativeContact,
+        fixed: form.value.fixed,
+        email: form.value.email,
+        nuit: form.value.nuit,
+        tax: form.value.tax,
         name: form.value.name,
         districtId: form.value.districtId.id,
-      };
-      await institutionStore.update(id, payload);
+      }
+      await institutionStore.update(institutionId, payload);
       notifySuccess("Instituição editada com sucesso!");
     } else if (parent) {
       await institutionStore.create({ parentId: parent, ...form.value });
@@ -240,8 +273,9 @@ const saveInstitution = async () => {
       await institutionStore.create(form.value);
       notifySuccess("Instituição criada com sucesso!");
     }
-    router.push("/institution");
+    // router.back();
   } catch (error) {
+    console.log(error);
     notifyError("Instituição nao criada");
   } finally {
     isLoading.value = false;
@@ -268,7 +302,7 @@ const uploadFile = async () => {
 };
 
 const cancel = () => {
-  router.push("/institution");
+  router.back();
 };
 
 const handleFilterProvince = async (val, update) => {
@@ -296,46 +330,31 @@ const fetchProvinces = async () => {
 
 const fetchinstitution = async () => {
   try {
-    if (id) {
-      await institutionStore.findOne(id);
+    if (institutionId) {
+      await institutionStore.findOne(institutionId);
       institution.value = institutionStore.institution;
-      if (institution.value) {
-        form.value.name = institution.value.name || "";
-        form.value.districtId = institution.value.district || "";
-        province.value = institution.value.district?.province || "";
-        form.value.neighborhood = institution.value.neighborhood || "";
-        form.value.address = institution.value.address || "";
-        form.value.mainContact = institution.value.mainContact || "";
-        form.value.alternativeContact =
-          institution.value.alternativeContact || "";
-        form.value.fixed = institution.value.fixed || "";
-        form.value.email = institution.value.email || "";
-        form.value.nuit = institution.value.nuit || "";
-        form.value.tax = institution.value.tax || "";
-      }
     } else if (parent) {
       await institutionStore.findOne(parent);
       institution.value = institutionStore.institution;
-      form.value.name = institution.value.name || "";
     }
   } catch (error) {
     notifyError("Erro ao buscar Instituição");
   }
 };
 
-const fetchEducationLevel = async () => {
-  try {
-    await institutionStore.findEducationLevel();
-    educationLevel.value = institutionStore.educationLevel;
-  } catch (error) {
-    console.error(error);
+watchEffect(() => {
+  if (institutionId) {
+    form.value = { ...institution.value };
+    province.value = institution.value.district?.province;
+    form.value.districtId = institution.value.district;
+  } else if (parent) {
+    form.value.name = institution.value.name || "";
   }
-};
+});
 
 onMounted(() => {
   fetchProvinces();
-  fetchEducationLevel();
-  if (id || parent) {
+  if (institutionId || parent) {
     fetchinstitution();
   }
 });

@@ -6,9 +6,6 @@ export const useInstitutionStores = defineStore("institution", {
   state: () => ({
     institutions: [],
     institution: {},
-    shifts: [],
-    educationLevel: [],
-    rooms: [],
   }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
@@ -44,27 +41,8 @@ export const useInstitutionStores = defineStore("institution", {
       this.institution = data;
     },
 
-    async createInstitutionShift(params) {
-      const { data, error } = await api.post("/institution/shift", params);
-      if (error) throw error;
-      return data;
-    },
-
-    async findShifts(params) {
-      const authStore = useAuthStore();
-      const institutionId = authStore?.user?.userDetails?.institutionId ?? null;
-      const { data, error } = await api.get("/institution/shift/find", {
-        params: { institutionId: institutionId, ...params },
-      });
-      if (error) throw error;
-      this.shifts = data;
-    },
-
-    async createInstitutionEducation(params) {
-      const { data, error } = await api.post(
-        "/institution/education/level/create",
-        params
-      );
+    async addEducationLevel(educationLevelId, institutionId) {
+      const { data, error } = await api.post(`/institution/education-level/${educationLevelId}/${institutionId}`);
       if (error) throw error;
       return data;
     },
@@ -76,23 +54,6 @@ export const useInstitutionStores = defineStore("institution", {
       );
       if (error) throw error;
       return data;
-    },
-
-    async findEducationLevel() {
-      const { data, error } = await api.get("/institution/education/level");
-      if (error) throw error;
-      this.educationLevel = data;
-    },
-
-    //rooms
-    async listRooms() {
-      const authStore = useAuthStore();
-      const institutionId = authStore?.user?.userDetails?.institutionId ?? null;
-      const { data, error } = await api.get(
-        `class/institution/${institutionId}/room`
-      );
-      if (error) throw error;
-      this.rooms = data;
     },
 
     /* site */

@@ -275,6 +275,29 @@ export default function scripts() {
     }
   };
 
+  const getNameForDiscipline = (name) => {
+    switch (name) {
+      case "activities":
+        return "Actividade";
+      case "disciplines":
+        return "Disciplina";
+      default:
+        return "Disciplines";
+    }
+  };
+
+  const getNameForDisciplineEducation = (name) => {
+    switch (name) {
+      case "Ensino Infantil":
+        return "Actividades";
+      case "disciplines":
+        return "Disciplina";
+      default:
+        return "Disciplines";
+
+    }
+  }
+
   return {
     determineRegime,
     addMinutes,
@@ -287,5 +310,7 @@ export default function scripts() {
     getNotasPorRegime,
     formatToMZN,
     getProgramName,
+    getNameForDiscipline,
+    getNameForDisciplineEducation
   };
 }

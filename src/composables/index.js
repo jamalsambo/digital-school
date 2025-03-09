@@ -8,6 +8,7 @@ export const useComposablesStores = defineStore("composables", {
     provinces: [],
     countries: [],
     extraFees: [],
+    educationLevels: [],
   }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
@@ -27,6 +28,11 @@ export const useComposablesStores = defineStore("composables", {
       const { data, error } = await api.post("/upload/single", formData);
       if (error) throw error;
       return data;
+    },
+    async findEducationLevels() {
+      const { data, error } = await api.get("/education-level");
+      if (error) throw error;
+      this.educationLevels = data;
     },
     async listExtraFees() {
       const { data, error } = await api.get("/extra-fees");

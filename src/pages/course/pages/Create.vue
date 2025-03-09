@@ -64,20 +64,6 @@
               ]"
               dense
             />
-
-            <!-- Regime -->
-            <q-select
-              v-model="form.academicRegime"
-              :options="regimeOptions"
-              label="Regime *"
-              outlined
-              class="col-md-4 col-sm-12 col-xs-12"
-              :rules="[(val) => !!val || 'Campo obrigatório']"
-              dense
-              emit-value=""
-              map-options
-            />
-
             <!-- Aplicar para Todos -->
             <q-toggle
               class="col-md-4 col-sm-12 col-xs-12"

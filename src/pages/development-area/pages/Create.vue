@@ -36,7 +36,7 @@
 <script setup>
 import { onMounted, ref, watchEffect } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { useAuthStore } from "src/pages/auth/store";
+
 import { useDevelopmentAreaStores } from "../stores";
 import useNotify from "src/composables/UseNotify";
 
@@ -45,17 +45,16 @@ const router = useRouter();
 const route = useRoute();
 
 /* setup store */
-const authStore = useAuthStore();
-const developmentAreaStore = useDevelopmentAreaStores()
+
+const developmentAreaStore = useDevelopmentAreaStores();
 const { notifySuccess, notifyError } = useNotify();
 
 /* setup data */
-const { institutionId } = authStore?.user?.userDetails;
-const { internshipId, developmentAreaId } = route.params;
-const developmentArea = ref()
+const { educationId, curriculumId, developmentAreaId } = route.params;
+const developmentArea = ref();
 const form = ref({
-  institutionId: institutionId,
-  internshipId: internshipId,
+  educationId: educationId,
+  curriculumId: curriculumId,
   name: "",
   description: "",
 });
@@ -64,13 +63,15 @@ const form = ref({
 const submitForm = async () => {
   try {
     if (!developmentAreaId) {
-    await developmentAreaStore.create(form.value);
-    notifySuccess("Area de desenvolvimento criado com sucesso");
+      await developmentAreaStore.create(form.value);
+      notifySuccess("Area de desenvolvimento criado com sucesso");
+      form.value.name = "";
+      form.value.description = "";
     } else {
       await developmentAreaStore.update(developmentAreaId, form.value);
       notifySuccess("Area de desenvolvimento editado com sucesso");
+      router.back();
     }
-    router.back();
   } catch (error) {
     console.error(error);
     notifyError("Erro ao salvar o Area de desenvolvimento");
@@ -90,7 +91,7 @@ const fetchDevelopmentArea = async () => {
 /* wacth data */
 watchEffect(() => {
   if (developmentArea.value) {
-    form.value = {...developmentArea.value };
+    form.value = { ...developmentArea.value };
   }
 });
 

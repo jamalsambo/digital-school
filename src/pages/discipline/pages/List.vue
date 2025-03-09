@@ -3,40 +3,24 @@
     <div class="row q-col-gutter-sm">
       <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <q-card class="text-grey-8 no-shadow" bordered>
-          <q-card-section class="q-pa-none">
-            <q-table
-              class="no-shadow"
+          <q-card-section>
+            <Tables
               :rows="disciplines"
-              title="Disciplinas"
+              :title="getNameForDiscipline(title) + `s`"
               :columns="columns"
-              row-key="id"
-              :filter="filter"
-              v-model:pagination="pagination"
             >
-              <template v-slot:top-right="">
-                <q-input
-                  borderless
-                  dense
-                  debounce="300"
-                  v-model="filter"
-                  placeholder="Pesquisar"
-                >
-                  <template v-slot:append>
-                    <q-icon name="search" />
-                  </template>
-                </q-input>
-
+              <template #new>
                 <q-btn
                   color="primary"
                   icon="add"
                   label="Adicionar"
                   no-caps
-                  @click="addDiscipline"
+                  @click="createDiscipline"
                   class="q-ml-sm"
                 />
               </template>
 
-              <template v-slot:body-cell-actions="props">
+              <template #actions="{ props }">
                 <q-btn
                   flat
                   round
@@ -52,7 +36,7 @@
                   @click="deleteDiscipline(props.row)"
                 />
               </template>
-            </q-table>
+            </Tables>
           </q-card-section>
         </q-card>
       </div>
@@ -61,65 +45,77 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useQuasar } from "quasar";
-import { useRouter } from "vue-router";
+import { ref, onMounted, watch } from "vue";
+import { onBeforeRouteUpdate, useRouter } from "vue-router";
 import { useDisciplineStores } from "src/pages/discipline/store";
+import { useRoute } from "vue-router";
+import scripts from "src/composables/Scripts";
+import Tables from "src/components/Tables.vue";
+import columns from "../components/DisciplinesColumns";
 
-const $q = useQuasar();
-const filter = ref("");
+/* setup route */
 const router = useRouter();
-const pagination = ref({
-  rowsPerPage: 10,
-});
+const route = useRoute();
 
+/* setup store */
 const disciplineStores = useDisciplineStores();
+const { getNameForDiscipline } = scripts();
+
+/* setup data */
+const { educationId, module } = route.params;
+const educationIdUpdated = ref(route.params.educationId || educationId);
 const disciplines = ref([]);
+const moduleUpdated = ref(route.params.module || module);
+const title = ref(moduleUpdated);
 
-const columns = [
-  { name: "name", align: "left", label: "Nome", field: "name", sortable: true },
-  { name: "actions", align: "left", label: "Ações", field: "actions" },
-];
+/* setup methods */
+const createDiscipline = () => {
+  router.push({
+    name: "create-module",
+    params: {
+      educationId: educationIdUpdated.value,
+      module: moduleUpdated.value,
+    },
+  });
+};
 
-const fetchDiscipline = async () => {
+const editDiscipline = (discipline) => {
+  router.push({
+    name: "edit-module",
+    params: {
+      educationId: educationIdUpdated.value,
+      module: moduleUpdated.value,
+      moduleId: discipline.id,
+    }
+  })
+};
 
+const deleteDiscipline = async (discipline) => {
   try {
-    await disciplineStores.list();
+    await disciplineStores.delete(discipline.id);
+    await fetchDisciplines()
+  } catch (error) {
+    console.error("Erro ao excluir Discipline:", error);
+  }
+};
+
+/* fetch data */
+const fetchDisciplines = async () => {
+  try {
+    await disciplineStores.list(educationIdUpdated.value);
     disciplines.value = disciplineStores.disciplines;
   } catch (error) {
     console.error("Erro ao buscar disciplinas:", error);
   }
 };
 
-const addDiscipline = () => {
-  router.push({ name: "discipline-create" });
-};
+onBeforeRouteUpdate(async (to) => {
+  moduleUpdated.value = to.params.module || module;
+  educationIdUpdated.value = to.params.educationId || educationId;
+  await fetchDisciplines();
+});
 
-const editDiscipline = (discipline) => {
-  $q.notify({
-    message: `Editando: ${discipline.name}`,
-    color: "info",
-  });
-};
-
-const deleteDiscipline = async (discipline) => {
-  try {
-    await disciplineStores.delete(discipline.id);
-    $q.notify({
-      message: `Disciplina "${discipline.name}" excluída com sucesso!`,
-      color: "positive",
-    });
-    fetchCourses();
-  } catch (error) {
-    console.error("Erro ao excluir Discipline:", error);
-    $q.notify({
-      message: "Erro ao excluir Discipline.",
-      color: "negative",
-    });
-  }
-};
-
-onMounted(() => {
-  fetchDiscipline();
+onMounted(async () => {
+  await fetchDisciplines();
 });
 </script>

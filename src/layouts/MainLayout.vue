@@ -112,7 +112,7 @@
             <q-icon name="dashboard" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Dashboard Educar</q-item-label>
+            <q-item-label>Dashboard D-School</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -120,7 +120,8 @@
         <div
           v-if="
             user.userDetails.userType.name === 'Funcionario' &&
-            user.userDetails.teacher?.toLowerCase() === 'nao'
+            (user.userDetails.teacher?.toLowerCase() === 'nao' ||
+              user.userDetails.teacher === null)
           "
         >
           <q-expansion-item icon="menu_open" label="Instituição">
@@ -179,7 +180,7 @@
               v-for="(item, index) in educationsLevels"
               :key="index"
               :header-inset-level="0.85"
-              :label="item.name"
+              :label="item.education.name"
               :icon="getIcon(item.name)"
             >
               <q-item
@@ -194,8 +195,11 @@
                   <q-item-label>Calendario academico</q-item-label>
                 </q-item-section>
               </q-item>
+              <!-- discplinas -->
               <q-item
-                :to="`/education/${item.id}${getRouteForDiscipline(item.name)}`"
+                :to="`/education/${item.education.id}/module${getRouteForDiscipline(
+                  item.education.name
+                )}`"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
               >
@@ -204,12 +208,25 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{
-                    getNameForDiscipline(item.name)
+                    getNameForDiscipline(item.education.name)
                   }}</q-item-label>
                 </q-item-section>
               </q-item>
+              <!-- curriculums -->
               <q-item
-                :to="`/education/${item.id}${getRoute(item.name)}`"
+                :to="`/education/${item.education.id}/curriculums`"
+                style="margin-left: 55px !important"
+                active-class="q-item-no-link-highlighting"
+              >
+                <q-item-section avatar>
+                  <q-icon name="check_box_outline_blank" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label> Planos curriculares </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item
+                :to="`/education/${item.education.id}${getRoute(item.education.name)}`"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
               >
@@ -217,7 +234,7 @@
                   <q-icon name="school" />
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>{{ getName(item.name) }}</q-item-label>
+                  <q-item-label>{{ getName(item.education.name) }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-expansion-item>
@@ -427,6 +444,35 @@
             </q-expansion-item>
           </q-list>
         </div>
+
+        <div v-else>
+          <q-expansion-item icon="menu_open" label="Instituição">
+            <q-item
+              to="/institutions"
+              class="q-ml-xl"
+              active-class="q-item-no-link-highlighting"
+            >
+              <q-item-section avatar>
+                <q-icon name="history_edu" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Listar</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item
+              to="/employees"
+              class="q-ml-xl"
+              active-class="q-item-no-link-highlighting"
+            >
+              <q-item-section avatar>
+                <q-icon name="groups_2" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Funcionarios</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-expansion-item>
+        </div>
       </q-list>
     </q-drawer>
 
@@ -456,7 +502,7 @@ const $q = useQuasar();
 const user = computed(() => authStore.user);
 const students = computed(() => studentStores.students);
 const educationsLevels = computed(
-  () => authStore.user?.userDetails?.institution?.educationsLevels
+  () => authStore.user?.userDetails?.institution?.institutionLevels
 );
 
 const getIcon = (name) => {

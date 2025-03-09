@@ -28,7 +28,7 @@ const addEmployee = async () => {
 
 const editEmployee = async (employee) => {
   router.push({
-    name: "employee-space",
+    name: "create-employee",
     params: { id: employee.id, created: "edit" },
   });
 };

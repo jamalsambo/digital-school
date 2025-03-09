@@ -1,5 +1,13 @@
 import authGuard from "./authGuard";
-import { courseRoutes } from "./pageRoutes"
+import {
+  courseRoutes,
+  institutionRoutes,
+  employeeRoutes,
+  disciplineRoutes,
+  curriculumRoutes,
+  developmentAreaRoutes,
+} from "./pageRoutes";
+
 const routes = [
   {
     path: "/",
@@ -12,84 +20,12 @@ const routes = [
         component: () => import("pages/Dashboard.vue"),
       },
 
-      {
-        path: "/institution",
-        name: "institutions",
-        component: () => import("pages/institution/pages/List.vue"),
-      },
-
-      {
-        path: "/institution/create",
-        name: "institution-create",
-        component: () => import("pages/institution/pages/Create.vue"),
-      },
-      {
-        path: "/institution/edit/:id",
-        name: "institution-edit",
-        component: () => import("pages/institution/pages/Create.vue"),
-      },
-      {
-        path: "/institution/create/:parent/branch",
-        name: "create-branch",
-        component: () => import("pages/institution/pages/Create.vue"),
-      },
-      {
-        path: "/institution/:institution/:entity/create/education/:education",
-        name: "course-create",
-        component: () => import("pages/course/pages/Create.vue"),
-      },
-
-      {
-        path: "/institution/:institution/settings/payment/education/:education",
-        name: "settings-payment",
-        component: () =>
-          import("pages/financial/payments/pages/PaymentSettings.vue"),
-      },
-     /* Routas de calendario academico  */
-
-
-      {
-        path: "/courses",
-        name: "courses",
-        component: () => import("pages/course/pages/List.vue"),
-      },
-      {
-        path: "/course/:id/settings/:settingsEntity?/:settingsEntityId?/:purpose?/:entity?/:purposeId?",
-        name: "course-settings",
-        component: () => import("pages/course/components/SettingsCourse.vue"),
-      },
-
       /* Rotas de Turma */
       { path: "/class", component: () => import("pages/class/pages/List.vue") },
       {
         path: "/class/create",
         name: "class-create",
         component: () => import("pages/class/pages/Create.vue"),
-      },
-
-      {
-        path: "/discipline",
-        component: () => import("pages/discipline/pages/List.vue"),
-      },
-      {
-        path: "/discipline/create",
-        name: "discipline-create",
-        component: () => import("pages/discipline/pages/Create.vue"),
-      },
-
-      {
-        path: "/curriculum-plan",
-        component: () => import("pages/curriculum-plan/pages/List.vue"),
-      },
-      {
-        path: "/curriculum-plan/create",
-        name: "curriculum-create",
-        component: () => import("pages/curriculum-plan/pages/Create.vue"),
-      },
-      {
-        path: "/curriculum-plan/edit/:id",
-        name: "curriculum-edit",
-        component: () => import("pages/curriculum-plan/pages/Create.vue"),
       },
 
       /* Rotas do Estudante */
@@ -121,21 +57,7 @@ const routes = [
       },
 
       /* Rotas do funcionario */
-      {
-        path: "/employees",
-        name: "employees",
-        component: () => import("pages/employee/pages/List.vue"),
-      },
-      {
-        path: "/employee/:created/:id",
-        name: "employee-space",
-        component: () => import("pages/employee/pages/Create.vue"),
-      },
-      {
-        path: "/employee/:id/teachings",
-        name: "employee-teachings",
-        component: () => import("pages/employee/pages/Teachings.vue"),
-      },
+
       {
         path: "/class/:id/teachings/add",
         name: "class-teachings-add",
@@ -285,13 +207,18 @@ const routes = [
       {
         path: "/institution/:id/settings-site",
         name: "settings-site",
-        component: () => import("pages/institution/components/SettingsSite.vue"),
+        component: () =>
+          import("pages/institution/components/SettingsSite.vue"),
       },
 
       /* Rotas de Configurações do sistema infantil*/
 
-      ...courseRoutes
-
+      ...institutionRoutes,
+      ...courseRoutes,
+      ...employeeRoutes,
+      ...disciplineRoutes,
+      ...curriculumRoutes,
+      ...developmentAreaRoutes,
     ],
   },
 
@@ -320,8 +247,7 @@ const routes = [
     path: "/sige/:schoolSlug",
     name: "logout",
     component: () => import("pages/site/institution/main.vue"),
-  }
-
+  },
 ];
 
 export default routes;

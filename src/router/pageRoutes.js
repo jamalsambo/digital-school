@@ -1,1 +1,6 @@
 export { default as courseRoutes } from '../pages/course/router'
+export { default as institutionRoutes } from '../pages/institution/router'
+export { default as  employeeRoutes} from '../pages/employee/router'
+export { default as disciplineRoutes} from '../pages/discipline/router'
+export { default as curriculumRoutes} from '../pages/curriculum-plan/router'
+export { default as developmentAreaRoutes} from '../pages/development-area/routes'

@@ -1,23 +1,31 @@
 import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
+import { useAuthStore } from "src/pages/auth/store";
 
 export const useCurriculumPlanStores = defineStore("curriculum-plan", {
   state: () => ({
     curriculumPlans: [],
-    curriculumPlan: {}
+    curriculumPlan: {},
   }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
   },
   actions: {
-    async list() {
-      const { data, error } = await api.get("/curriculum-plan");
+    async list(params) {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
+      const { data, error } = await api.get("/curriculum-plan", { params: {...params, institutionId:institutionId}});
       if (error) throw error;
       this.curriculumPlans = data;
     },
 
     async create(params) {
-      const { data, error } = await api.post("/curriculum-plan", params);
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
+      const { data, error } = await api.post("/curriculum-plan", {
+        ...params,
+        institutionId: institutionId,
+      });
       if (error) throw error;
       return data;
     },
@@ -37,19 +45,15 @@ export const useCurriculumPlanStores = defineStore("curriculum-plan", {
     async findOne(id) {
       const { data, error } = await api.get(`/curriculum-plan/${id}`);
       if (error) throw error;
-      return data;
+      this.curriculumPlan = data;
     },
 
-    async addDiscipline(params) {
-      const { data, error } = await api.post(`/curriculum-plan/associate-to-discipline`, params);
+    async addCourseToCurriculum(curriculumId, courseId) {
+      const { data, error } = await api.post(
+        `/curriculum-plan/${curriculumId}/courses/${courseId}`
+      );
       if (error) throw error;
       return data;
     },
-
-    async removeDiscipline(id, disciplineId) {
-      const { data, error } = await api.delete(`/curriculum-plan/${id}/disciplines/${disciplineId}`);
-      if (error) throw error;
-      return data;
-    }
   },
 });
