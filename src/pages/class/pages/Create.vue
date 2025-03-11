@@ -116,7 +116,7 @@
                   label="Valor da primeira mensalidade inclusa"
                 />
               </div>
-              <div class="col-md-6">
+              <div class="col-md-6" v-if="classeIdOnCreate">
                 <span class="text-h7">Taxas extras de matricula</span>
                 <q-list bordered>
                   <q-item v-for="fees in extraFees" :key="fees.id" clickable>
@@ -181,7 +181,7 @@
                   placeholder="Digite os meses"
                 />
               </div>
-              <div class="col-md-6">
+              <div class="col-md-6" v-if="classeIdOnCreate">
                 <span class="text-h7">Taxas extras de escriçao</span>
                 <q-list bordered>
                   <q-item
@@ -247,6 +247,7 @@ const { notifyError, notifySuccess } = useNotify();
 
 /* setup data */
 const { internshipId, classeId } = route.params;
+const classeIdOnCreate = ref(classeId)
 const duration = ref();
 const rooms = ref([]);
 const shifts = ref([]);
@@ -281,7 +282,7 @@ const submitForm = async () => {
     vacancyLimit: parseInt(form.value.vacancyLimit),
     courseId: internshipId,
     roomId: form.value.roomId,
-    periodId: form.value.periodId.id,
+    periodId: form.value.periodId,
     name: form.value.name,
     startDate: form.value.startDate,
     endDate: form.value.endDate,
@@ -296,12 +297,12 @@ const submitForm = async () => {
     if (!classeId) {
       await classStore.create(payload);
       notifySuccess("Turma criada com sucesso!");
+      classeIdOnCreate.value = classStore.classe.id;
     } else {
       await classStore.update(classeId, payload);
       notifySuccess("Turma editada com sucesso!");
     }
   } catch (error) {
-    console.log(error);
     notifyError("Erro ao salvar turma");
   }
 };
@@ -315,9 +316,9 @@ const saveGrades = (duration) => {
 const onUpdatedFees = async (checked, feesId) => {
   try {
     if (checked) {
-      await extraFeeStores.createFeesToEnrollment(classeId, feesId);
+      await extraFeeStores.createFeesToEnrollment(classeIdOnCreate.value, feesId);
     } else {
-      await extraFeeStores.deleteFeesToEnrollment(classeId, feesId);
+      await extraFeeStores.deleteFeesToEnrollment(classeIdOnCreate.value, feesId);
     }
   } catch (error) {
     notifyError("Erro ao tratar as despensas extras");
@@ -327,9 +328,9 @@ const onUpdatedFees = async (checked, feesId) => {
 const onUpdatedRenewalFees = async (checked, feesId) => {
   try {
     if (checked) {
-      await extraFeeStores.createFeesToRenew(classeId, feesId);
+      await extraFeeStores.createFeesToRenew(classeIdOnCreate.value, feesId);
     } else {
-      await extraFeeStores.deleteFeesToRenew(classeId, feesId);
+      await extraFeeStores.deleteFeesToRenew(classeIdOnCreate.value, feesId);
     }
   } catch (error) {
     notifyError("Erro ao tratar as despensas extras");
@@ -409,9 +410,17 @@ const fetchClasse = async () => {
     try {
       await classStore.findOne(classeId);
       classe.value = classStore.classe;
+
+      if (parseInt(classe.value.renew) === 0) {
+      toogleRenew.value = false;
+    } else {
+      toogleRenew.value = true;
+    }
     } catch (error) {
       notifyError("Erro ao buscar turma");
     }
+
+
   }
 };
 
@@ -423,11 +432,7 @@ watchEffect(() => {
       moment(classe.value.startDate),
       "months"
     );
-    if (classe.value.renew === 0) {
-      toogleRenew.value = false;
-    } else {
-      toogleRenew.value = true;
-    }
+
   }
 });
 
