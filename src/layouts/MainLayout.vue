@@ -143,10 +143,22 @@
               active-class="q-item-no-link-highlighting"
             >
               <q-item-section avatar>
-                <q-icon name="chair" />
+                <q-icon name="schedule" />
               </q-item-section>
               <q-item-section>
                 <q-item-label>Salas</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item
+              to="/periods"
+              class="q-ml-xl"
+              active-class="q-item-no-link-highlighting"
+            >
+              <q-item-section avatar>
+                <q-icon name="chair" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Horarios</q-item-label>
               </q-item-section>
             </q-item>
             <q-item

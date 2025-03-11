@@ -53,7 +53,6 @@ import { useRoute, useRouter } from "vue-router";
 import { useCourseStores } from "../store";
 import Tables from "src/components/Tables.vue";
 import useNotify from "src/composables/UseNotify";
-import columns from "../components/DevelopmentAreaColumns";
 import ClasseColumns from "../components/ClasseColumns";
 
 /* setup route */
@@ -65,64 +64,45 @@ const courseStores = useCourseStores();
 const { notifyError } = useNotify();
 
 /* setup data */
-const { educationId,internshipId,program } = route.params;
-const internship = ref(null);
+const { educationId, internshipId, program } = route.params;
 const developmentAreas = ref([]);
 const classes = ref([]);
 
 /* methods */
-// const addDevelopmentArea = () => {
-//   router.push({
-//     name: "create-development-area",
-//     params: { internshipId: internshipId },
-//   });
-// };
 
-// const editDevelopmentArea = (row) => {
-//   router.push({
-//     name: "edit-development-area",
-//     params: { developmentAreaId: row.key },
-//   });
-// };
+const addClasse = () => {
+  router.push({
+    name: "create-classe",
+    params: { educationId: educationId, internshipId: internshipId },
+  });
+};
 
-// const addActivities = (row) => {
-//   router.push({
-//     name: "activities-development-area",
-//     params: { internshipId: internshipId, developmentId: row.key },
-//   });
-// };
-
-// const addClasse = () => {
-//   router.push({
-//     name: "create-classe",
-//     params: { internshipId: internshipId },
-//   });
-// };
-
-// const editClasse = (row) => {
-//   router.push({
-//     name: "edit-classe",
-//     params: { classId: row.key },
-//   });
-// };
+const editClasse = (row) => {
+  router.push({
+    name: "edit-classe",
+    params: {
+      educationId: educationId,
+      internshipId: internshipId,
+      classeId: row.key,
+    },
+  });
+};
 
 // const showScheduleClass = (row) => {
 //   router.push({ name: "schedule-class", params: { educationId: educationId, classId: row.key } });
 // };
 
 /* fetch data */
-// const fetchInternship = async () => {
-//   try {
-//     await internshipStore.findOne(internshipId);
-//     internship.value = internshipStore.internship;
-//     developmentAreas.value = internshipStore.internship.developmentAreas;
-//     classes.value = internshipStore.internship.classes;
-//   } catch (error) {
-//     notifyError("Erro no carregamento");
-//   }
-// };
+const fetchCourse = async () => {
+  try {
+    await courseStores.findOne(internshipId);
+    classes.value = courseStores.course.classes;
+  } catch (error) {
+    notifyError("Erro no carregamento");
+  }
+};
 
 onMounted(async () => {
-  // await fetchInternship();
+  await fetchCourse();
 });
 </script>

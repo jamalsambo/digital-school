@@ -6,6 +6,9 @@ import {
   disciplineRoutes,
   curriculumRoutes,
   developmentAreaRoutes,
+  roomRoutes,
+  classeRoutes,
+  periodsRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -18,14 +21,6 @@ const routes = [
         path: "",
         name: "home",
         component: () => import("pages/Dashboard.vue"),
-      },
-
-      /* Rotas de Turma */
-      { path: "/class", component: () => import("pages/class/pages/List.vue") },
-      {
-        path: "/class/create",
-        name: "class-create",
-        component: () => import("pages/class/pages/Create.vue"),
       },
 
       /* Rotas do Estudante */
@@ -103,23 +98,6 @@ const routes = [
         path: "/financial-control/expenses",
         name: "expenses",
         component: () => import("pages/financial/expense/pages/Expenses.vue"),
-      },
-
-      /* Rotas de salas */
-      {
-        path: "/rooms/",
-        name: "rooms",
-        component: () => import("pages/room/pages/List.vue"),
-      },
-      {
-        path: "/room/create",
-        name: "room-create",
-        component: () => import("pages/room/pages/Create.vue"),
-      },
-      {
-        path: "/room/edit/:id",
-        name: "room-edit",
-        component: () => import("pages/room/pages/Create.vue"),
       },
 
       /* Rotas de Tarefas*/
@@ -219,6 +197,9 @@ const routes = [
       ...disciplineRoutes,
       ...curriculumRoutes,
       ...developmentAreaRoutes,
+      ...roomRoutes,
+      ...classeRoutes,
+      ...periodsRoutes
     ],
   },
 

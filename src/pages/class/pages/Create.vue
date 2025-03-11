@@ -2,292 +2,440 @@
   <q-page padding>
     <q-card class="q-pa-md">
       <q-card-section>
-        <div class="text-h6">Criar Nova Turma</div>
+        <div class="text-h6" v-if="!classId">Criar nova turma</div>
+        <div class="text-h6" v-else>Editar turma</div>
       </q-card-section>
-
+      <q-separator spaced />
       <q-card-section>
-        <q-form @submit="submitForm" @reset="resetForm">
-          <div class="row q-col-gutter-md">
+        <q-form @submit.prevent="submitForm">
+          <div class="row q-col-gutter-sm">
             <q-input
-              class="col-md-6 col-sm-12 col-xs-12"
-              v-model="formData.name"
-              label="Nome da Turma"
+              class="col-md-8 col-sm-6 col-xs-12"
+              v-model="form.name"
+              label="Nome"
+              required
               outlined
-              :rules="[(val) => !!val || 'O nome da turma é obrigatório.']"
+              dense
+              placeholder="Digite o nome"
             />
-
-            <q-select
-              class="col-md-6 col-sm-12 col-xs-12"
-              v-model="formData.courseId"
-              :options="courses"
-              label="Curso"
-              option-label="name"
-              option-value="id"
+            <q-input
+              class="col-md-4 col-sm-6 col-xs-12"
+              v-model="form.vacancyLimit"
+              label="Capacidade"
+              required
               outlined
-              emit-value
-              map-options
-              :rules="[(val) => !!val || 'Selecione um curso.']"
+              type="number"
+              dense
+              placeholder="Digite a capacidade"
             />
-
             <q-input
               class="col-md-6 col-sm-6 col-xs-12"
-              v-model="formData.startDate"
+              v-model="form.startDate"
               type="date"
               label="Data de Início"
               outlined
               :rules="[(val) => !!val || 'A data de início é obrigatória.']"
+              dense
             />
-
             <q-input
               class="col-md-6 col-sm-6 col-xs-12"
-              v-model="formData.endDate"
-              type="date"
-              label="Data de Término"
+              v-model="duration"
+              label="Duração"
+              required
               outlined
-              :rules="[
-                (val) => !!val || 'A data de término é obrigatória.',
-                (val) =>
-                  !formData.startDate ||
-                  new Date(val) >= new Date(formData.startDate) ||
-                  'A data de término deve ser posterior à data de início.',
-              ]"
-            />
-
-            <q-input
-              class="col-md-3 col-sm-12 col-xs-12"
-              v-model.number="formData.vacancy_limit"
               type="number"
-              label="Limite de Vagas"
-              outlined
-              :rules="[
-                (val) => !!val || 'O limite de vagas é obrigatório.',
-                (val) =>
-                  val > 0 || 'O limite de vagas deve ser maior que zero.',
-              ]"
+              dense
+              placeholder="Digite os meses"
+              @blur="saveGrades(duration)"
             />
-
             <q-select
-              class="col-md-3 col-sm-12 col-xs-12"
-              v-model="formData.period"
-              :options="periodOptions"
-              label="Periodo"
-              outlined
-              emit-value
-              :rules="[(val) => !!val || 'Selecione um periodo.']"
-            />
-
-            <q-select
-              class="col-md-3 col-sm-12 col-xs-12"
-              v-model="formData.curriculumId"
-              :options="curriculuns"
-              label="Plano Curricular"
-              outlined
+              class="col-md-4 col-sm-6 col-xs-12"
+              v-model="form.roomId"
+              :options="rooms"
+              label="Salas"
               option-label="name"
               option-value="id"
-              emit-value
-              map-options
-            />
-
-            <q-input
-              class="col-md-3 col-sm-12 col-xs-12"
-              v-model.number="formData.renew"
-              type="number"
-              label="Renovacao da Inscricao"
+              dense
               outlined
-              :rules="[
-                (val) => !!val || 'O Renovacao é obrigatório.',
-                (val) => val > 0 || 'O Renovacao deve ser maior que zero.',
-              ]"
+              map-options
+              emit-value
+            />
+            <q-select
+              class="col-md-4 col-sm-6 col-xs-12"
+              v-model="form.periodId"
+              :options="shifts"
+              label="Turnos"
+              option-label="start"
+              option-value="id"
+              dense
+              outlined
+              map-options
+              emit-value
+            >
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.start }}</q-item-label>
+                    <q-item-label caption>{{ scope.opt.end }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+            <q-select
+              class="col-md-4 col-sm-6 col-xs-12"
+              v-model="form.leader"
+              :options="employees"
+              label="Professor responsavel"
+              option-label="name"
+              option-value="id"
+              dense
+              outlined
+              map-options=""
+              emit-value=""
             />
           </div>
-          <q-card-section v-if="classStore.classe.id">
-            <div class="text-subtitle1 q-mb-md">
-              Taxas Extras para Matricula
+          <q-separator spaced />
+          <div class="text-h6">Pagamentos</div>
+          <q-separator spaced="" />
+          <div class="border q-pa-md shadow-2">
+            <div class="row q-col-gutter-sm">
+              <div class="col-md-6">
+                <span class="text-h7 text-bold">Valor de Matricula</span>
+                <q-input
+                  class="col-md-6 col-sm-6 col-xs-12"
+                  v-model="form.enrollmentFeeValue"
+                  label="Matricula"
+                  outlined
+                  type="number"
+                  dense
+                  placeholder="Digite o valor"
+                />
+                <q-toggle
+                  class="col-md-4 col-sm-12 col-xs-12"
+                  v-model="form.monthlyFeeIncluse"
+                  label="Valor da primeira mensalidade inclusa"
+                />
+              </div>
+              <div class="col-md-6">
+                <span class="text-h7">Taxas extras de matricula</span>
+                <q-list bordered>
+                  <q-item v-for="fees in extraFees" :key="fees.id" clickable>
+                    <q-checkbox
+                      class="col-auto"
+                      v-model="fees.isActive"
+                      :val="fees.id"
+                      :label="fees.name"
+                      @update:model-value="
+                        onUpdatedFees(fees.isActive, fees.id)
+                      "
+                    />
+                  </q-item>
+                </q-list>
+              </div>
             </div>
-            <div
-              v-for="extra in extraFees"
-              :key="extra.id"
-              class="row items-center q-py-sm"
-            >
-              <q-checkbox
-                v-model="selectEdextraFees"
-                @click="toggleExtraFees(extra)"
-                :val="extra.id"
-                :label="extra.name"
-                class="col-3"
-              />
+          </div>
+          <q-separator spaced />
+          <div class="border q-pa-md shadow-2">
+            <div class="row q-col-gutter-x-sm">
+              <div class="col-md-6">
+                <span class="text-h7">Mensalidade</span>
+                <q-input
+                  class="col-md-6 col-sm-6 col-xs-12"
+                  v-model="form.monthlyFee"
+                  label="Mensalidade"
+                  outlined
+                  type="number"
+                  dense
+                  placeholder="Digite o valor"
+                />
+              </div>
             </div>
-          </q-card-section>
+          </div>
+          <q-separator spaced="" />
+          <q-toggle
+            class="col-md-4 col-sm-12 col-xs-12"
+            v-model="toogleRenew"
+            label="Renovação inscrição"
+            @update:model-value="updateToggleRenew"
+          />
+          <div class="border q-pa-md shadow-2" v-if="toogleRenew">
+            <div class="row q-col-gutter-sm">
+              <div class="col-md-6">
+                <span class="text-h7 text-bold">Inscriçao</span>
+                <q-input
+                  class="col-md-6 col-sm-6 col-xs-12"
+                  v-model="form.renewalValue"
+                  label="Valor de inscrição"
+                  outlined
+                  type="number"
+                  dense
+                  placeholder="Digite o valor"
+                />
+                <q-input
+                  class="col-md-6 col-sm-6 col-xs-12 q-mt-md"
+                  v-model="form.renewal"
+                  label="Tempo de renovação"
+                  outlined
+                  type="number"
+                  dense
+                  placeholder="Digite os meses"
+                />
+              </div>
+              <div class="col-md-6">
+                <span class="text-h7">Taxas extras de escriçao</span>
+                <q-list bordered>
+                  <q-item
+                    v-for="fees in renewalExtraFees"
+                    :key="fees.id"
+                    clickable
+                  >
+                    <q-checkbox
+                      class="col-auto"
+                      v-model="fees.isActive"
+                      :val="fees.id"
+                      :label="fees.name"
+                      @update:model-value="
+                        onUpdatedRenewalFees(fees.isActive, fees.id)
+                      "
+                    />
+                  </q-item>
+                </q-list>
+              </div>
+            </div>
+          </div>
+
           <div class="row q-mt-md justify-end">
             <q-btn
-              label="Canceclar"
-              color="warning"
-              @click="cancel"
+              label="voltar"
+              color="negative"
               flat
               type="reset"
+              @click="router.back()"
             />
-            <q-btn
-              v-if="!classStore.classe.id"
-              label="Salvar"
-              color="primary"
-              flat
-              type="submit"
-            />
-            <q-btn
-              v-else
-              label="Finalizar"
-              @click="cancel"
-              color="primary"
-              flat
-              type="button"
-            />
+            <q-btn label="Salvar" color="green" flat type="submit" />
           </div>
         </q-form>
       </q-card-section>
     </q-card>
   </q-page>
 </template>
-
 <script setup>
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { useCourseStores } from "src/pages/course/store";
-import { useClassStores } from "src/pages/class/store";
-import { useCurriculumPlanStores } from "src/pages/curriculum-plan/store";
-import { useServicesStores } from "src/services";
-import { useEnrollmentStores } from "src/components/register/enrollment/Stores";
+import { computed, onMounted, ref, watchEffect } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "src/pages/auth/store";
+import { useRoomStores } from "src/pages/room/store";
+import { useEmployeeStores } from "src/pages/employee/stores";
+import { useClassStores } from "../store";
+import { useExtraFeeStores } from "src/pages/financial/extra-fees/stores";
+import { useShiftStores } from "src/pages/shift/store";
 import useNotify from "src/composables/UseNotify";
+import moment from "moment";
 
+/* setup route */
+const route = useRoute();
 const router = useRouter();
-const courseStore = useCourseStores();
+
+/* setup store */
+const authStore = useAuthStore();
+const roomStores = useRoomStores();
+const employeeStore = useEmployeeStores();
 const classStore = useClassStores();
-const curriculumStores = useCurriculumPlanStores();
-const servicesStores = useServicesStores();
-const enrollmentStores = useEnrollmentStores();
+const extraFeeStores = useExtraFeeStores();
+const shiftStores = useShiftStores();
 const { notifyError, notifySuccess } = useNotify();
 
-const formData = ref({
+
+/* setup data */
+const { internshipId, classeId } = route.params;
+const duration = ref();
+const rooms = ref([]);
+const shifts = ref([]);
+const employees = ref([]);
+const extraFees = ref([]);
+const renewalExtraFees = ref([]);
+const classe = ref();
+const toogleRenew = ref(false);
+
+/* setup computed */
+const instituttion = computed(() => authStore.user?.userDetails?.institution);
+
+const form = ref({
+  courseId: internshipId,
+  roomId: "",
+  periodId: "",
   name: "",
-  vacancy_limit: 0,
-  courseId: null,
+  vacancyLimit: 0,
   startDate: "",
   endDate: "",
-  period: "",
-  curriculumId: "",
-  renew: "",
+  leader: "",
+  enrollmentFeeValue: 0,
+  monthlyFeeIncluse: false,
+  renewal: 0,
+  renewalValue: 0,
+  monthlyFee: 0,
 });
-const selectEdextraFees = ref([]);
 
-const isLoading = ref(false);
-const courses = ref([]);
-const curriculuns = ref([]);
-const extraFees = ref([]);
-
-const periodOptions = [
-  { label: "Manha", value: "Manha" },
-  { label: "Tarde", value: "Tarde" },
-  { label: "Noite", value: "Noite" },
-];
-
-// Methods
+/* methods */
 const submitForm = async () => {
-  isLoading.value = true;
-  if (!formData.value.name || !formData.value.vacancy_limit) {
-    notifyError("Por favor, preencha todos os campos obrigatórios.");
-    return;
-  }
-
+  const payload = {
+    vacancyLimit: parseInt(form.value.vacancyLimit),
+    courseId: internshipId,
+    roomId: form.value.roomId,
+    periodId: form.value.periodId.id,
+    name: form.value.name,
+    startDate: form.value.startDate,
+    endDate: form.value.endDate,
+    leader: form.value.leader,
+    enrollmentFeeValue: form.value.enrollmentFeeValue,
+    monthlyFeeIncluse: form.value.monthlyFeeIncluse,
+    renewal: parseInt(form.value.renewal),
+    renewalValue: form.value.renewalValue,
+    monthlyFee: form.value.monthlyFee,
+  };
   try {
-    await classStore.create(formData.value);
-    notifySuccess("Turma criada com sucesso!");
+    if (!classeId) {
+      await classStore.create(payload);
+      notifySuccess("Turma criada com sucesso!");
+    } else {
+      await classStore.update(classeId, payload);
+      notifySuccess("Turma editada com sucesso!");
+    }
   } catch (error) {
-    notifyError("Erro ao criar Turma");
-  } finally {
-    isLoading.value = false;
+    console.log(error);
+    notifyError("Erro ao salvar turma");
   }
 };
 
-const fetchCourses = async () => {
+const saveGrades = (duration) => {
+  const endDate = new Date(form.value.startDate);
+  endDate.setMonth(endDate.getMonth() + parseInt(duration));
+  form.value.endDate = endDate;
+};
+
+const onUpdatedFees = async (checked, feesId) => {
   try {
-    await courseStore.list();
-    const courseList = courseStore.courses; // Atualize para o método correto de listagem
-    courses.value = courseList.map((course) => ({
-      id: course.id,
-      name: course.name,
-    }));
+    if (checked) {
+      await extraFeeStores.createFeesToEnrollment(classeId, feesId);
+    } else {
+      await extraFeeStores.deleteFeesToEnrollment(classeId, feesId);
+    }
   } catch (error) {
-    notifyError("Erro ao carregar cursos.");
+    notifyError("Erro ao tratar as despensas extras");
   }
 };
 
-const fetchCurriculum = async () => {
+const onUpdatedRenewalFees = async (checked, feesId) => {
   try {
-    await curriculumStores.list();
-    const curriculumList = curriculumStores.curriculumPlans; // Atualize para o método correto de listagem
-    curriculuns.value = curriculumList.map((curriculum) => ({
-      id: curriculum.id,
-      name: curriculum.name,
-    }));
+    if (checked) {
+      await extraFeeStores.createFeesToRenew(classeId, feesId);
+    } else {
+      await extraFeeStores.deleteFeesToRenew(classeId, feesId);
+    }
   } catch (error) {
-    notifyError("Erro ao carregar Planos Curriculares.");
+    notifyError("Erro ao tratar as despensas extras");
+  }
+};
+
+const updateToggleRenew = async (value) => {
+  if (value) {
+    form.value.renewal = instituttion.value.regime;
+  }
+};
+
+const fetchRooms = async () => {
+  try {
+    await roomStores.list();
+    rooms.value = roomStores.rooms;
+  } catch (error) {
+    notifyError("Erro no carregemento...");
+  }
+};
+
+const fetchShifts = async () => {
+  try {
+    await shiftStores.list();
+    shifts.value = shiftStores.shifts;
+  } catch (error) {
+    notifyError("Erro no carregemento...");
+  }
+};
+
+const fetchEmployees = async () => {
+  try {
+    await employeeStore.list();
+    employees.value = employeeStore.employees.map((e) => {
+      return {
+        id: e.id,
+        name: e?.basicInformation?.fullName ?? "Default",
+      };
+    });
+  } catch (error) {
+    notifyError("Erro no carregemento...");
   }
 };
 
 const fetchExtraFees = async () => {
   try {
-    await servicesStores.listExtraFees();
-    extraFees.value = servicesStores.extraFees;
+    await extraFeeStores.list();
+    extraFees.value = extraFeeStores.extraFees.map((fees) => {
+      const isActive = classe.value?.extraFeesEnrollments.find(
+        (f) => f.id === fees.id
+      );
+      return {
+        id: fees.id,
+        name: fees.name,
+        isActive: isActive ? true : false,
+      };
+    });
+
+    renewalExtraFees.value = extraFeeStores.extraFees.map((fees) => {
+      const isActive = classe.value?.extraFeesRenewals.find(
+        (f) => f.id === fees.id
+      );
+      return {
+        id: fees.id,
+        name: fees.name,
+        isActive: isActive ? true : false,
+      };
+    });
   } catch (error) {
-    notifyError("Erro ao carregar Taxas Extras.");
+    console.log(error);
+    notifyError("Erro ao buscar taxas extras");
   }
 };
 
-const toggleExtraFees = async (extra) => {
-  const index = selectEdextraFees.value.findIndex((e) => e.id === extra.id);
-
-  if (index !== -1) {
-    // Uncheck: Remove a disciplina selecionada
-    selectEdextraFees.value.splice(index, 1);
-    const payload = {
-      classId: classStore.classe.id,
-      extraFeesId: extra.id,
-    };
-    console.log(payload);
-  } else {
-    // Check: Adiciona a disciplina selecionada
-    selectEdextraFees.value.push(extra);
-    const payload = {
-      classId: classStore.classe.id,
-      extraFeesId: extra.id,
-    };
+const fetchClasse = async () => {
+  if (classeId) {
     try {
-      await enrollmentStores.createExtraFees(payload);
-      notifySuccess("Taxa Extra adicionado com sucesso");
+      await classStore.findOne(classeId);
+      classe.value = classStore.classe;
     } catch (error) {
-      notifyError("Erro ao adicionar Taxa Extra");
+      notifyError("Erro ao buscar turma");
     }
   }
 };
 
-const resetForm = () => {
-  formData.value = {
-    name: "",
-    vacancy_limit: 0,
-    courseId: null,
-    startDate: "",
-    endDate: "",
-    status: "",
-  };
-};
+/* wacth */
+watchEffect(() => {
+  if (classe.value) {
+    form.value = { ...classe.value };
+    duration.value = moment(classe.value.endDate).diff(
+      moment(classe.value.startDate),
+      "months"
+    );
+    if (classe.value.renew === 0) {
+      toogleRenew.value = false;
+    } else {
+      toogleRenew.value = true;
+    }
+  }
+});
 
-const cancel = () => {
-  router.push("/class");
-  resetForm();
-};
-
-onMounted(() => {
-  fetchCourses();
-  fetchCurriculum();
-  fetchExtraFees();
+onMounted(async () => {
+  await fetchRooms();
+  await fetchShifts();
+  await fetchEmployees();
+  await fetchClasse();
+  await fetchExtraFees();
 });
 </script>

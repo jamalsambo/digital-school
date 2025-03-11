@@ -49,29 +49,6 @@
             />
             </div>
 
-            <div class="row q-col-gutter-sm">
-            <!-- Taxa de Mensalidade -->
-            <q-input
-              v-model="form.tuitionFee"
-              label="Taxa de Mensalidade *"
-              outlined
-              type="number"
-              step="0.01"
-              class="col-md-4 col-sm-12 col-xs-12"
-              :rules="[
-                (val) => !!val || 'Campo obrigatório',
-                (val) => val >= 0 || 'Valor não pode ser negativo',
-              ]"
-              dense
-            />
-            <!-- Aplicar para Todos -->
-            <q-toggle
-              class="col-md-4 col-sm-12 col-xs-12"
-              v-model="form.applyToAll"
-              label="Aplicar para todos os alunos"
-            />
-          </div>
-
           <div class="row q-mt-md justify-end">
             <q-btn
               label="voltar"
@@ -109,11 +86,8 @@ const applyAge = ref(false)
 const form = ref({
   educationId: educationId,
   name: "",
-  tuitionFee: 0,
   minimumAge: 0,
-  maximumAge: 1,
-  academicRegime: "",
-  applyToAll: false,
+  maximumAge: 1
 });
 
 // Exemplo de opções - substituir com dados reais

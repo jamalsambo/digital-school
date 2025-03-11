@@ -33,20 +33,6 @@ export const useExtraFeeStores = defineStore("fees", {
       this.extraFee = data;
     },
 
-    async createFeesToEnrollment(params) {
-      const { data, error } = await api.post("/extra-fees/enrollments", params);
-      if (error) throw error;
-      this.extraFee = data;
-    },
-
-    async feesEnrollments(classId, extraFeesId) {
-      const { data, error } = await api.get(
-        `/extra-fees/enrollments/${classId}/${extraFeesId}`
-      );
-      if (error) throw error;
-      this.extraFeeEnrollment = data;
-    },
-
     async delete(params) {
       const { data, error } = await api.delete(`/extra-fees`, {
         params: params,
@@ -55,17 +41,31 @@ export const useExtraFeeStores = defineStore("fees", {
       return data;
     },
 
-    /* childhood */
-    async childhoodCreateFeesToEnrollment(params) {
-      const { data, error } = await api.post("/extra-fees/childhood/enrollments", params);
+    /* extra fees to enrollment */
+    async createFeesToEnrollment(classeId, feesId) {
+      const { data, error } = await api.post(`extra-fees/enrollment/${classeId}/${feesId}`);
+      if (error) throw error;
+      return data;
+    },
+
+    async deleteFeesToEnrollment(classeId, feesId) {
+      const { data, error } = await api.delete(`extra-fees/enrollment/${classeId}/${feesId}`);
+      if (error) throw error;
+      return data;
+    },
+
+     /* extra fees to extra */
+    async createFeesToRenew(classeId, feesId) {
+      const { data, error } = await api.post(`extra-fees/renew/${classeId}/${feesId}`);
       if (error) throw error;
       this.extraFee = data;
     },
 
-    async childhoodDeleteFeesToEnrollment(classId,extraFeesId) {
-      const { data, error } = await api.delete(`/extra-fees/childhood/${classId}/${extraFeesId}`);
+    async deleteFeesToRenew(classeId, feesId) {
+      const { data, error } = await api.delete(`extra-fees/renew/${classeId}/${feesId}`);
       if (error) throw error;
       return data;
     },
+
   },
 });

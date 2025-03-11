@@ -28,6 +28,12 @@ export const useClassStores = defineStore("classe", {
       const { data, error } = await api.get(`/class/${id}`);
       if (error) throw error;
       this.classe = data;
+    },
+
+    async update(id, params) {
+      const { data, error } = await api.put(`/class/${id}`,params);
+      if (error) throw error;
+      this.classe = data;
     }
   },
 });
