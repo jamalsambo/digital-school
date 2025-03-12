@@ -7,3 +7,4 @@ export { default as developmentAreaRoutes} from '../pages/development-area/route
 export { default as roomRoutes} from '../pages/room/router'
 export { default as classeRoutes} from '../pages/class/rooter'
 export { default as periodsRoutes} from '../pages/shift/router'
+export { default as enrollmentRoutes } from '../pages/enrollment/router'

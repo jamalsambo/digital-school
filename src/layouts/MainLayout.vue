@@ -249,6 +249,18 @@
                   <q-item-label>{{ getName(item.education.name) }}</q-item-label>
                 </q-item-section>
               </q-item>
+              <q-item
+                :to="`/education/${item.education.id}/enrollments`"
+                style="margin-left: 55px !important"
+                active-class="q-item-no-link-highlighting"
+              >
+                <q-item-section avatar>
+                  <q-icon name="school" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Matriculas</q-item-label>
+                </q-item-section>
+              </q-item>
             </q-expansion-item>
           </q-expansion-item>
 

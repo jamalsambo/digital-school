@@ -8,7 +8,8 @@ import {
   developmentAreaRoutes,
   roomRoutes,
   classeRoutes,
-  periodsRoutes
+  periodsRoutes,
+  enrollmentRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -199,7 +200,8 @@ const routes = [
       ...developmentAreaRoutes,
       ...roomRoutes,
       ...classeRoutes,
-      ...periodsRoutes
+      ...periodsRoutes,
+      ...enrollmentRoutes
     ],
   },
 

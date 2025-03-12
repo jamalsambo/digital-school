@@ -17,6 +17,11 @@ export const useEnrollmentStores = defineStore("enrollment", {
       if (error) throw error;
       this.enrollment = data;
     },
+    async update(id, params) {
+      const { data, error } = await api.put(`/enrollment/${id}`, params);
+      if (error) throw error;
+      return  data;
+    },
     async renew(params) {
       const { data, error } = await api.post("/enrollment/renew", params);
       if (error) throw error;
