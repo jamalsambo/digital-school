@@ -126,7 +126,7 @@
         >
           <q-expansion-item icon="menu_open" label="Instituição">
             <q-item
-              to="/institution"
+               to="/institutions"
               class="q-ml-xl"
               active-class="q-item-no-link-highlighting"
             >
@@ -469,7 +469,7 @@
           </q-list>
         </div>
 
-        <div v-else>
+        <!-- <div v-else>
           <q-expansion-item icon="menu_open" label="Instituição">
             <q-item
               to="/institutions"
@@ -496,7 +496,7 @@
               </q-item-section>
             </q-item>
           </q-expansion-item>
-        </div>
+        </div> -->
       </q-list>
     </q-drawer>
 

@@ -9,7 +9,8 @@ import {
   roomRoutes,
   classeRoutes,
   periodsRoutes,
-  enrollmentRoutes
+  enrollmentRoutes,
+  paymentsRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -53,12 +54,6 @@ const routes = [
       },
 
       /* Rotas do funcionario */
-
-      {
-        path: "/class/:id/teachings/add",
-        name: "class-teachings-add",
-        component: () => import("pages/employee/pages/Teachings-Add.vue"),
-      },
 
       {
         path: "/education/:educationId/schedule/class/:classId/",
@@ -201,7 +196,8 @@ const routes = [
       ...roomRoutes,
       ...classeRoutes,
       ...periodsRoutes,
-      ...enrollmentRoutes
+      ...enrollmentRoutes,
+      ...paymentsRoutes
     ],
   },
 

@@ -2,8 +2,8 @@
   <q-page padding>
     <div
       v-if="
-        user.userDetails.userType.name === 'Funcionario' &&
-        user.userDetails.teacher?.toLowerCase() === 'nao'
+        user.userDetails.userType.name === 'Funcionario'
+        && user.userDetails.teacher?.toLowerCase() === 'nao'
       "
     >
       <div class="text-h6 q-mb-lg">Painel de Controlo</div>

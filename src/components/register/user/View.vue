@@ -84,7 +84,6 @@ const form = ref({
   password: "",
   passwordConfirm: "",
   userTypeId: props.userTypeId,
-  institutionId: props.data?.institutionId
 });
 
 const validaSenha = (val) => {
@@ -125,7 +124,7 @@ const handleSubmit = async () => {
 
 watchEffect(() => {
   if (props.entity === "student") {
-    form.value.displayName = props.data?.basic_information?.fullName;
+    form.value.displayName = props.data?.basicInformation?.fullName;
     form.value.username = props.data?.number;
   } else if (props.entity === "employee") {
     form.value.displayName = props.data?.basicInformation?.fullName;

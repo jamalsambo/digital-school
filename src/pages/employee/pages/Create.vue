@@ -158,7 +158,7 @@
                 :data="employee"
                 :entity="entity"
                 :userTypeId="'5bc90aeb-0034-4b84-80ce-fa1b60225ce3'">
-                
+
                   <template #actions>
                     <div class="row justify-end q-gutter-sm">
                       <q-btn

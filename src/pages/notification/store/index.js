@@ -21,6 +21,8 @@ export const useNotificationStores = defineStore("notification", {
     },
 
     async create(params) {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
       const { data, error } = await api.post("/notification", {
         ...params,
         institutionId: institutionId,

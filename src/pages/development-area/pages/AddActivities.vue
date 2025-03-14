@@ -27,6 +27,7 @@
                   :disable="!activity.hours"
                 />
                 <q-input
+
                   class="col-md-2 col-sm-12 col-xs-12"
                   v-model="activity.hours"
                   type="number"
@@ -74,6 +75,7 @@
                   map-options
                 />
                 <q-input
+                  v-if="education.name !== 'Ensino Infantil'"
                   class="col-md-2 col-sm-12 col-xs-12"
                   v-model="activity.year"
                   type="number"

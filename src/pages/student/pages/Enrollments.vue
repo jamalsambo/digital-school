@@ -39,11 +39,13 @@ import { onMounted, ref } from "vue";
 import { onBeforeRouteUpdate, useRoute } from "vue-router";
 import { useStudentStores } from "../store";
 import useNotify from "src/composables/UseNotify";
+import scripts from "src/composables/Scripts";
 
 /* use store */
 const route = useRoute();
 const studentStores = useStudentStores();
 const { notifyError } = useNotify();
+const { filterEnrollmentsByYear } = scripts();
 
 /* data */
 const { id } = route.params;
@@ -58,7 +60,7 @@ const fetchStudent = async () => {
     await studentStores.findOne(studentId.value);
     student.value = studentStores.student;
     enrollments.value = student.value.enrollments;
-    enrollmentActive.value = isCurrentDateInInterval(enrollments.value);
+    enrollmentActive.value =  !!filterEnrollmentsByYear(enrollments.value, new Date().getFullYear())
   } catch (error) {
     notifyError("Erro ao carregar estudante");
   }

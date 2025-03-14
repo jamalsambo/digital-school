@@ -32,19 +32,6 @@
                   flat
                   dense
                   round
-                  icon="school"
-                  color="primary"
-                  @click="createCourse(education)"
-                >
-                  <q-tooltip> Botao criar classe </q-tooltip>
-                </q-btn>
-              </q-item-section>
-              <q-item-section side>
-                <q-btn
-                  v-if="education.checked"
-                  flat
-                  dense
-                  round
                   icon="currency_exchange"
                   color="primary"
                   @click="settingsPayment(education)"
@@ -86,6 +73,12 @@ const updateSelection = async (checked, educationLevelId) => {
   }
 };
 
+const settingsPayment = (education) => {
+  router.push({
+    name: 'settings-payment',
+    params: {institutionId: institutionId, educationId: education.id}
+  })
+}
 /* fetch dada */
 const fetchInstitution = async () => {
   try {

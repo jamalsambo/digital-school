@@ -21,7 +21,7 @@ const { notifyInfo, notifyError } = useNotify();
 const addEmployee = async () => {
   await employeeStores.create();
   router.push({
-    name: "employee-space",
+    name: "create-employee",
     params: { id: employeeStores.employee.id, created: "create" },
   });
 };

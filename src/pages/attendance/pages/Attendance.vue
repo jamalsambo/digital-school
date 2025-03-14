@@ -58,7 +58,7 @@ const fetchStudent = async () => {
       const isActive =  attendences.value.find((att) => att.studentId === student.id);
       return {
         id: student.id,
-        fullName: student.basic_information?.fullName,
+        fullName: student.basicInformation?.fullName,
         status: isActive? isActive.status : "",
       };
     });

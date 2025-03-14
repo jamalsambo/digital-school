@@ -55,7 +55,7 @@
             <q-tr :props="props">
               <!-- Número do Estudante -->
               <q-td>
-                <strong>{{ props.row?.basic_information?.fullName }}</strong>
+                <strong>{{ props.row?.basicInformation?.fullName }}</strong>
               </q-td>
 
               <!-- Evoluções -->
@@ -121,7 +121,7 @@
   </q-page>
 </template>
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useStudentStores } from "src/pages/student/store";
 import { useEvolutionStores } from "../stores";

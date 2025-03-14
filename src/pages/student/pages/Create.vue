@@ -10,6 +10,37 @@
     </q-card-section>
     <!-- Sessão de Dados Pessoais -->
     <q-card flat bordered class="q-mb-md">
+      <q-card flat bordered class="q-pa-md shadow-2">
+        <div class="row items-center justify-between">
+          <div class="text-h6 text-primary">Matriculas</div>
+          <q-btn
+            color="primary"
+            icon="edit"
+            label="Nova Matricula"
+            class="q-mr-sm"
+            @click="handleNewEnrollment"
+            flat
+          />
+        </div>
+        <q-separator spaced />
+        <q-card-section>
+          <Tables :rows="enrollments" :columns="ColumnsEnrollments">
+            <template #actions="{ props }">
+              <q-btn
+                v-if="!props.row.paymentId"
+                flat
+                round
+                icon="payment"
+                @click="paymentEnrollment(props.row)"
+                color="primary"
+              />
+            </template>
+          </Tables>
+        </q-card-section>
+      </q-card>
+    </q-card>
+
+    <q-card flat bordered class="q-mb-md">
       <PersonalInformationComponent
         ref="personalChild"
         :personalInformation="personalInformation"
@@ -118,31 +149,6 @@
         </template>
       </DocumentsComponent>
     </q-card>
-    <!-- Sessão de Matricula -->
-    <q-card flat bordered class="q-mb-md">
-      <EnrollmentComponent ref="enrollChild">
-        <template #actions>
-          <div class="row justify-end q-gutter-sm">
-            <q-btn
-              label="Cancelar"
-              color="negative"
-              icon="close"
-              outline
-              @click="toggleEditEnroll"
-              class="q-mr-sm"
-              flat
-            />
-            <q-btn
-              label="Guardar"
-              color="positive"
-              icon="save"
-              type="submit"
-              flat
-            />
-          </div>
-        </template>
-      </EnrollmentComponent>
-    </q-card>
     <!-- Sessão de Tipo de de Pagamento -->
     <q-card flat bordered class="q-mb-md">
       <q-card flat bordered class="q-pa-md shadow-2">
@@ -165,7 +171,10 @@
         </div>
 
         <div v-if="!isEditing">
-          <Tables :rows="studentPaymentTypes" :columns="ColumnsStudentPaymentType">
+          <Tables
+            :rows="studentPaymentTypes"
+            :columns="ColumnsStudentPaymentType"
+          >
             <template #actions="{ props }">
               <q-btn
                 icon="print"
@@ -287,7 +296,7 @@
                 ref="userChild"
                 :data="student"
                 :entity="entity"
-                :userTypeId="'4d90c961-05f6-4963-a94c-dad53cc360a7'"
+                :userTypeId="'5adc9f0f-2175-4f29-8a77-43eb1c2d5fae'"
               >
                 <template #actions>
                   <div class="row justify-end q-gutter-sm">
@@ -308,7 +317,7 @@
                 ref="userChild"
                 :data="contacts"
                 :entity="'guardian'"
-                :userTypeId="'0a68239d-757e-462a-a6d7-4ccfb5eff4ee'"
+                :userTypeId="'637c12c9-5e26-417d-8fa2-96c5486ce0e3'"
               >
                 <template #actions>
                   <div class="row justify-end q-gutter-sm">
@@ -342,11 +351,11 @@ import PersonalInformationComponent from "src/components/register/personal_infor
 import PaternityComponent from "src/components/register/personal_information/paternity.vue";
 import ContactComponent from "src/components/register/contact/View.vue";
 import DocumentsComponent from "src/components/register/documents/View.vue";
-import EnrollmentComponent from "src/components/register/enrollment/View.vue";
 import UserComponent from "src/components/register/user/View.vue";
 import Tables from "src/components/Tables.vue";
 import ColumnsPaymentsList from "../components/ColumsPaymentsList.js";
 import ColumnsStudentPaymentType from "../components/ColumnsStudentsPaymentTypes.js";
+import ColumnsEnrollments from "../components/ColumnsEnrolments";
 import OrderSummary from "src/components/register/order_summary/View.vue";
 import scripts from "src/composables/Scripts";
 
@@ -371,7 +380,7 @@ const documents = ref([]);
 const payments = ref([]);
 const enrollments = ref([]);
 const paymentTypes = ref([]);
-const studentPaymentTypes = ref([])
+const studentPaymentTypes = ref([]);
 const invoices = ref([]);
 const medium = ref(false);
 const invoiceData = ref();
@@ -381,7 +390,6 @@ const personalChild = ref(null);
 const paternityChild = ref(null);
 const contactChild = ref(null);
 const documentChild = ref(null);
-const enrollChild = ref(null);
 const payType = ref({
   paymentTypeId: "",
   amount: "",
@@ -416,7 +424,7 @@ const handleSavePersonal = async () => {
   }
 
   await studentStores.findOne(route.params.id);
-  personalInformation.value = studentStores.student?.basic_information;
+  personalInformation.value = studentStores.student?.basicInformation;
   toggleEditPersonalInfo();
 };
 const handleSavePaternity = async () => {
@@ -435,8 +443,20 @@ const handleNewPayment = async () => {
   router.push({
     name: "payment-create",
     params: {
-      id: route.params.id,
+      id: route.params.studentId,
     },
+  });
+};
+const paymentEnrollment = async (row) => {
+  router.push({
+    name: "enrollment-payment",
+    params: { studentId: route.params.id, enrollmentId: row.id },
+  });
+}
+const handleNewEnrollment = () => {
+  router.push({
+    name: "create-enrollment",
+    params: { studentId: route.params.id },
   });
 };
 const onSubmit = async () => {
@@ -475,9 +495,7 @@ const toggleEditContact = () => {
 const toggleEditDocument = () => {
   documentChild.value.toggleEdit();
 };
-const toggleEditEnroll = () => {
-  enrollChild.value.toggleEdit();
-};
+
 const handleNewPaymentType = () => {
   isEditing.value = !isEditing.value;
 };
@@ -486,14 +504,14 @@ const handleNewPaymentType = () => {
 const fetchStudent = async () => {
   try {
     await studentStores.findOne(route.params.id);
-    personalInformation.value = studentStores.student?.basic_information;
+    personalInformation.value = studentStores.student?.basicInformation;
     paternity.value = studentStores.student?.paternity;
     contacts.value = studentStores.student?.contacts;
     documents.value = studentStores.student?.documents;
     student.value = studentStores.student;
     invoices.value = studentStores.student?.invoices;
     enrollments.value = studentStores.student?.enrollments;
-    studentPaymentTypes.value = studentStores.student?.studentPaymentTypes
+    studentPaymentTypes.value = studentStores.student?.studentPaymentTypes;
   } catch (error) {
     console.error("Erro ao carregar os dados:", error);
   } finally {

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
+import { useAuthStore } from "src/pages/auth/store";
 
 export const useEnrollmentStores = defineStore("enrollment", {
   state: () => ({
@@ -13,14 +14,16 @@ export const useEnrollmentStores = defineStore("enrollment", {
   },
   actions: {
     async create(params) {
-      const { data, error } = await api.post("/enrollment", params);
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
+      const { data, error } = await api.post("/enrollment", {...params, institutionId: institutionId});
       if (error) throw error;
       this.enrollment = data;
     },
     async update(id, params) {
       const { data, error } = await api.put(`/enrollment/${id}`, params);
       if (error) throw error;
-      return  data;
+      this.enrollment = data;
     },
     async renew(params) {
       const { data, error } = await api.post("/enrollment/renew", params);
@@ -30,7 +33,7 @@ export const useEnrollmentStores = defineStore("enrollment", {
     async findById(id) {
       const { data, error } = await api.get(`/enrollment/${id}`);
       if (error) throw error;
-      return  data;
+      this.enrollment =  data;
     },
     async findByStudent(id) {
       const { data, error } = await api.get(`/enrollment/student/${id}`);

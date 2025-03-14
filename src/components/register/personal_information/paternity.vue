@@ -218,7 +218,7 @@ const saveChanges = async () => {
     } else {
       // create
       await studentStores.paternity({
-        studentId: route.params.id,
+        studentId: route.params.studentId,
         ...form.value,
       });
       notifySuccess("Filiacao salva com sucesso");

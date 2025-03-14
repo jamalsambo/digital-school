@@ -122,11 +122,20 @@ const actualEnrollment = computed(() =>
 );
 /* Funcao que lista o regime (Semestral -2 / trimestral- 3) */
 const regime = computed(
-  () => actualEnrollment.value?.classe?.course?.academicRegime
+  () => actualEnrollment.value?.classe?.course.institution.regime
 );
 /* Funcao que lista as disciplinas */
 const disciplines = computed(
-  () => actualEnrollment.value?.classe?.curriculum?.disciplines
+  () => actualEnrollment.value?.classe?.course.curriculum.developmentAreas.flatMap(
+          (area) => {
+            return area.developmentAreaActivities.map((dev) => {
+
+              return {
+                id: dev.activity.id,
+                name: dev.activity.name, // ou qualquer outro dado relevante
+              }; // ou qualquer outro dado relevante
+            });
+          })
 );
 /* Funcao  que lista o total de anos tem a matricula */
 const yearsList = computed(() => {

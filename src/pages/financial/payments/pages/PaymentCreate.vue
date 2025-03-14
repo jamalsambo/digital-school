@@ -249,6 +249,7 @@ const handlePenaltyPaid = (penalty) => {
 
 const handleMonthPaid = (fee) => {
   if (fee.row.payment.status) {
+    console.log(fee)
     // Adiciona o item à lista de selecionados
     totalMonthPaySelect.value.push(fee);
     totalAmountMonth.value += parseInt(fee.row.payment.amount); // Soma o valor 'amount'
@@ -281,7 +282,7 @@ const fetchPayments = async () => {
     const amount =
       studentPaymentType && studentPaymentType.amount !== null
         ? studentPaymentType.amount
-        : enrollmentsByYear.monthlyFee;
+        : enrollmentsByYear.classe.monthlyFee;
 
     payments.value = months.value.map((month) => {
       const payment = paymentStudent.find(
@@ -322,8 +323,8 @@ const handlePaid = async () => {
     endDate.setFullYear(endDate.getFullYear() + 1);
 
     const payloadInvoice = {
-      institutionId: authStore.user.userDetails.institutionId,
-      employeeId: authStore.user.userDetails.id,
+      institutionId: authStore.user?.userDetails?.institutionId,
+      employeeId: authStore.user?.userDetails?.id,
       studentId: studentId.value,
       issueDate: new Date(),
       totalValue: totalPaid.value.toString(),
@@ -347,6 +348,7 @@ const handlePaid = async () => {
           endDate.setMonth(endDate.getMonth() + 1);
 
           const payload = {
+            institutionId: authStore.user?.userDetails?.institutionId,
             paymentTypeId: paymentTypeSelected.value.id,
             amount: payment.row.payment.amount,
             method: method.value,

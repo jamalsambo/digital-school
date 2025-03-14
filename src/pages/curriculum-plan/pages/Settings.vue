@@ -21,6 +21,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label>{{ course.name }}</q-item-label>
+                <span>{{ course?.curriculum?.name }}</span>
               </q-item-section>
             </q-item>
           </q-list>
@@ -96,10 +97,12 @@ const education = ref();
 const updateSelection = async (checked, courseId) => {
   try {
     if (checked) {
-      await curriculumStores.addCourseToCurriculum(curriculumId, courseId);
+      await courseStores.update(courseId, {curriculumId: curriculumId})
+    } else {
+      await courseStores.update(courseId, {curriculumId: curriculumId})
     }
   } catch (error) {
-    notifyError("Erro ao adicionar...");
+    notifyError("Erro ao alocar curriculum")
   }
 };
 const addDevelopmentArea = () => {
@@ -108,15 +111,12 @@ const addDevelopmentArea = () => {
     params: { educationId: educationId, curriculumId: curriculumId },
   });
 };
-
-
 const editDevelopmentArea = (row) => {
   router.push({
     name: "edit-development-area",
     params: { developmentAreaId: row.key },
   });
 }
-
 const addActivities = (row) => {
   router.push({
     name: "activities-development-area",
@@ -130,13 +130,13 @@ const fetchCourses = async () => {
     courses.value = courseStores.courses.map((course) => {
       return {
         ...course,
-        checked: !!curriculumStores.curriculumPlan.curriculumCourses.find(
-          (c) => c.courseId === course.id
+        checked: !!curriculumStores.curriculumPlan.courses.find(
+          (c) => c.id === course.id && curriculumId === course.curriculumId
         ),
       };
     });
   } catch (error) {
-    console.error(error);
+    notifyError("Erro ao carregar corsos")
   }
 };
 
@@ -146,7 +146,7 @@ const fetchCurriculum = async () => {
     developmentAreas.value = curriculumStores.curriculumPlan.developmentAreas;
     education.value = curriculumStores.curriculumPlan.educationLevel;
   } catch (error) {
-    console.error(error);
+    notifyError("Erro ao carregar curriculums")
   }
 };
 

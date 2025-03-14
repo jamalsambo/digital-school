@@ -9,20 +9,32 @@
         <q-form @submit="onSubmit">
           <div class="row q-col-gutter-sm">
             <q-select
-              class="col-md-6 col-sm-12 col-xs-12"
+              class="col-md-4 col-sm-12 col-xs-12"
+              v-model="education"
+              :options="educationsLevels"
+              option-label="name"
+              option-value="id"
+              label="Ensino"
+              outlined
+              dense
+              map-options
+              @update:model-value="onEducationChange"
+            />
+            <q-select
+              class="col-md-4 col-sm-12 col-xs-12"
               v-model="course"
               :options="courses"
               option-label="name"
               option-value="id"
-              label="Curso"
+              label="Classe/Estagio/Curso"
               outlined
               dense
               map-options
               @update:model-value="onCourseChange"
             />
             <q-select
-              class="col-md-6 col-sm-12 col-xs-12"
-              v-model="model"
+              class="col-md-4 col-sm-12 col-xs-12"
+              v-model="classe"
               :options="classes"
               label="Turma"
               option-label="name"
@@ -93,8 +105,9 @@
   </q-page>
 </template>
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "src/pages/auth/store";
 import { useCourseStores } from "src/pages/course/store";
 import { useEnrollmentStores } from "../store";
 import { useStudentStores } from "src/pages/student/store";
@@ -105,37 +118,45 @@ const router = useRouter();
 const route = useRoute();
 
 /* setup router */
+const authStore = useAuthStore();
 const courseStores = useCourseStores();
 const enrollmentStores = useEnrollmentStores();
 const studentStores = useStudentStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* setup data */
-const { educationId } = route.params;
+const { studentId } = route.params;
 const courses = ref([]);
 const course = ref();
 const classes = ref([]);
 const classe = ref();
+const educationsLevels = computed(
+  () => authStore.user?.userDetails?.institution?.institutionLevels.map((education) =>{
+    return{
+      id: education.education.id,
+      name: education.education.name
+    }
+  })
+);
+const education = ref()
 
 /* setup methods */
 const onSubmit = async () => {
   const payload = {
     classId: classe.value.id,
-    educationId: educationId,
+    educationId: education.value.id,
   };
   try {
     await enrollmentStores.create(payload);
     if (enrollmentStores.enrollment.id) {
-      await studentStores.create()
-      if (studentStores.student.id) {
-        
-      }
+        enrollmentStores.update(enrollmentStores.enrollment.id, {
+          studentId: studentId,
+        });
+        router.back()
+        notifySuccess("Matricula registada, aguardando pagamento!")
     } else {
-      notifyError("Matricula nao criada.")
+      notifyError("Matricula nao criada.");
     }
-    router.push({
-
-    })
   } catch (error) {
     notifyError("Erro na criaça de matricula");
   }
@@ -146,16 +167,16 @@ const onCourseChange = async (value) => {
 const onClasseChange = async (value) => {
   classe.value = value;
 };
+const onEducationChange = async (value) => {
+  await fetchCourses(value.id)
+}
 
 /* fetchdata */
-const fetchCourses = async () => {
+const fetchCourses = async (education) => {
   try {
-    await courseStores.list({ educationId: educationId });
+    await courseStores.list({ educationId: education });
     courses.value = courseStores.courses;
   } catch (error) {}
 };
 
-onMounted(async () => {
-  await fetchCourses();
-});
 </script>

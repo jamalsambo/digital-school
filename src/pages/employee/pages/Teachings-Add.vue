@@ -7,6 +7,7 @@
           <div class="text-subtitle2">
             Selecione as disciplinas para associar ao funcionário.
           </div>
+          {{ disciplines }}
         </q-card-section>
         <q-separator />
         <q-card-section>
@@ -42,10 +43,10 @@
               />
             </div>
           </q-card-section>
-  
+
           <q-list bordered>
             <q-item
-              v-for="discipline in disciplineFiltered"
+              v-for="discipline in disciplines"
               :key="discipline.id"
               clickable
             >
@@ -89,7 +90,7 @@ const employees = ref([]);
 const employee = ref(null);
 const disciplines = ref([]);
 // const employeeTeachings = ref([])
-const disciplineFiltered = ref([]);
+
 // Disciplinas selecionadas
 const selectedDisciplines = ref([]);
 const visibleSemeters = ref(false);
@@ -134,34 +135,51 @@ const fetchEmployees = async () => {
 const fetchClass = async () => {
   try {
     await classStores.findOne(id);
-    disciplines.value = classStores.classe.curriculum.disciplines;
+    if (classStores.classe.curriculumId) {
+      console.log("tem curriculum");
+    } else {
+      disciplines.value =
+        classStores.classe.course.curriculum.developmentAreas.flatMap(
+          (area) => {
+            return area.developmentAreaActivities.map((dev) => {
+
+              return {
+                id: dev.activity.id,
+                name: dev.activity.name, // ou qualquer outro dado relevante
+              }; // ou qualquer outro dado relevante
+            });
+          }
+        );
+    }
   } catch (error) {
-    notifyError("Erro no carregamento")
+    notifyError("Erro no carregamento");
   }
 };
+
 const onchangeSelectedEmployee = async (val) => {
   try {
     await employeeStores.findTeachings(val);
-    // employeeTeachings.value = employeeStores.teachings;
   } catch (error) {
-    notifyError("Falha ao carregar os disciplinas.");
+    notifyError("Falha ao carregar as disciplinas.");
+    return;
   }
 
-  const disc = disciplines.value.map((d) => {
-      const employeeDisciplines = employeeStores.teachings;
+  disciplines.value = disciplines.value.map((d) => {
+    const employeeDisciplines = employeeStores.teachings;
 
-      const isAssociated = employeeDisciplines.some(
-        (emp) => emp.discipline.id === d.id && emp.classId === id
-      );
-      return {
-        id: d.id,
-        name: d.name,
-        checked: !!isAssociated,
-      };
-    });
+    const isAssociated = employeeDisciplines.some(
+      (emp) => emp.discipline.id === d.id && emp.classId === id
+    );
 
-    disciplineFiltered.value = disc;
+    return {
+      id: d.id,
+      name: d.name,
+      checked: isAssociated, // Define como `true` apenas se a disciplina estiver associada
+    };
+  });
 };
+
+
 onMounted(async () => {
   await fetchEmployees();
   await fetchClass();

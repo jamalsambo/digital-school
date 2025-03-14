@@ -47,12 +47,12 @@
         </div>
         <div v-else>
           <div class="row items-center justify-between">
-            <span class="text-weight-bold">Criar Periodo</span>
+            <span class="text-weight-bold">Criar tipo de pagamento</span>
           </div>
           <q-separator spaced />
           <FormPaymentTypesComponent
             :education-level-id="educationLevelId"
-            :institution-id="institutionId"
+            :institution-id="institution"
             :fetch-payment-types="fetchPaymentTypes"
             :toggle-edit="toggleEdit"
           >
@@ -94,14 +94,14 @@ import useNotify from "src/composables/UseNotify";
 
 /* use store */
 const route = useRoute();
-const { institution, education } = route.params;
+const { institutionId, educationId } = route.params;
 const paymentStores = usePaymentStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* data */
 const isEditing = ref(false);
-const institutionId = ref(institution);
-const educationLevelId = ref(education);
+const institution = ref(institutionId);
+const educationLevelId = ref(educationId);
 const paymentTypes = ref([]);
 const penaltyRulesChild = ref()
 const paymentTypeSelected = ref()

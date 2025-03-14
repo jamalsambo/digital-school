@@ -129,7 +129,7 @@ const saveChanges = async () => {
     const entity =
       props.entity === "employee"
         ? { employeeId: route.params.id }
-        : { studentId: route.params.id };
+        : { studentId: route.params.studentId };
 
     const formData = new FormData();
     formData.append("file", file.value);

@@ -31,7 +31,7 @@
             <div class="row justify-between">
               <div>Nome</div>
               <div style="margin-right: 5px">
-                {{ student?.basic_information?.fullName }}
+                {{ student?.basicInformation?.fullName }}
               </div>
             </div>
 

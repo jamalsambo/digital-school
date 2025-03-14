@@ -39,6 +39,15 @@
                 flat
                 dense
               />
+              <q-btn
+                color="primary"
+                icon="person"
+                label="Professores"
+                no-caps
+                @click="te(props)"
+                flat
+                dense
+              />
             </template>
           </Tables>
         </div>
@@ -91,6 +100,13 @@ const editClasse = (row) => {
 // const showScheduleClass = (row) => {
 //   router.push({ name: "schedule-class", params: { educationId: educationId, classId: row.key } });
 // };
+
+const te = (row) => {
+  router.push({
+    name: "employee-teachings-add",
+    params: { id: row.key },
+  });
+};
 
 /* fetch data */
 const fetchCourse = async () => {
