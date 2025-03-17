@@ -204,7 +204,7 @@ import { useStudentStores } from "src/pages/student/store";
 import { useInstitutionStores } from "src/pages/institution/store";
 import useNotify from "src/composables/UseNotify";
 import OrderComponent from "src/components/register/order_summary/View.vue";
-import { usePaymentStores } from "src/pages/financial/payments/stores";
+import { usePaymentStores } from "src/pages/finance/payments/stores";
 import { useAuthStore } from "src/pages/auth/store";
 
 // stores

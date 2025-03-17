@@ -7,7 +7,7 @@
           icon="add"
           label="Adicionar"
           no-caps
-          @click="addShift"
+          @click="addActivity"
           class="q-ml-sm"
         />
       </template>
@@ -21,7 +21,7 @@
 import { onMounted, ref } from "vue";
 import { useShiftStores } from "../store";
 import Tables from "src/components/Tables.vue";
-import Columns from "../components/Columns";
+import Columns from "../components/ColumnsActivitiesFixes";
 import useNotify from "src/composables/UseNotify";
 import { useRoute, useRouter } from "vue-router";
 
@@ -34,26 +34,26 @@ const { notifyError } = useNotify();
 
 /* setup data */
 const rows = ref([]);
-const title = ref("Horarios");
+const title = ref("Actividades Fixas");
 
 /* setup methods */
-const addShift = () => {
+const addActivity = () => {
   router.push({
-    name: "create-period"
+    name: "activity-fixe-create"
   })
 }
 
 /* fetch data */
-const fetchShifts = async () => {
+const fetchActivitiesFixes = async () => {
   try {
-    await shiftStores.list();
-    rows.value = shiftStores.shifts;
+    await shiftStores.findActivityFixe();
+    rows.value = shiftStores.activitiesFixes;
   } catch (error) {
     notifyError("Erro no carregamento...");
   }
 };
 
 onMounted(async () => {
-  await fetchShifts();
+  await fetchActivitiesFixes();
 });
 </script>

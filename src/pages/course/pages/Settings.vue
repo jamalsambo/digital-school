@@ -97,9 +97,9 @@ const editClasse = (row) => {
   });
 };
 
-// const showScheduleClass = (row) => {
-//   router.push({ name: "schedule-class", params: { educationId: educationId, classId: row.key } });
-// };
+const showScheduleClass = (row) => {
+  router.push({ name: "schedule", params: { classId: row.key } });
+};
 
 const te = (row) => {
   router.push({

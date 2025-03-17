@@ -105,12 +105,13 @@
   </q-page>
 </template>
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/pages/auth/store";
 import { useCourseStores } from "src/pages/course/store";
 import { useEnrollmentStores } from "../store";
-import { useStudentStores } from "src/pages/student/store";
+import { usePaymentStores } from "src/pages/finance/payments/stores";
+import { useInvoiceStores } from "src/pages/finance/invoice/stores";
 import useNotify from "src/composables/UseNotify";
 
 /* setup router */
@@ -121,7 +122,8 @@ const route = useRoute();
 const authStore = useAuthStore();
 const courseStores = useCourseStores();
 const enrollmentStores = useEnrollmentStores();
-const studentStores = useStudentStores();
+const paymentStores = usePaymentStores();
+const invoiceStores = useInvoiceStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* setup data */
@@ -130,6 +132,7 @@ const courses = ref([]);
 const course = ref();
 const classes = ref([]);
 const classe = ref();
+const month = new Date().toLocaleString('pt-BR', { month: 'long' });
 const educationsLevels = computed(
   () => authStore.user?.userDetails?.institution?.institutionLevels.map((education) =>{
     return{
@@ -139,25 +142,42 @@ const educationsLevels = computed(
   })
 );
 const education = ref()
+const paymentType = ref()
 
 /* setup methods */
 const onSubmit = async () => {
   const payload = {
     classId: classe.value.id,
     educationId: education.value.id,
+    studentId: studentId,
   };
   try {
     await enrollmentStores.create(payload);
     if (enrollmentStores.enrollment.id) {
-        enrollmentStores.update(enrollmentStores.enrollment.id, {
+
+        const payloadInvoice = {
+          paymentTypeId:paymentType.value.id,
+          classId: classe.value.id,
           studentId: studentId,
-        });
+          issueDate: new Date(),
+          dueDate: new Date(),
+          month: month,
+          amount: classe.value.enrollmentFeeValue,
+          status: "Pendente",
+          note: `Factura referente a matricula do ano lectivo ${new Date().getFullYear()}`
+        }
+
+        await invoiceStores.create(payloadInvoice)
+
+        console.log(payloadInvoice)
+
         router.back()
         notifySuccess("Matricula registada, aguardando pagamento!")
     } else {
       notifyError("Matricula nao criada.");
     }
   } catch (error) {
+    console.log(error)
     notifyError("Erro na criaça de matricula");
   }
 };
@@ -178,5 +198,18 @@ const fetchCourses = async (education) => {
     courses.value = courseStores.courses;
   } catch (error) {}
 };
+
+const fetchPaymentType = async () => {
+  try {
+    await paymentStores.findPaymentTypes()
+    paymentType.value = paymentStores.paymentTypes.find((type) => type.name === 'Matricula')
+  } catch (error) {
+    notifyError("Erro no carregamento")
+  }
+}
+
+onMounted(async() => {
+  await fetchPaymentType()
+})
 
 </script>

@@ -34,6 +34,13 @@
                 @click="paymentEnrollment(props.row)"
                 color="primary"
               />
+              <q-btn
+              icon="print"
+              color="primary"
+              class="q-mr-sm"
+              flat
+              @click="printDocument(props)"
+            />
             </template>
           </Tables>
         </q-card-section>
@@ -344,7 +351,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useStudentStores } from "../store";
-import { usePaymentStores } from "src/pages/financial/payments/stores";
+import { usePaymentStores } from "src/pages/finance/payments/stores";
 import { useBasicStores } from "src/components/register/personal_information/store";
 import useNotify from "src/composables/UseNotify";
 import PersonalInformationComponent from "src/components/register/personal_information/view.vue";

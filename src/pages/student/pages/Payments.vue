@@ -10,7 +10,7 @@ import { useAuthStore } from "src/pages/auth/store";
 import { useStudentStores } from "../store";
 import Tables from "src/components/Tables.vue";
 import scripts from "src/composables/Scripts";
-import PaymentsColumns from "src/pages/financial/payments/components/columns/Payments";
+import PaymentsColumns from "src/pages/finance/payments/components/columns/Payments";
 
 /* Stores */
 const authStore = useAuthStore();

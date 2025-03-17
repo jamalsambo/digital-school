@@ -22,12 +22,13 @@
       </q-input>
       <slot name="new"></slot>
     </template>
-    <template v-slot:body-cell-penalts="props">
-      <slot name="penalts" :penalts="props.row.payment.penalts"></slot>
-    </template>
+
 
     <template v-slot:body-cell-actions="props">
       <slot name="actions" :props="props"></slot>
+    </template>
+    <template v-slot:body-cell-penalts="props">
+      <slot name="penalts" :penalts="props.row.penalts"></slot>
     </template>
   </q-table>
 </template>

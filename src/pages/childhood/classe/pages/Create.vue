@@ -137,7 +137,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useInstitutionStores } from "src/pages/institution/store";
 import { useEmployeeStores } from "src/pages/employee/stores";
 import { useChildhoodClasseStores } from "../stores";
-import { useExtraFeeStores } from "src/pages/financial/extra-fees/stores";
+import { useExtraFeeStores } from "src/pages/finance/extra-fees/stores";
 import useNotify from "src/composables/UseNotify";
 import moment from "moment";
 

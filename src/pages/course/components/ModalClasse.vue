@@ -176,7 +176,7 @@ import { onMounted, ref, watchEffect } from "vue";
 import { useRouter } from "vue-router";
 import { useCourseStores } from "../store";
 import { useInstitutionStores } from "src/pages/institution/store";
-import { useExtraFeeStores } from "src/pages/financial/extra-fees/stores";
+import { useExtraFeeStores } from "src/pages/finance/extra-fees/stores";
 import { useEmployeeStores } from "src/pages/employee/stores";
 import useNotify from "src/composables/UseNotify";
 

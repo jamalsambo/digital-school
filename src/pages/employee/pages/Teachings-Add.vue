@@ -7,7 +7,6 @@
           <div class="text-subtitle2">
             Selecione as disciplinas para associar ao funcionário.
           </div>
-          {{ disciplines }}
         </q-card-section>
         <q-separator />
         <q-card-section>

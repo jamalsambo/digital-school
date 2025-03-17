@@ -131,9 +131,9 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { usePaymentStores } from "./financial/payments/stores";
+import { usePaymentStores } from "./finance/payments/stores";
 import { useUserStores } from "./user/store";
-import { useExpenseStores } from "./financial/expense/store";
+import { useExpenseStores } from "./finance/expense/store";
 import Card from "src/components/dashboard/Card.vue";
 import SubCard from "src/components/dashboard/Sub-Card.vue";
 import InOutCard from "src/components/dashboard/InOut-Card.vue";

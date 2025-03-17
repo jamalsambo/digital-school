@@ -1,9 +1,5 @@
 import { defineStore } from "pinia";
-import { api } from "src/boot/axios";
-import { useAuthStore } from "src/pages/auth/store";
-
-const authStore = useAuthStore();
-const { institutionId } = authStore.user.userDetails;
+import { api } from "src/boot/axios"
 
 export const useScheduleStores = defineStore("schedule", {
   state: () => ({

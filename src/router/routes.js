@@ -10,7 +10,10 @@ import {
   classeRoutes,
   periodsRoutes,
   enrollmentRoutes,
-  paymentsRoutes
+  paymentsRoutes,
+  scheduleRoutes,
+  invoiceRoutes,
+  receiptsRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -50,7 +53,7 @@ const routes = [
         path: "/student/:id/payments/:view",
         name: "student-payments",
         component: () =>
-          import("pages/financial/payments/pages/PaymentCreate.vue"),
+          import("src/pages/finance/payments/pages/PaymentCreate.vue"),
       },
 
       /* Rotas do funcionario */
@@ -78,22 +81,22 @@ const routes = [
         path: "/payment/create/student/:id",
         name: "payment-create",
         component: () =>
-          import("pages/financial/payments/pages/PaymentCreate.vue"),
+          import("src/pages/finance/payments/pages/PaymentCreate.vue"),
       },
       {
         path: "/extras-fees",
         name: "extras-fees",
-        component: () => import("pages/financial/extra-fees/pages/List.vue"),
+        component: () => import("src/pages/finance/extra-fees/pages/List.vue"),
       },
       {
         path: "/financial-control/expenses-categories",
         name: "expenses-categories",
-        component: () => import("pages/financial/expense/pages/Categories.vue"),
+        component: () => import("src/pages/finance/expense/pages/Categories.vue"),
       },
       {
         path: "/financial-control/expenses",
         name: "expenses",
-        component: () => import("pages/financial/expense/pages/Expenses.vue"),
+        component: () => import("src/pages/finance/expense/pages/Expenses.vue"),
       },
 
       /* Rotas de Tarefas*/
@@ -158,13 +161,6 @@ const routes = [
         component: () => import("src/pages/attendance/pages/Student.vue"),
       },
 
-      /* Rotas de Horarios */
-      {
-        path: "/schedule/create",
-        name: "schedule-create",
-        component: () => import("pages/schedule/pages/Create.vue"),
-      },
-
       /* Rotas de Notificações */
       {
         path: "/notifications",
@@ -197,7 +193,10 @@ const routes = [
       ...classeRoutes,
       ...periodsRoutes,
       ...enrollmentRoutes,
-      ...paymentsRoutes
+      ...paymentsRoutes,
+      ...scheduleRoutes,
+      ...invoiceRoutes,
+      ...receiptsRoutes
     ],
   },
 

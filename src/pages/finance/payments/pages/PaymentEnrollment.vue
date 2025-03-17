@@ -21,7 +21,7 @@
             <q-item-section>📌 Mensalidade</q-item-section>
             <q-item-section side>{{ classe?.monthlyFee }}</q-item-section>
           </q-item>
-          <q-item v-if="classe?.renewal !== 0">
+          <!-- <q-item v-if="classe?.renewal !== 0">
             <q-item-section>📋 Valor de inscricao </q-item-section>
             <q-item-section side>{{ classe?.renewalValue }}</q-item-section>
           </q-item>
@@ -35,12 +35,12 @@
               >{{ classe?.period.start }} -
               {{ classe?.period.end }}</q-item-section
             >
-          </q-item>
-          <q-item v-if="classe?.monthlyFeeIncluse">
+          </q-item> -->
+          <!-- <q-item v-if="classe?.monthlyFeeIncluse">
             <q-item-section
               >Nota: Valor da primeira mensalidade inclusa</q-item-section
             >
-          </q-item>
+          </q-item> -->
 
         </q-list>
         <div class="row q-col-gutter-sm">
@@ -95,33 +95,56 @@
   </q-page>
 </template>
 <script setup>
-import { useEnrollmentStores } from "src/pages/enrollment/store";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
+import { useAuthStore } from "src/pages/auth/store";
+import { useEnrollmentStores } from "src/pages/enrollment/store";
+import { usePaymentStores } from "../stores";
+import useNotify from "src/composables/UseNotify";
+/* setup route */
 const route = useRoute();
 const router = useRouter();
 
+/* setup store */
+const authStore = useAuthStore();
 const enrollmentStores = useEnrollmentStores();
+const paymentStores = usePaymentStores();
+const { notifyError, notifySuccess } = useNotify()
 
-const { enrollmentId } = route.params;
+/* setup data */
+const { studentId,enrollmentId } = route.params;
 const classe = ref();
+const paymentType = ref();
+const method = ref();
+const code = ref();
+const currentDate = new Date();
+const month = currentDate.toLocaleString('pt-BR', { month: 'long' });
 
 const submitPayment = async () => {
   const payload = {
     institutionId: authStore.user?.userDetails?.institutionId,
-    paymentTypeId: paymentTypeSelected.value.id,
-    amount: payment.row.payment.amount,
+    paymentTypeId: paymentType.value.id,
+    amount:  classe.value?.enrollmentFeeValue,
     method: method.value,
     status: "Pago",
-    paymentDate: new Date(),
-    dueDate: endDate,
-    paymentNote: `${paymentTypeSelected.value.name} de referente o mes de ${payment.row.month.month}`,
-    month: payment.row.month.month,
-    year: year.value.toString(),
-    studentId: studentId.value,
+    paymentDate: currentDate,
+    dueDate: classe.value?.endDate,
+    paymentNote: `Matricula referente o ano ${currentDate.getFullYear()}`,
+    month: month,
+    year: currentDate.getFullYear().toString(),
+    studentId: studentId,
     code: code.value || "",
   };
+  try {
+    await paymentStores.create(payload)
+    if (paymentStores.payment.id){
+      await enrollmentStores.update(enrollmentId, {paymentId: paymentStores.payment.id})
+    } 
+    notifySuccess("Pagamento efectuado com sucesso!")
+    router.back();
+  } catch (error) {
+    notifyError("Erro ao efectuar pagamento")
+  }
 };
 
 const fetchEnrollment = async () => {
@@ -133,7 +156,18 @@ const fetchEnrollment = async () => {
   }
 };
 
+const fetchPaymentTypes = async () => {
+  try {
+    await paymentStores.findPaymentTypes()
+    paymentType.value = paymentStores.paymentTypes.find((type) => type.name === "Matricula")
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+
 onMounted(async () => {
   await fetchEnrollment();
+  await fetchPaymentTypes();
 });
 </script>

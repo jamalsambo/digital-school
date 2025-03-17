@@ -226,7 +226,7 @@ import { useAuthStore } from "src/pages/auth/store";
 import { useRoomStores } from "src/pages/room/store";
 import { useEmployeeStores } from "src/pages/employee/stores";
 import { useClassStores } from "../store";
-import { useExtraFeeStores } from "src/pages/financial/extra-fees/stores";
+import { useExtraFeeStores } from "src/pages/finance/extra-fees/stores";
 import { useShiftStores } from "src/pages/shift/store";
 import useNotify from "src/composables/UseNotify";
 import moment from "moment";

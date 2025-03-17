@@ -1,10 +1,12 @@
 <template>
+ <q-page padding>
   <q-card class="q-ma-md">
     <q-table
       :rows="sortedRows"
       :columns="columns"
       row-key="id"
       hide-bottom
+      :pagination="{ rowsPerPage: 10 }"
       flat
       class="schedule-table"
     >
@@ -64,7 +66,6 @@
       >
         <q-td
           :props="props"
-          :style="getActivityStyle(props.row.activities[day])"
         >
           <q-select
             v-model="props.row.activities[day]"
@@ -73,8 +74,9 @@
             dense
             emit-value
             map-options
-            :readonly="props.row.type === 'fixed'"
-            options-dense
+            :readonly="props.row.type === 'fixed' || hasOverlap"
+
+            @update:model-value="updateSelection(props.row, day)"
           />
         </q-td>
       </template>
@@ -89,101 +91,101 @@
         class="q-mr-sm"
       />
       <q-space />
-      <q-btn
-        @click="save"
-        icon="save"
-        label="Salvar Agenda"
-        color="primary"
-        :disable="hasOverlap"
-      />
     </q-card-actions>
   </q-card>
+</q-page>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useQuasar } from "quasar";
+import { useShiftStores } from "src/pages/shift/store";
+import { useClassStores } from "src/pages/class/store";
+import { useScheduleStores } from "../stores";
+import { useRoute } from "vue-router";
 
-const $q = useQuasar();
 
+// setup routes
+const route = useRoute();
+
+// setup store
+const shiftStores = useShiftStores();
+const classStores = useClassStores();
+const scheduleStores = useScheduleStores();
+
+// setup data
+const { classId } = route.params;
 // Configurações
 const weekDays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
+const registeredActivities = ref([]);
+const savedSchedule = ref([]);
+const fixedSchedules = ref([]);
 
-// Simulação de banco de dados
-const registeredActivities = ref([
-  { id: 1, nome: "Trabalho", cor: "#4ECDC4" },
-  { id: 2, nome: "Reunião", cor: "#FF6B6B" },
-  { id: 3, nome: "Lanche", cor: "#2ECC71" },
-  { id: 4, nome: "Almoço", cor: "#FF9F43" },
-]);
-
-const savedSchedule = ref([
-  {
-    entry: "08:00",
-    exit: "09:00",
-    activities: {
-      Segunda: 1,
-      Terça: 1,
-      Quarta: 1,
-      Quinta: 1,
-      Sexta: 1,
-    },
-  },
-  {
-    entry: "12:00",
-    exit: "13:00",
-    activities: {
-      Segunda: 4,
-      Terça: 4,
-      Quarta: 4,
-      Quinta: 4,
-      Sexta: 4,
-    },
-  },
-]);
-
-// Horários fixos
-const fixedSchedules = [
-  {
-    type: "fixed",
-    entry: "09:00",
-    exit: "09:30",
-    label: "Lanche da Manhã",
-    activities: Object.fromEntries(weekDays.map((day) => [day, 3])),
-  },
-  {
-    type: "fixed",
-    entry: "13:00",
-    exit: "17:00",
-    label: "Período da Tarde",
-    activities: Object.fromEntries(weekDays.map((day) => [day, 1])),
-  },
-];
-
-// Reatividade
 const columns = ref([
   { name: "hora", label: "HORA", align: "left" },
   ...weekDays.map((day) => ({ name: day, label: day })),
 ]);
-
 const rows = ref([]);
+const classe = ref();
+const classEntry = ref();
+const classExit = ref();
+const classTime = ref([
+  {
+    type: "fixed",
+    entry: classEntry,
+    exit: classEntry,
+    label: "Lanche da Manhã",
+    activities: Object.fromEntries(weekDays.map((day) => [day, "Entrada"])),
+  },
+]);
 
-// Conversão de tempo
+const updateSelection = async (row, day) => {
+  const selectedActivityId = row.activities[day]; // Número da atividade selecionada
+
+  // Encontrar o objeto completo da atividade pelo ID
+  // const selectedActivity = activitiesOptions.value.find(act => act.value === selectedActivityId);
+
+  const payload = {
+    classId: classId,
+    disciplineId: selectedActivityId,
+    dayWeek: day,
+    startTime: row.entry,
+    endTime: row.exit,
+  };
+
+  try {
+    await scheduleStores.create(payload);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// methods
 const timeToMinutes = (time) => {
   const [hours, minutes] = time?.split(":") || [0, 0];
   return parseInt(hours) * 60 + parseInt(minutes);
 };
 
 // Validação
-const validateTime = () => {
+const validateTime = (time) => {
+  const timeMinutes = timeToMinutes(time);
+  const classStart = timeToMinutes(classEntry.value);
+  const classEnd = timeToMinutes(classExit.value);
+
+  // Verificar se está dentro do horário da classe
+  if (timeMinutes < classStart || timeMinutes > classEnd) {
+    return "Fora do horário da classe!";
+  }
+
+  // Verificar conflitos entre períodos
   const entries = sortedRows.value.map((row) => ({
     start: timeToMinutes(row.entry),
     end: timeToMinutes(row.exit),
   }));
 
   for (let i = 1; i < entries.length; i++) {
-    if (entries[i].start < entries[i - 1].end) return false;
+    if (entries[i].start < entries[i - 1].end) return "Conflito de horário!";
   }
+
   return true;
 };
 
@@ -197,17 +199,6 @@ const sortedRows = computed(() => {
 // Verificação de conflitos
 const hasOverlap = computed(() => !validateTime());
 
-// Estilo das atividades
-const getActivityStyle = (activityId) => {
-  const activity = registeredActivities.value.find((a) => a.id === activityId);
-  return activity
-    ? {
-        backgroundColor: `${activity.cor}20`,
-        borderLeft: `3px solid ${activity.cor}`,
-      }
-    : {};
-};
-
 // Adição de linhas
 const addRow = (schedule) => {
   rows.value.push({
@@ -217,15 +208,26 @@ const addRow = (schedule) => {
 };
 
 const addCustomRow = () => {
-  const lastRow = sortedRows.value[sortedRows.value.length - 1];
-  const lastEnd = lastRow ? timeToMinutes(lastRow.exit) : 480;
+  const classEndTime = timeToMinutes(classExit.value); // Horário de término da classe (ex: 17:00)
 
-  addRow({
-    type: "custom",
-    entry: minutesToTime(lastEnd),
-    exit: minutesToTime(lastEnd + 60),
-    activities: Object.fromEntries(weekDays.map((day) => [day, null])),
-  });
+const lastRow = sortedRows.value[sortedRows.value.length - 1];
+const lastEnd = lastRow ? timeToMinutes(lastRow.exit) : 480; // 480 = 8:00 AM
+
+// Calcular novo horário, mas não ultrapassar o fim da aula
+const newEntry = lastEnd;
+const newExit = Math.min(newEntry + 60, classEndTime); // 👈 Limitar ao horário da classe
+
+if (newEntry >= classEndTime) {
+  alert("Não é possível adicionar mais períodos após o término da aula!");
+  return;
+}
+
+addRow({
+  type: "custom",
+  entry: minutesToTime(newEntry),
+  exit: minutesToTime(newExit),
+  activities: Object.fromEntries(weekDays.map((day) => [day, null])),
+});
 };
 
 const minutesToTime = (minutes) => {
@@ -244,48 +246,116 @@ const loadInitialData = () => {
     });
   });
 
-  // Carregar horários fixos
-  fixedSchedules.forEach((schedule) => addRow(schedule));
-};
-
-// Salvamento
-const save = async () => {
-  try {
-    // 1. Criar payload com dados atuais
-    const payload = sortedRows.value
-      .map((row) => ({
-        entry: row.entry,
-        exit: row.exit,
-        activities: row.activities,
-      }));
-
-    // 2. Atualizar dados salvos com o novo payload
-    savedSchedule.value = [...payload]; // Cria nova referência para trigger de reatividade
-
-    const newRou =  rows.value.filter((row) => row.type === "custom");
-    console.log(newRou)
-
-
-    // 3. Limpar linhas salvas antigas
-    rows.value = rows.value.filter((row) => row.type !== "custom");
-  } catch (error) {
-    $q.notify({
-      type: "negative",
-      message: "Erro ao salvar: " + error.message,
-    });
-  }
+  // // Carregar horários fixos
+  classTime.value.forEach((schedule) => addRow(schedule));
+  fixedSchedules.value.forEach((schedule) => addRow(schedule));
 };
 
 // Opções de atividades formatadas
 const activitiesOptions = computed(() => {
   return registeredActivities.value.map((activity) => ({
-    label: activity.nome,
+    label: activity.name,
     value: activity.id,
   }));
 });
 
+const fetchScheduleFixe = async () => {
+  try {
+    await shiftStores.findShiftFixe();
+    fixedSchedules.value = groupDataByPeriod(shiftStores.scheduleFixes);
+  } catch (error) {
+    console.log();
+  }
+};
+
+const fetchClass = async () => {
+  try {
+    await classStores.findOne(classId);
+    classe.value = classStores.classe;
+    classEntry.value = classe.value.period.start;
+    classExit.value = '17:00';
+    if (classStores.classe.curriculumId) {
+      console.log("tem curriculum");
+    } else {
+      registeredActivities.value =
+        classStores.classe.course.curriculum.developmentAreas.flatMap(
+          (area) => {
+            return area.developmentAreaActivities.map((dev) => {
+              return {
+                id: dev.activity.id,
+                name: dev.activity.name, // ou qualquer outro dado relevante
+              }; // ou qualquer outro dado relevante
+            });
+          }
+        );
+    }
+  } catch (error) {
+    console.log(error);
+    // notifyError("Erro no carregamento");
+  }
+};
+
+const fetchSchedules = async () => {
+  try {
+    await scheduleStores.list();
+    savedSchedule.value = groupDataByPeriodTe(scheduleStores.schecules)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const groupDataByPeriodTe = (data) => {
+  const grouped = {};
+
+  data.forEach((item) => {
+    if (!grouped[item.startTime]) {
+      grouped[item.startTime] = {
+        entry: item.startTime,
+        exit: item.endTime,
+        activities: {},
+
+
+      };
+    }
+
+    weekDays.forEach((day) => {
+      if (day === item.dayWeek && item.disciplineId) {
+        grouped[item.startTime].activities[day] = item.discipline.name;
+      }
+    });
+  });
+
+  return Object.values(grouped);
+};
+
+const groupDataByPeriod = (data) => {
+  const grouped = {};
+
+  data.forEach((item) => {
+    if (!grouped[item.start]) {
+      grouped[item.start] = {
+        type: item.type,
+        entry: item.start,
+        exit: item.end,
+        activities: {},
+      };
+    }
+
+    weekDays.forEach((day) => {
+      if (day === item.dayWeek && item.activityFixeId) {
+        grouped[item.start].activities[day] = item.activity.name;
+      }
+    });
+  });
+
+  return Object.values(grouped);
+};
+
 // Inicialização
-onMounted(() => {
+onMounted(async () => {
+  await fetchClass();
+  await fetchScheduleFixe();
+  await fetchSchedules();
   loadInitialData();
 });
 </script>
@@ -294,7 +364,9 @@ onMounted(() => {
 .schedule-table .q-table__top {
   border-bottom: 1px solid #ddd;
 }
-
+.schedule-table .q-table__middle {
+  max-height: none !important;
+}
 .time-cell {
   min-width: 250px;
 }

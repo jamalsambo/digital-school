@@ -129,6 +129,7 @@
                to="/institutions"
               class="q-ml-xl"
               active-class="q-item-no-link-highlighting"
+                 :header-inset-level="0.85"
             >
               <q-item-section avatar>
                 <q-icon name="history_edu" />
@@ -143,24 +144,54 @@
               active-class="q-item-no-link-highlighting"
             >
               <q-item-section avatar>
-                <q-icon name="schedule" />
+                <q-icon name="room" />
               </q-item-section>
               <q-item-section>
                 <q-item-label>Salas</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item
-              to="/periods"
-              class="q-ml-xl"
-              active-class="q-item-no-link-highlighting"
+            <q-expansion-item
+              :header-inset-level="0.85"
+              label="Horarios"
+              icon="schedule"
             >
-              <q-item-section avatar>
-                <q-icon name="chair" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Horarios</q-item-label>
-              </q-item-section>
-            </q-item>
+              <q-item
+                to="/periods"
+                style="margin-left: 55px !important"
+                active-class="q-item-no-link-highlighting"
+              >
+                <q-item-section avatar>
+                  <q-icon name="calendar_month" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Listar</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item
+                to="/periods/fixe/activity"
+                style="margin-left: 55px !important"
+                active-class="q-item-no-link-highlighting"
+              >
+                <q-item-section avatar>
+                  <q-icon name="calendar_month" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Actidades Fixas</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item
+                to="/periods/fixes"
+                style="margin-left: 55px !important"
+                active-class="q-item-no-link-highlighting"
+              >
+                <q-item-section avatar>
+                  <q-icon name="calendar_month" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Horarios Fixos</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
             <q-item
               to="/students"
               class="q-ml-xl"
@@ -267,7 +298,29 @@
           <q-expansion-item icon="map" label="Controle Financeiro">
             <q-list class="q-pl-lg">
               <q-item
-                to="/financial-control/expenses-categories"
+                :to="`finance/institution/${user.userDetails.id}/invoices`"
+                active-class="q-item-no-link-highlighting"
+              >
+                <q-item-section avatar>
+                  <q-icon name="map" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Facturas</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item
+                :to="`finance/institution/${user.userDetails.id}/receipts`"
+                active-class="q-item-no-link-highlighting"
+              >
+                <q-item-section avatar>
+                  <q-icon name="map" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Recibos</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item
+                to="/finance/expenses-categories"
                 active-class="q-item-no-link-highlighting"
               >
                 <q-item-section avatar>
