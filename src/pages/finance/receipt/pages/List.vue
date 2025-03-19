@@ -148,8 +148,21 @@
                             fine.paymentNote
                           }}</q-item-label>
                           <q-item-label caption>{{
-                            fine?.createdAt
+                            formatDate(fine?.createdAt)
                           }}</q-item-label>
+                          <q-item-label caption>{{
+                            fine?.status ? "Paga" : "Nao Paga"
+                          }}</q-item-label>
+                        </q-item-section>
+                        <q-item-section side>
+                          <q-btn
+                            flat
+                            dense
+                            round
+                            color="red"
+                            icon="delete"
+                            @click="deletePenalty(props.row.id, fine.id)"
+                          />
                         </q-item-section>
                       </q-item>
                     </q-list>
@@ -162,44 +175,28 @@
               </q-tr>
             </template>
             <!-- Configuração da expansão -->
+            <template v-slot:bottom>
+              <div class="q-pa-md bg-grey-2 text-right">
+                <div>
+                  Total facturas pagos: <strong>{{ invoices.length }}</strong>
+                </div>
+                <div>
+                  Total de multas:
+                  <strong>{{ formatToMZN(totalPenalty) }}</strong>
+                </div>
+                <div>
+                  Total de mensalidades:
+                  <strong>{{ formatToMZN(totalMonthFees) }}</strong>
+                </div>
+                <div>
+                  Total Geral: <strong>{{ formatToMZN(totalPayments) }}</strong>
+                </div>
+              </div>
+            </template>
           </q-table>
         </q-card>
       </q-card-section>
     </q-card>
-    <q-card flat bordered class="q-pa-md shadow-2 q-mt-md">
-      <q-card-section class="text-center q-pb-sm">
-        <div class="text-h6">Resumo</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <q-list dense bordered class="justify-end">
-          <q-item>
-            <q-item-section>📋 Total Meses Pagos</q-item-section>
-            <q-item-section side>{{
-
-            }}</q-item-section>
-          </q-item>
-          <q-item>
-            <q-item-section>📌 Total Multas Pagas</q-item-section>
-            <q-item-section side>{{
-
-            }}</q-item-section>
-          </q-item>
-          <q-item>
-            <q-item-section>💵 Total de Multas</q-item-section>
-            <q-item-section side>{{  }}</q-item-section>
-          </q-item>
-          <q-item>
-            <q-item-section>✔️ Total de Mensalidades</q-item-section>
-            <q-item-section side>{{  }}</q-item-section>
-          </q-item>
-          <q-item>
-            <q-item-section>✔️ Total</q-item-section>
-            <q-item-section side>{{  }}</q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
-    </q-card>
-
     <q-card flat bordered class="q-pa-md shadow-2 q-mt-md" v-if="!view">
       <span class="text-weight-bold">Método de pagamento</span>
       <q-separator spaced />
@@ -233,18 +230,24 @@
           dense
         />
         <q-btn
-          v-if="
-            method &&
-            paymentTypeSelected &&
-            year &&
-            totalMonthPaySelect.length > 0
-          "
+          v-if="method"
           label="Pagar"
           color="primary"
           type="button"
           flat
+          dense
           outline
           @click="handlePaid"
+        />
+        <q-btn
+          v-if="method"
+          label="Impimir"
+          color="secondary"
+          type="button"
+          flat
+          dense
+          outline
+          @click="handlePaidPrint"
         />
       </div>
     </q-card>
@@ -252,18 +255,26 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useStudentStores } from "src/pages/student/store";
 import { usePaymentStores } from "../../payments/stores";
 import { useInvoiceStores } from "../../invoice/stores";
+import { useReceiptStores } from "../stores";
 import columns from "../components/InvoiceColumns";
 import useNotify from "src/composables/UseNotify";
+import scripts from "src/composables/Scripts";
+import { useRouter } from "vue-router";
+
+/* setup router */
+const router = useRouter();
 
 /* setup stores */
 const studentStores = useStudentStores();
 const paymentStores = usePaymentStores();
 const invoiceStores = useInvoiceStores();
+const receiptStores = useReceiptStores();
 const { notifyError, notifySuccess } = useNotify();
+const { formatToMZN, formatDate } = scripts();
 
 /* setup data */
 const students = ref([]);
@@ -275,10 +286,11 @@ const stages = ref([]);
 const invoices = ref([]);
 const paymentTypes = ref([]);
 const paymentTypeSelected = ref(null);
-const year = ref(parseInt(new Date().getFullYear()));
+const code = ref(null);
+const method = ref(null);
+const receiptId = ref();
 
 /* setup methods */
-
 const fetchInvoices = async () => {
   try {
     await invoiceStores.find({
@@ -287,16 +299,118 @@ const fetchInvoices = async () => {
       studentId: student.value.id,
     });
 
-      invoices.value = invoiceStores.invoices.filter((value) => value.status === "Pendente")
+    invoices.value = invoiceStores.invoices.filter((value) =>
+      ["Pendente", "Parcial", "Pago"].includes(value.status)
+    );
+  } catch (error) {
+    notifyError("Erro ao buscar facturas");
+  }
+};
 
+const handlePaid = async () => {
+  try {
+    const payloadReceipt = {
+      transactionCode: code.value || "",
+      paymentMethod: method.value,
+      note: "dfdfdfd",
+    };
+
+    await receiptStores.create(payloadReceipt);
+    receiptId.value = receiptStores.receipt.id;
+
+    if (receiptId.value) {
+      const requests = invoices.value.map(async (invoice) => {
+        const totalPenalty =
+          invoice.penalts?.reduce((sum, p) => sum + parseFloat(p.amount), 0) ||
+          0;
+
+        if (invoice.status === "Parcial") {
+          await paymentStores.create({
+            invoiceId: invoice.id,
+            receiptId: receiptId.value,
+            amount: totalPenalty, // Mantém valores decimais
+            paymentDate: new Date(),
+          });
+          const paid = parseFloat(invoice.paidAmount) + totalPenalty;
+
+          if (paymentStores.payment.id) {
+            await invoiceStores.update(invoice.id, {
+              status: "Pago",
+              paidAmount: paid,
+            });
+            await paymentStores.updateInvoicePenalts(invoice.id, {
+              status: true,
+            });
+          }
+        } else {
+          const paid = parseFloat(invoice.amount) + totalPenalty;
+
+          if (paid >= parseFloat(invoice.total)) invoice.status = "Pago";
+          else if (paid > 0) invoice.status = "Parcial";
+          else invoice.status = "Pendente";
+
+          await paymentStores.create({
+            invoiceId: invoice.id,
+            receiptId: receiptId.value,
+            amount: parseFloat(paid), // Mantém valores decimais
+            paymentDate: new Date(),
+          });
+
+          if (paymentStores.payment.id) {
+            await invoiceStores.update(invoice.id, {
+              status: invoice.status,
+              paidAmount: paid,
+            });
+            if (invoice.status === "Pago") {
+              if (totalPenalty > 0) {
+                await paymentStores.updateInvoicePenalts(invoice.id, {
+                  status: true,
+                });
+              }
+            }
+          }
+        }
+      });
+
+      await Promise.all(requests);
+      notifySuccess("Pagamento realizado com sucesso!");
+    }
+
+    // Recarregar as facturas
+    await fetchInvoices();
   } catch (error) {
     console.log(error);
+    notifyError("Erro ao realizar o pagamento");
   }
+};
+
+const handlePaidPrint = async () => {
+  await handlePaid();
+  router.push({
+    name: "print-receipt",
+    params: { receiptId: receiptId.value },
+  });
+};
+
+const deleteInvoice = (invoice) => {
+  invoices.value = invoices.value.filter((i) => i.id !== invoice.id);
+};
+
+const deletePenalty = (invoiceId, penaltyId) => {
+  const invoice = invoices.value.find((inv) => inv.id === invoiceId);
+
+  if (!invoice) {
+    console.warn("Fatura não encontrada!");
+    return;
+  }
+
+  invoice.penalts = invoice.penalts.filter(
+    (penalty) => penalty.id !== penaltyId
+  );
 };
 
 const updateStudentSelect = (student) => {
   stages.value = student.enrollments;
-  // invoices.value = student.invoices;
 };
 
 const updateClasseSelect = (classe) => {
@@ -314,7 +428,7 @@ const fetchStudents = async () => {
       };
     });
   } catch (error) {
-    console.log(error);
+    notifyError("Error ao buscar estudantes");
   }
 };
 
@@ -335,6 +449,25 @@ const filterFn = (val, update, abort) => {
     );
   });
 };
+
+/* computed */
+const totalPayments = computed(
+  () => parseFloat(totalMonthFees.value) + parseFloat(totalPenalty.value)
+);
+const totalMonthFees = computed(() =>
+  invoices.value
+    .filter((value) => value.status === "Pendente")
+    .reduce((acc, value) => {
+      return acc + parseFloat(value.amount);
+    }, 0)
+);
+const totalPenalty = computed(() =>
+  invoices.value.reduce((acc, value) => {
+    const totalPenalty =
+      value.penalts?.reduce((sum, p) => sum + parseFloat(p.amount), 0) || 0; // Soma todas as penalidades do array
+    return acc + totalPenalty;
+  }, 0)
+);
 
 onMounted(async () => {
   await fetchStudents();

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
+import { useAuthStore } from "src/pages/auth/store";
 
 export const usePaymentStores = defineStore("payment", {
   state: () => ({
@@ -12,7 +13,7 @@ export const usePaymentStores = defineStore("payment", {
     invoice: {},
     invoiceItens: {},
     items: [],
-    invoices: []
+    invoices: [],
   }),
   getters: {
     paymentMonthFeeStudent: (state) => state.value,
@@ -24,7 +25,12 @@ export const usePaymentStores = defineStore("payment", {
       this.payments = data;
     },
     async create(params) {
-      const { data, error } = await api.post("/payment", params);
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
+      const { data, error } = await api.post("/payment", {
+        ...params,
+        institutionId: institutionId,
+      });
       if (error) throw error;
       this.payment = data;
     },
@@ -52,27 +58,27 @@ export const usePaymentStores = defineStore("payment", {
       this.penaltyRules = data;
     },
 
-    async updatePenaltyRules (id,params) {
+    async updatePenaltyRules(id, params) {
       const { data, error } = await api.put(`/penalty-rule/${id}`, params);
       if (error) throw error;
       return data;
     },
 
-    async updatePenalty(id, params) {
-      const { data, error } = await api.put(`/penalty/${id}`, params);
+    async updateInvoicePenalts(id, params) {
+      const { data, error } = await api.put(`/penalty/update-invoice-penalties/${id}`, params);
       if (error) throw error;
       return data;
     },
 
     /* Secção de facturas */
     async createInvoice(params) {
-      const { data, error } = await api.post('/invoice', params);
+      const { data, error } = await api.post("/invoice", params);
       if (error) throw error;
       this.invoice = data;
     },
 
     async createInvoiceItems(params) {
-      const { data, error } = await api.post('/invoice/item/create', params);
+      const { data, error } = await api.post("/invoice/item/create", params);
       if (error) throw error;
       return data;
     },
@@ -84,9 +90,11 @@ export const usePaymentStores = defineStore("payment", {
     },
 
     async findInvoiceItems(params) {
-      const { data, error } = await api.get(`/invoice/item`, {params: params});
+      const { data, error } = await api.get(`/invoice/item`, {
+        params: params,
+      });
       if (error) throw error;
       this.items = data;
-    }
+    },
   },
 });

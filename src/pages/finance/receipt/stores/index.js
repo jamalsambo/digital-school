@@ -29,7 +29,13 @@ export const useReceiptStores = defineStore("receipt", {
         institutionId: institutionId,
       });
       if (error) throw error;
-      this.shift = data;
+      this.receipt = data;
     },
+
+    async findOne(id) {
+      const { data, error } = await api.get(`receipt/${id}`);
+      if (error) throw error;
+      this.receipt = data;
+    }
   },
 });

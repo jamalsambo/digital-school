@@ -1,8 +1,7 @@
 <template>
   <q-page padding>
     <div
-      v-if="
-        user.userDetails.userType.name === 'Funcionario'
+      v-if="user?.userDetails?.userType?.name === 'Funcionario'
         && user.userDetails.teacher?.toLowerCase() === 'nao'
       "
     >
@@ -105,25 +104,24 @@
           />
         </div>
       </div>
-      <div class="row q-col-gutter-x-md q-mt-lg">
+      <!-- <div class="row q-col-gutter-x-md q-mt-lg">
         <div class="col-md-12">
           <Graphic :payments="payments" />
         </div>
-      </div>
+      </div> -->
     </div>
 
-    <div  v-if="
-            user.userDetails.userType.name === 'Funcionario' &&
+    <div  v-if="user?.userDetails?.userType?.name === 'Funcionario' &&
             user.userDetails.teacher?.toLowerCase() === 'sim'
           ">
       <TeachearDash/>
     </div>
 
-    <div v-if="user.userDetails.userType.name === 'Estudante'">
+    <div v-if="user?.userType?.name === 'Estudante'">
       <StudantDash/>
     </div>
 
-    <div v-if="user.userDetails.userType.name === 'Visitante'">
+    <div v-if="user?.userDetails?.userType?.name === 'Encarregado'">
       <GuardianDash/>
     </div>
   </q-page>
@@ -131,7 +129,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { usePaymentStores } from "./finance/payments/stores";
+import { useInvoiceStores } from "./finance/invoice/stores";
 import { useUserStores } from "./user/store";
 import { useExpenseStores } from "./finance/expense/store";
 import Card from "src/components/dashboard/Card.vue";
@@ -139,14 +137,14 @@ import SubCard from "src/components/dashboard/Sub-Card.vue";
 import InOutCard from "src/components/dashboard/InOut-Card.vue";
 import scripts from "src/composables/Scripts";
 import useNotify from "src/composables/UseNotify";
-import Graphic from "src/components/dashboard/Graphic.vue";
+// import Graphic from "src/components/dashboard/Graphic.vue";
 import { useAuthStore } from "src/pages/auth/store";
 import TeachearDash from "./TeachearDash.vue";
 import StudantDash from "./StudentDash.vue";
 import GuardianDash from "./GuardianDash.vue";
 /* use store */
 const authStore = useAuthStore();
-const paymentsStores = usePaymentStores();
+const invoiceStores = useInvoiceStores();
 const expensesStores = useExpenseStores();
 const userStores = useUserStores();
 const { formatToMZN } = scripts();
@@ -154,105 +152,85 @@ const { notifyError } = useNotify();
 
 /* use data */
 const user = computed(() => authStore.user);
-const payments = ref([]);
+const invoices = ref([]);
 const expenses = ref([]);
 const users = ref();
 const currentDate = new Date();
 const month = currentDate.toLocaleString("pt-BR", { month: "long" });
-const teste = computed(() => payments.value);
 
 /* computed */
 const totalPayments = computed(() =>
   formatToMZN(
-    payments.value.reduce((acc, value) => {
-      const totalPenalty =
-        value.penalts?.reduce((sum, p) => sum + parseInt(p.amount), 0) || 0; // Soma todas as penalidades do array
-      return acc + parseInt(value.amount) + totalPenalty;
+    invoices.value.reduce((acc, value) => {
+      return acc + parseInt(value.total);
     }, 0)
   )
 );
 
 const totalPaymentsToday = computed(() =>
   formatToMZN(
-    payments.value
+    invoices.value
       .filter(
         (payment) =>
-          new Date(payment.paymentDate).getFullYear() === currentDate.getFullYear() &&
-          new Date(payment.paymentDate).getMonth() === currentDate.getMonth() &&
-          new Date(payment.paymentDate).getDate() === currentDate.getDate() &&
+          new Date(payment.updatedAt).getFullYear() === currentDate.getFullYear() &&
+          new Date(payment.updatedAt).getMonth() === currentDate.getMonth() &&
+          new Date(payment.updatedAt).getDate() === currentDate.getDate() &&
           payment.status === "Pago",
       )
       .reduce((acc, value) => {
-        const totalPenalty = value.penalts?.reduce((sum, p) => sum + parseInt(p.amount), 0) || 0; // Soma todas as penalidades do array
-        return acc + parseInt(value.amount) + totalPenalty;
+        return acc + parseInt(value.paidAmount);
       }, 0)
   )
 );
 
 const totalPaymentsMonth = computed(() =>
   formatToMZN(
-    payments.value
-      .filter((payment) => payment.month === month && payment.status === "Pago")
+    invoices.value
+      .filter((payment) => payment.month.toLowerCase() === month.toLowerCase() && payment.status === "Pago")
       .reduce((acc, value) => {
-        const totalPenalty =
-          value.penalts?.reduce((sum, p) => sum + parseInt(p.amount), 0) || 0; // Soma todas as penalidades do array
-        return acc + parseInt(value.amount) + totalPenalty;
+        return acc + parseFloat(value.paidAmount);
       }, 0)
   )
 );
 
 const totalPaymentsDone = computed(() =>
   formatToMZN(
-    payments.value
+    invoices.value
       .filter((payment) => payment.status === "Pago") // Filtra apenas os atrasados
       .reduce((acc, value) => {
-        const totalPenalty =
-          value.penalts
-            ?.filter((p) => p.status === true)
-            .reduce((sum, p) => sum + parseInt(p.amount), 0) || 0; // Soma todas as penalidades do array
-        return acc + parseInt(value.amount) + totalPenalty;
+        return acc + parseInt(value.paidAmount) ;
       }, 0)
   )
 );
 
 const totalPaymentsLate = computed(() =>
-  formatToMZN(
-    payments.value
-      .filter((payment) => payment.status === "Atrasado") // Filtra apenas os atrasados
-      .reduce((acc, value) => {
-        const totalPenalty =
-          value.penalts
-            ?.filter((p) => p.status === false)
-            .reduce((sum, p) => sum + parseInt(p.amount), 0) || 0; // Soma todas as penalidades do array
-        return acc + parseInt(value.amount) + totalPenalty;
-      }, 0)
-  )
-);
+formatToMZN(
+ invoices.value
+  .filter((invoice) => invoice.status === "Pendente" || invoice.status === "Parcial")
+  .reduce((acc, invoice) => {
+    const restante = parseFloat(invoice.total) - parseFloat(invoice.paidAmount || 0);
+    return acc + (restante > 0 ? restante : 0); // Evita valores negativos
+  }, 0)));
+
 const totalPaymentsLateMonth = computed(() =>
-  formatToMZN(
-    payments.value
-      .filter(
-        (payment) => payment.status === "Atrasado" && payment.month === month
-      ) // Filtra apenas os atrasados
-      .reduce((acc, value) => {
-        const totalPenalty =
-          value.penalts
-            ?.filter((p) => p.status === false)
-            .reduce((sum, p) => sum + parseInt(p.amount), 0) || 0; // Soma todas as penalidades do array
-        return acc + parseInt(value.amount) + totalPenalty;
-      }, 0)
-  )
+formatToMZN(
+ invoices.value
+  .filter((invoice) => (invoice.status === "Pendente" || invoice.status === "Parcial") &&  invoice.month.toLowerCase() === month.toLowerCase())
+  .reduce((acc, invoice) => {
+    const restante = parseFloat(invoice.total) - parseFloat(invoice.paidAmount || 0);
+    return acc + (restante > 0 ? restante : 0); // Evita valores negativos
+  }, 0))
 );
 
 const totalPaymentToYear = computed(() =>
   formatToMZN(
-    payments.value
+    invoices.value
       .filter(
         (payment) =>
-          payment.year === new Date().getFullYear().toString() &&
+          payment.year === new Date().getFullYear() &&
           payment.status === "Pago"
       ) // Filtro
-      .reduce((acc, value) => acc + parseInt(value.amount), 0)
+      .reduce((acc, value) => acc + parseInt(value.paidAmount), 0)
   )
 );
 
@@ -306,10 +284,10 @@ const totalExpensesMonthLate = computed(() =>
 );
 
 /* fetch data */
-const fetchPayments = async () => {
+const fetchInvoices = async () => {
   try {
-    await paymentsStores.findAll();
-    payments.value = paymentsStores.payments;
+    await invoiceStores.find();
+    invoices.value = invoiceStores.invoices;
   } catch (error) {
     notifyError("Erro ao buscar pagamentos");
   }
@@ -334,7 +312,7 @@ const fetchUsers = async () => {
 };
 
 onMounted(async() => {
-  await fetchPayments();
+  await fetchInvoices();
   fetchUsers();
   fetchExpenses();
 });

@@ -21,6 +21,7 @@ const columns = [
     field: "amount",
     sortable: true,
     align: "left",
+    summary: "sum"
   },
   {
     name: "amount",
@@ -28,6 +29,7 @@ const columns = [
     field: "total",
     sortable: true,
     align: "left",
+    summary: "sum"
   },
   {
     name: "status",
@@ -43,6 +45,5 @@ const columns = [
     sortable: true,
     align: "left",
   },
-  { name: "actions", label: "Ações", align: "right" }
 ];
 export default columns

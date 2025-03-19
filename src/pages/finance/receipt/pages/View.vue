@@ -4,7 +4,10 @@
       <q-card flat bordered class="q-pa-md shadow-2">
         <div class="row justify-between items-center">
           <div>
-            <q-img :src="`http://localhost:4000/upload/${institution.logo}`" width="100px" />
+            <q-img
+              :src="`http://localhost:4000/upload/${institution?.logo}`"
+              width="100px"
+            />
             <div class="text-h6">{{ institution?.name }}</div>
             <div class="text-caption">
               Cidade da {{ institution?.district?.name }} -
@@ -38,45 +41,43 @@
             <div class="row justify-between">
               <div>Classe</div>
               <div style="margin-right: 5px">
-                {{ enroll?.classe?.course?.name }}
+                {{ classe?.course?.name }}
               </div>
             </div>
 
             <div class="row justify-between">
               <div>Turma</div>
-              <div style="margin-right: 5px">{{ enroll?.classe?.name }}</div>
+              <div style="margin-right: 5px">{{ classe?.name }}</div>
             </div>
           </div>
 
           <div class="col-md-4" style="border: 1px solid #ccc">
             <div class="row justify-between">
               <div>Documento:</div>
-              <div style="margin-right: 5px">Factura-Recibo</div>
+              <div style="margin-right: 5px">Recibo</div>
             </div>
 
             <div class="row justify-between">
               <div>Número</div>
-              <div style="margin-right: 5px">{{ invoice?.invoiceNumber }}</div>
+              <div style="margin-right: 5px">{{ receipt?.number }}</div>
             </div>
 
             <div class="row justify-between">
               <div>Data de emissão</div>
               <div style="margin-right: 5px">
-                {{ formatDate(invoice?.issueDate) }}
+                {{ formatDate(receipt?.createdAt) }}
               </div>
             </div>
 
             <div class="row justify-between">
               <div>Operador</div>
               <div style="margin-right: 5px">
-                {{ invoice?.employee?.basicInformation?.fullName }}
+                {{ authStore.user.userDetails?.basicInformation?.fullName }}
               </div>
             </div>
           </div>
         </div>
-
         <q-separator class="q-my-md" />
-
         <q-markup-table bordered separator="cell" class="q-mb-md" dense>
           <!-- Cabeçalho -->
           <thead>
@@ -91,36 +92,33 @@
           <tbody>
             <!-- Primeira Linha (Exemplo) -->
             <tr>
-              <td>{{ invoice?.paymentMethod }}</td>
-              <td>{{ invoice?.paymentReference }}</td>
+              <td>{{ receipt?.paymentMethod }}</td>
+              <td>{{ receipt?.transactionCode }}</td>
             </tr>
-
             <!-- Adicione mais linhas conforme necessário -->
           </tbody>
         </q-markup-table>
         <q-table
-          :rows="monthlyPayments"
+          :rows="invoices"
           :columns="mensalidadeColumns"
           hide-bottom
           bordered
           dense
           separator="cell"
           class="bold-header"
-        />
-
-        <q-separator class="q-my-md" />
-
+        >
+        </q-table>
         <div class="row justify-end q-mt-md">
           <div class="col-auto text-right">
-            <div class="text-h7">Total Líquido: {{ invoice?.netvalue }}</div>
-            <div class="text-h7">Imposto: Incluido 5%</div>
+            <div class="text-h7">Total da factura: {{ total }}</div>
+            <div class="text-h7">Total alocado: {{ totalPaid }}</div>
             <div class="text-h7">
-              Total: {{ invoice?.totalValue }} <q-separator spaced />
+              Total: {{ totalPaid }} <q-separator spaced />
             </div>
 
             <div class="text-h7">
               <strong>São:</strong>
-              {{ numberForExtension(parseInt(invoice?.totalValue)) }} Meticais
+              {{ numberForExtension(totalPaid) }} Meticais
             </div>
           </div>
         </div>
@@ -146,12 +144,12 @@
   </q-page>
   <div class="row justify-end q-gutter-sm">
     <q-btn
-      label="Guardar"
+      label="Voltar"
       color="secondary"
-      icon="save"
+      icon="back"
       type="button"
       flat
-      @click="handleModal"
+      @click="router.back()"
     />
     <q-btn
       label="Imprimir"
@@ -165,35 +163,57 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useAuthStore } from "src/pages/auth/store";
+import { useReceiptStores } from "../stores";
 import scripts from "src/composables/Scripts";
+import { useRoute, useRouter } from "vue-router";
+
+/* use stores */
+const route = useRoute();
+const router = useRouter();
 
 /* use stores */
 const authStore = useAuthStore();
-const { filterEnrollmentsByYear, formatDate, numberForExtension } = scripts();
-
-const props = defineProps({
-  invoiceData: {
-    type: Object,
-    required: true,
-  },
-  handleModal: {
-    type: Function,
-    required: true,
-  }
-});
+const receiptStores = useReceiptStores();
+const { getActiveClass, formatDate, formatToMZN, numberForExtension } =
+  scripts();
 
 /* Data */
-const invoice = ref();
+const { receiptId} = route.params
 
-const institution = ref();
+const institution = computed(() => authStore.user.userDetails.institution);
 const student = ref();
-const monthlyPayments = ref([]);
-const year = ref(new Date().getFullYear());
-const enroll = ref();
+const receipt = ref();
+const classe = ref();
+const invoices = ref([]);
+
+/* Fetch data */
+const fetchReceipt = async () => {
+  try {
+    await receiptStores.findOne(receiptId);
+    receipt.value = receiptStores.receipt;
+    student.value = receipt.value.student;
+    classe.value = getActiveClass(student.value.enrollments);
+    invoices.value = receipt.value.payments;
+  } catch (error) {
+    console.error("Erro ao carregar o recibo:", error);
+  }
+};
+
+const totalPaid = computed(() =>
+  invoices.value.reduce((acc, value) => {
+    return acc + parseFloat(value.invoice.paidAmount);
+  }, 0)
+);
+
+const total = computed(() =>
+  invoices.value.reduce((acc, value) => {
+    return acc + parseFloat(value.invoice.total);
+  }, 0)
+);
 
 const exportToPDF = async () => {
   const invoiceContent = document.querySelector(".invoice-container");
@@ -224,39 +244,53 @@ const exportToPDF = async () => {
 
 const mensalidadeColumns = [
   {
-    name: "description",
+    name: "number",
+    align: "left",
+    label: "Documento",
+    field: (row) => row.invoice.number,
+    headerStyle: "font-weight: bold",
+  },
+  {
+    name: "note",
     align: "left",
     label: "Descrição",
-    field: (row) => row.description,
+    field: (row) => row.invoice.note,
     headerStyle: "font-weight: bold",
   },
   {
-    name: "quantity",
+    name: "issueDate",
     align: "left",
-    label: "Quantidade",
-    field: (row) => row.quantity,
-    headerStyle: "font-weight: bold",
-  },
-  {
-    name: "unitPrice",
-    align: "left",
-    label: "Valor unitario",
-    field: (row) => row.unitPrice,
+    label: "Data de emissão",
+    field: (row) => formatDate(row.invoice.issueDate),
     headerStyle: "font-weight: bold",
   },
   {
     name: "amount",
     align: "left",
-    label: "Total",
+    label: "Valor total ",
+    field: (row) => row.invoice.total,
+    headerStyle: "font-weight: bold",
+  },
+  {
+    name: "total",
+    align: "left",
+    label: "Valor pago",
     field: (row) => row.amount,
     headerStyle: "font-weight: bold",
   },
+  {
+    name: "total",
+    align: "left",
+    label: "Valor pendente",
+    field: (row) =>
+      parseFloat(row.invoice.total) - parseFloat(row.invoice.paidAmount),
+    headerStyle: "font-weight: bold",
+  },
 ];
-institution.value = props.invoiceData.institution;
-student.value = props.invoiceData.student;
-enroll.value = filterEnrollmentsByYear(student.value.enrollments, year.value);
-invoice.value = props.invoiceData;
-monthlyPayments.value = props.invoiceData.items;
+
+onMounted(async () => {
+  await fetchReceipt();
+});
 </script>
 
 <style scoped>

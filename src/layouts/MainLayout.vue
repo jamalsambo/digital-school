@@ -118,9 +118,8 @@
 
         <!-- Menu do funcionario -->
         <div
-          v-if="
-            user.userDetails.userType.name === 'Funcionario' &&
-            (user.userDetails.teacher?.toLowerCase() === 'nao' ||
+          v-if="user?.userDetails?.userType?.name === 'Funcionario' &&
+            (user?.userDetails?.teacher?.toLowerCase() === 'nao' ||
               user.userDetails.teacher === null)
           "
         >
@@ -298,7 +297,7 @@
           <q-expansion-item icon="map" label="Controle Financeiro">
             <q-list class="q-pl-lg">
               <q-item
-                :to="`finance/institution/${user.userDetails.id}/invoices`"
+                 :to="{ name: 'invoices' }"
                 active-class="q-item-no-link-highlighting"
               >
                 <q-item-section avatar>
@@ -309,7 +308,7 @@
                 </q-item-section>
               </q-item>
               <q-item
-                :to="`finance/institution/${user.userDetails.id}/receipts`"
+                 :to="{ name: 'receipts' }"
                 active-class="q-item-no-link-highlighting"
               >
                 <q-item-section avatar>
@@ -387,8 +386,7 @@
 
         <!-- Menu do funcionario professor -->
         <div
-          v-if="
-            user.userDetails.userType.name === 'Funcionario' &&
+          v-if="user?.userDetails?.userType?.name === 'Funcionario' &&
             user.userDetails.teacher?.toLowerCase() === 'sim'
           "
         >
@@ -414,7 +412,7 @@
         </div>
 
         <!-- Menu do estudante -->
-        <div v-if="user.userDetails.userType.name === 'Estudante'">
+        <div v-if="user?.userDetails?.userType?.name === 'Estudante'">
           <q-item
             :to="`/student/${user.userDetails.id}/evolutions/normal`"
             active-class="q-item-no-link-highlighting"
@@ -463,13 +461,13 @@
         </div>
 
         <!-- Menu do encarregado -->
-        <div v-if="user.userDetails.userType.name === 'Visitante'">
+        <div v-if="user?.userDetails?.userType?.name === 'Encarregado'">
           <q-list>
             <q-expansion-item
               v-for="student in students"
               :key="student.id"
               icon="map"
-              :label="student?.basic_information?.fullName"
+              :label="student?.basicInformation?.fullName"
             >
               <q-list class="q-pl-lg">
                 <q-item
@@ -670,7 +668,7 @@ const toggleLeftDrawer = () => {
 };
 
 onMounted(() => {
-  if (user.value && user.value.userDetails.userType.name === "Visitante") {
+  if (user.value && user.value.userDetails?.userType?.name === "Encarregado") {
     try {
       studentStores.list({
         telephone: user.value.username,

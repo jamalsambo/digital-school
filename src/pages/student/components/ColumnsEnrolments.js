@@ -14,13 +14,12 @@ const columns = [
     sortable: true,
   },
   {
-    name: "paymentId",
+    name: "course",
     align: "left",
-    label: "Pagamento",
-    field: (row) => row?.paymentId? "Feito": "Aguardando",
-    sortable: false,
+    label: "Estagio",
+    field: (row) => row?.classe?.course.name,
+    sortable: true,
   },
-  { name: "actions", align: "left", label: "Ações", field: "actions" },
 ];
 
 export default columns;

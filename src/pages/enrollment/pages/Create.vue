@@ -162,8 +162,10 @@ const onSubmit = async () => {
           issueDate: new Date(),
           dueDate: new Date(),
           month: month,
-          amount: classe.value.enrollmentFeeValue,
+          amount: parseInt(classe.value.enrollmentFeeValue),
+          total: parseInt(classe.value.enrollmentFeeValue),
           status: "Pendente",
+          year: new Date().getFullYear(),
           note: `Factura referente a matricula do ano lectivo ${new Date().getFullYear()}`
         }
 

@@ -2,8 +2,7 @@ import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
 import { useAuthStore } from "src/pages/auth/store";
 
-const authStore = useAuthStore();
-const { institutionId } = authStore.user.userDetails;
+
 
 export const useNotificationStores = defineStore("notification", {
   state: () => ({
@@ -15,6 +14,8 @@ export const useNotificationStores = defineStore("notification", {
   },
   actions: {
     async list(params) {
+      const authStore = useAuthStore();
+const { institutionId } = authStore.user;
       const { data, error } = await api.get("/notification", {params: params});
       if (error) throw error;
       this.notifications = data;

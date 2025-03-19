@@ -101,6 +101,18 @@ export default function scripts() {
       return enrollmentYear === year;
     });
   };
+  const getActiveClass = (enrollments) => {
+    const today = new Date();
+
+    return enrollments.find((enrollment) => {
+      const { startDate, endDate } = enrollment.classe;
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      return today >= start && today <= end;
+    })?.classe || null;
+  };
+
   /* Funcao para formatar data */
   const formatDate = (dateString) => {
     const dataISO = dateString;
@@ -311,6 +323,7 @@ export default function scripts() {
     formatToMZN,
     getProgramName,
     getNameForDiscipline,
-    getNameForDisciplineEducation
+    getNameForDisciplineEducation,
+    getActiveClass
   };
 }

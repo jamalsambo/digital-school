@@ -1,9 +1,5 @@
 <template>
-  <q-dialog v-model="medium" persistent>
-    <q-card style="width: 900px; max-width: 80vw">
-      <OrderSummary :invoice-data="invoiceData" :handle-modal="handleModal" />
-    </q-card>
-  </q-dialog>
+
   <q-page padding>
     <q-card-section>
       <div class="text-h6">
@@ -180,7 +176,6 @@ import { useStudentStores } from "src/pages/student/store";
 import { useAuthStore } from "src/pages/auth/store";
 import useNotify from "src/composables/UseNotify";
 import scripts from "src/composables/Scripts";
-import OrderSummary from "src/components/register/order_summary/View.vue";
 
 /* use stores */
 const route = useRoute();

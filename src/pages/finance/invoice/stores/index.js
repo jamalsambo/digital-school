@@ -33,6 +33,12 @@ export const useInvoiceStores = defineStore("invoice", {
       this.invoice = data;
     },
 
+    async update(id, params) {
+      const { data, error } = await api.put(`/invoice/${id}`, params);
+      if (error) throw error;
+      this.invoice = data;
+    },
+
     async createItems(params) {
       const { data, error } = await api.post("/invoice/item-create", params);
       if (error) throw error;

@@ -14,6 +14,7 @@
         <div class="row items-center justify-between">
           <div class="text-h6 text-primary">Matriculas</div>
           <q-btn
+           v-if="!actualEnrollment"
             color="primary"
             icon="edit"
             label="Nova Matricula"
@@ -25,23 +26,7 @@
         <q-separator spaced />
         <q-card-section>
           <Tables :rows="enrollments" :columns="ColumnsEnrollments">
-            <template #actions="{ props }">
-              <q-btn
-                v-if="!props.row.paymentId"
-                flat
-                round
-                icon="payment"
-                @click="paymentEnrollment(props.row)"
-                color="primary"
-              />
-              <q-btn
-              icon="print"
-              color="primary"
-              class="q-mr-sm"
-              flat
-              @click="printDocument(props)"
-            />
-            </template>
+           
           </Tables>
         </q-card-section>
       </q-card>
@@ -244,35 +229,7 @@
         </div>
       </q-card>
     </q-card>
-    <!-- Sessão de Pagamentos -->
-    <q-card flat bordered class="q-mb-md">
-      <q-card flat bordered class="q-pa-md shadow-2">
-        <div class="row items-center justify-between">
-          <div class="text-h6 text-primary">Pagamentos</div>
-          <q-btn
-            color="primary"
-            icon="edit"
-            label="Nova Pagamento"
-            class="q-mr-sm"
-            @click="handleNewPayment"
-            flat
-          />
-        </div>
-        <q-separator spaced />
 
-        <Tables :rows="invoices" :columns="ColumnsPaymentsList">
-          <template #actions="{ props }">
-            <q-btn
-              icon="print"
-              color="primary"
-              class="q-mr-sm"
-              flat
-              @click="printDocument(props)"
-            />
-          </template>
-        </Tables>
-      </q-card>
-    </q-card>
     <!-- Sessão de Configuracoes de acesso -->
     <q-card flat bordered class="q-mb-md">
       <q-card flat bordered class="q-pa-md shadow-2">
@@ -360,7 +317,6 @@ import ContactComponent from "src/components/register/contact/View.vue";
 import DocumentsComponent from "src/components/register/documents/View.vue";
 import UserComponent from "src/components/register/user/View.vue";
 import Tables from "src/components/Tables.vue";
-import ColumnsPaymentsList from "../components/ColumsPaymentsList.js";
 import ColumnsStudentPaymentType from "../components/ColumnsStudentsPaymentTypes.js";
 import ColumnsEnrollments from "../components/ColumnsEnrolments";
 import OrderSummary from "src/components/register/order_summary/View.vue";
@@ -373,7 +329,7 @@ const studentStores = useStudentStores();
 const paymentStores = usePaymentStores();
 const basicStores = useBasicStores();
 const { notifySuccess, notifyError } = useNotify();
-const { filterEnrollmentsByYear } = scripts();
+const { getActiveClass } = scripts();
 
 // data
 const isLoading = ref(true);
@@ -403,9 +359,7 @@ const payType = ref({
 });
 
 // computed
-const actualEnrollment = computed(() =>
-  filterEnrollmentsByYear(enrollments.value, new Date().getFullYear())
-);
+const actualEnrollment = computed(() => getActiveClass(enrollments.value));
 
 // methods
 const handleSavePersonal = async () => {
@@ -459,7 +413,7 @@ const paymentEnrollment = async (row) => {
     name: "enrollment-payment",
     params: { studentId: route.params.id, enrollmentId: row.id },
   });
-}
+};
 const handleNewEnrollment = () => {
   router.push({
     name: "create-enrollment",
@@ -481,12 +435,6 @@ const onSubmit = async () => {
     console.log(error);
     notifyError("Erro ao criar tipo de pagamento");
   }
-};
-const printDocument = async (props) => {
-  invoiceData.value = props.row.items;
-  await paymentStores.findInvoiceById(props.row.id);
-  invoiceData.value = paymentStores.invoiceItens;
-  handleModal();
 };
 // edit functions
 
@@ -526,14 +474,6 @@ const fetchStudent = async () => {
   }
 };
 
-const fetchPayments = async () => {
-  try {
-    await paymentStores.findInvoiceItems({ studentId: route.params.id });
-    payments.value = paymentStores.items;
-  } catch (error) {
-    console.error("Erro ao carregar os pagamentos:", error);
-  }
-};
 const fetchPaymentTypes = async () => {
   try {
     await paymentStores.findPaymentTypes();
@@ -552,7 +492,6 @@ const handleModal = () => {
 
 onMounted(() => {
   fetchStudent();
-  fetchPayments();
   fetchPaymentTypes();
 });
 </script>
