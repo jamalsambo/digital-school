@@ -15,7 +15,7 @@
       </div>
       <q-separator spaced />
       <div class="q-pt-sm">
-        <div v-if="contacts.length" class="q-mb-md">
+        <div v-if="contacts?.length" class="q-mb-md">
           <q-list bordered>
             <q-item v-for="(item, index) in contacts" :key="index">
               <q-item-section>
@@ -149,6 +149,7 @@ const addContact = async (owner) => {
       notifyError("Falha ao adicionar contato! ID não gerado.");
     }
   } catch (error) {
+    console.log(error);
     notifyError(`Erro ao adicionar contato: ${error.message}`);
   }
 };

@@ -66,6 +66,8 @@ const props = defineProps({
   data: { type: Object, required: true },
   entity: { type: String, required: true },
   userTypeId: { type: String, required: true },
+  institutionId: { type: String, required: true },
+
 });
 
 const studentStore = useStudentStores();
@@ -79,6 +81,7 @@ const isPwd = ref(true);
 const userId = ref(props.data?.user?.id);
 
 const form = ref({
+
   displayName: "",
   username: "",
   password: "",
@@ -94,10 +97,10 @@ const handleSubmit = async () => {
   try {
     if (form.value.password === form.value.passwordConfirm) {
       if (userId.value) {
-        userStore.update(userId.value, form.value);
+        userStore.update(userId.value, {...form.value});
         notifySuccess("Senha recuperada com sucesso!");
       } else {
-        await userStore.create(form.value);
+        await userStore.create({...form.value,  institutionId: employee.value.institutionId});
 
         if (userStore.user.id) {
           /* Se o usuario for estudante */

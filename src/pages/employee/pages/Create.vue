@@ -1,5 +1,6 @@
 <template>
   <q-page padding>
+    {{ contacts }}
     <q-card-section>
       <div class="text-h6 text-center">Registro do Funcionario</div>
     </q-card-section>
@@ -157,7 +158,7 @@
                 <UserComponent ref="userChild"
                 :data="employee"
                 :entity="entity"
-                :userTypeId="'5bc90aeb-0034-4b84-80ce-fa1b60225ce3'">
+                :userTypeId="'cbf9f9c4-2c5c-4eac-b096-ea588baf209a'">
 
                   <template #actions>
                     <div class="row justify-end q-gutter-sm">
