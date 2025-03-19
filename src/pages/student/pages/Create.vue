@@ -1,9 +1,4 @@
 <template>
-  <q-dialog v-model="medium" persistent>
-    <q-card style="width: 900px; max-width: 80vw">
-      <OrderSummary :invoice-data="invoiceData" :handle-modal="handleModal" />
-    </q-card>
-  </q-dialog>
   <q-page padding>
     <q-card-section>
       <div class="text-h6 text-center">Registro de Estudante</div>
@@ -26,7 +21,7 @@
         <q-separator spaced />
         <q-card-section>
           <Tables :rows="enrollments" :columns="ColumnsEnrollments">
-           
+
           </Tables>
         </q-card-section>
       </q-card>
@@ -319,7 +314,6 @@ import UserComponent from "src/components/register/user/View.vue";
 import Tables from "src/components/Tables.vue";
 import ColumnsStudentPaymentType from "../components/ColumnsStudentsPaymentTypes.js";
 import ColumnsEnrollments from "../components/ColumnsEnrolments";
-import OrderSummary from "src/components/register/order_summary/View.vue";
 import scripts from "src/composables/Scripts";
 
 // use store
@@ -340,13 +334,11 @@ const student = ref();
 const paternity = ref(null);
 const contacts = ref([]);
 const documents = ref([]);
-const payments = ref([]);
 const enrollments = ref([]);
 const paymentTypes = ref([]);
 const studentPaymentTypes = ref([]);
 const invoices = ref([]);
 const medium = ref(false);
-const invoiceData = ref();
 const isEditing = ref(false);
 
 const personalChild = ref(null);
@@ -399,21 +391,7 @@ const handleSaveContact = async () => {
   fetchStudent();
   toggleEditContact();
 };
-/* funcao pra ir ao novo pagamento */
-const handleNewPayment = async () => {
-  router.push({
-    name: "payment-create",
-    params: {
-      id: route.params.studentId,
-    },
-  });
-};
-const paymentEnrollment = async (row) => {
-  router.push({
-    name: "enrollment-payment",
-    params: { studentId: route.params.id, enrollmentId: row.id },
-  });
-};
+
 const handleNewEnrollment = () => {
   router.push({
     name: "create-enrollment",
