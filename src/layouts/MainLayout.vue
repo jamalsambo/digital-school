@@ -116,6 +116,28 @@
           </q-item-section>
         </q-item>
 
+        <div
+          v-if="user?.userDetails?.userType?.name === 'Super'
+          "
+        >
+        <q-expansion-item icon="menu_open" label="Instituição">
+            <q-item
+               to="/institutions"
+              class="q-ml-xl"
+              active-class="q-item-no-link-highlighting"
+                 :header-inset-level="0.85"
+            >
+              <q-item-section avatar>
+                <q-icon name="history_edu" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Listar</q-item-label>
+              </q-item-section>
+            </q-item>
+            </q-expansion-item>
+        </div>
+
+
         <!-- Menu do funcionario -->
         <div
           v-if="user?.userDetails?.userType?.name === 'Funcionario' &&
