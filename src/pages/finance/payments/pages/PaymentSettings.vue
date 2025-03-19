@@ -1,7 +1,5 @@
 <template>
-  <PenaltyRulesComponent ref="penaltyRulesChild" :payment-type-selected="paymentTypeSelected" :fetch-payment-types="fetchPaymentTypes">
-
-  </PenaltyRulesComponent>
+  <PenaltyRulesComponent ref="penaltyRulesChild" :payment-type-selected="paymentTypeSelected" :fetch-payment-types="fetchPaymentTypes"/>
   <q-card>
     <q-card-section>
       <div class="text-h6">Configuração de pagamentos</div>

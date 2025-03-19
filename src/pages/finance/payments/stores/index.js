@@ -42,7 +42,9 @@ export const usePaymentStores = defineStore("payment", {
 
     /* sessao tipos de pagamentos */
     async findPaymentTypes() {
-      const { data, error } = await api.get("/payment-type");
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
+      const { data, error } = await api.get("/payment-type", {params: {institutionId: institutionId}});
       if (error) throw error;
       this.paymentTypes = data;
     },

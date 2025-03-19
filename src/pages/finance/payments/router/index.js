@@ -1,5 +1,3 @@
-
-import Create from '../pages/PaymentCreate.vue';
 import Settings from '../pages/PaymentSettings.vue'
 import Enrollment from '../pages/PaymentEnrollment.vue'
 
