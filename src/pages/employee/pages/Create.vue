@@ -1,6 +1,5 @@
 <template>
   <q-page padding>
-    {{ contacts }}
     <q-card-section>
       <div class="text-h6 text-center">Registro do Funcionario</div>
     </q-card-section>

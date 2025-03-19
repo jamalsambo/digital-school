@@ -2,7 +2,6 @@ import List from "../pages/List.vue";
 import Create from "../pages/Create.vue";
 
 const classeRoutes = [
-  { path: "rooms", name: "rooms", component: List },
   {
     path: "education/:educationId/:program/:internshipId/classe/create",
     name: "create-classe",

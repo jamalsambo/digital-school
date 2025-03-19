@@ -64,6 +64,7 @@ const submitForm = async () => {
     if (!moduleId) {
       await disciplineStores.create(formData.value);
       notifySuccess(`${getNameForDiscipline(module)} criada com sucesso!`);
+      router.back();
     } else {
       await disciplineStores.update(moduleId, formData.value);
       notifySuccess(`${getNameForDiscipline(module)} editado com sucesso!`);

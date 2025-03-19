@@ -138,8 +138,8 @@ const updateSelection = async (activity, checked) => {
       activityId: activity.id,
       hours: parseInt(activity.hours),
       credit: parseInt(activity.credit),
-      exame: activity.exame.value,
-      cicle: parseInt(activity.cicle.value),
+      exame: activity.exame?.value || false,
+      cicle: parseInt(activity.cicle?.value),
       year: parseInt(activity.year),
     };
     if (checked) {

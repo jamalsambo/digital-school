@@ -122,12 +122,13 @@ const updateSelection = async (discipline) => {
 const fetchEmployees = async () => {
   try {
     await employeeStores.list();
-    employees.value = employees.value = employeeStores.employees.map((e) => {
-      return {
+    employees.value = employeeStores.employees
+      .filter((e) => e.teacher === 'Sim') // Primeiro filtra os professores
+      .map((e) => ({
         id: e.id,
         name: e?.basicInformation?.fullName ?? "Default",
-      };
-    });
+        teacher: e.teacher,
+      }));
   } catch (error) {}
 };
 
@@ -141,7 +142,6 @@ const fetchClass = async () => {
         classStores.classe.course.curriculum.developmentAreas.flatMap(
           (area) => {
             return area.developmentAreaActivities.map((dev) => {
-
               return {
                 id: dev.activity.id,
                 name: dev.activity.name, // ou qualquer outro dado relevante
@@ -177,7 +177,6 @@ const onchangeSelectedEmployee = async (val) => {
     };
   });
 };
-
 
 onMounted(async () => {
   await fetchEmployees();

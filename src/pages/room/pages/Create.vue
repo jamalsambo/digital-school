@@ -19,7 +19,7 @@
               dense
             />
             <q-select
-              class="col-md-4 col grow col-sm-12 col-xs-12"
+              class="col-md-3 col grow col-sm-12 col-xs-12"
               v-model="form.type"
               :options="['Normal', 'Laboratorio', 'Ginasio']"
               label="Tipo de sala"
@@ -28,7 +28,7 @@
               :rules="[(val) => !!val || 'Selecione um tipo de sala.']"
             />
             <q-input
-              class="col-md-4 col grow col-sm-12 col-xs-12"
+              class="col-md-3 col grow col-sm-12 col-xs-12"
               v-model="form.location"
               label="Localizaçao"
               placeholder="Digite o nome do sala"
@@ -37,7 +37,7 @@
               dense
             />
             <q-select
-              class="col-md-4 col grow col-sm-12 col-xs-12"
+              class="col-md-2 col grow col-sm-12 col-xs-12"
               v-model="form.availability"
               :options="[
                 { id: true, name: 'Sim' },
