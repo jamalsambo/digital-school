@@ -132,20 +132,26 @@ const courses = ref([]);
 const course = ref();
 const classes = ref([]);
 const classe = ref();
-const month = new Date().toLocaleString('pt-BR', { month: 'long' });
-const educationsLevels = computed(
-  () => authStore.user?.userDetails?.institution?.institutionLevels.map((education) =>{
-    return{
-      id: education.education.id,
-      name: education.education.name
+const month = new Date().toLocaleString("pt-BR", { month: "long" });
+const educationsLevels = computed(() =>
+  authStore.user?.userDetails?.institution?.institutionLevels.map(
+    (education) => {
+      return {
+        id: education.education.id,
+        name: education.education.name,
+      };
     }
-  })
+  )
 );
-const education = ref()
-const paymentType = ref()
+const education = ref();
+const paymentType = ref();
 
 /* setup methods */
 const onSubmit = async () => {
+  const monthFristPay = new Date(classe.value?.startDate).toLocaleString(
+    "pt-BR",
+    { month: "long" }
+  );
   const payload = {
     classId: classe.value.id,
     educationId: education.value.id,
@@ -154,32 +160,39 @@ const onSubmit = async () => {
   try {
     await enrollmentStores.create(payload);
     if (enrollmentStores.enrollment.id) {
+      const payloadInvoice = {
+        paymentTypeId: paymentType.value.id,
+        classId: classe.value.id,
+        studentId: studentId,
+        issueDate: new Date(),
+        dueDate: new Date(),
+        month: month,
+        amount: parseInt(classe.value.enrollmentFeeValue),
+        total: parseInt(classe.value.enrollmentFeeValue),
+        status: "Pendente",
+        year: new Date().getFullYear(),
+        note: `Factura referente a matricula do ano lectivo ${new Date().getFullYear()}`,
+      };
 
-        const payloadInvoice = {
-          paymentTypeId:paymentType.value.id,
-          classId: classe.value.id,
-          studentId: studentId,
-          issueDate: new Date(),
-          dueDate: new Date(),
-          month: month,
-          amount: parseInt(classe.value.enrollmentFeeValue),
-          total: parseInt(classe.value.enrollmentFeeValue),
-          status: "Pendente",
-          year: new Date().getFullYear(),
-          note: `Factura referente a matricula do ano lectivo ${new Date().getFullYear()}`
-        }
+      await invoiceStores.create(payloadInvoice);
 
-        await invoiceStores.create(payloadInvoice)
+      if (classe.value.monthlyFeeIncluse) {
+        const payloadPayment = {
+          invoiceId: invoiceStores.invoice.id,
+          description: `Mensalidade referente a turma ${classe.value.name}, mes de ${monthFristPay}`,
+          amount: parseInt(classe.value.monthlyFee),
+        };
 
-        console.log(payloadInvoice)
+        await invoiceStores.createItems(payloadPayment);
+      }
 
-        router.back()
-        notifySuccess("Matricula registada, aguardando pagamento!")
+      router.back();
+      notifySuccess("Matricula registada, aguardando pagamento!");
     } else {
       notifyError("Matricula nao criada.");
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
     notifyError("Erro na criaça de matricula");
   }
 };
@@ -190,8 +203,8 @@ const onClasseChange = async (value) => {
   classe.value = value;
 };
 const onEducationChange = async (value) => {
-  await fetchCourses(value.id)
-}
+  await fetchCourses(value.id);
+};
 
 /* fetchdata */
 const fetchCourses = async (education) => {
@@ -203,15 +216,16 @@ const fetchCourses = async (education) => {
 
 const fetchPaymentType = async () => {
   try {
-    await paymentStores.findPaymentTypes()
-    paymentType.value = paymentStores.paymentTypes.find((type) => type.name === 'Matricula')
+    await paymentStores.findPaymentTypes();
+    paymentType.value = paymentStores.paymentTypes.find(
+      (type) => type.name === "Matricula"
+    );
   } catch (error) {
-    notifyError("Erro no carregamento")
+    notifyError("Erro no carregamento");
   }
-}
+};
 
-onMounted(async() => {
-  await fetchPaymentType()
-})
-
+onMounted(async () => {
+  await fetchPaymentType();
+});
 </script>

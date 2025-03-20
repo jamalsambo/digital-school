@@ -116,16 +116,13 @@
           </q-item-section>
         </q-item>
 
-        <div
-          v-if="user?.userDetails?.userType?.name === 'Super'
-          "
-        >
-        <q-expansion-item icon="menu_open" label="Instituição">
+        <div v-if="user?.userDetails?.userType?.name === 'Super'">
+          <q-expansion-item icon="menu_open" label="Instituição">
             <q-item
-               to="/institutions"
+              to="/institutions"
               class="q-ml-xl"
               active-class="q-item-no-link-highlighting"
-                 :header-inset-level="0.85"
+              :header-inset-level="0.85"
             >
               <q-item-section avatar>
                 <q-icon name="history_edu" />
@@ -146,23 +143,23 @@
                 <q-item-label>Funcionarios</q-item-label>
               </q-item-section>
             </q-item>
-            </q-expansion-item>
+          </q-expansion-item>
         </div>
-
 
         <!-- Menu do funcionario -->
         <div
-          v-if="user?.userDetails?.userType?.name === 'Funcionario' &&
+          v-if="
+            user?.userDetails?.userType?.name === 'Funcionario' &&
             (user?.userDetails?.teacher?.toLowerCase() === 'nao' ||
               user.userDetails.teacher === null)
           "
         >
           <q-expansion-item icon="menu_open" label="Instituição">
             <q-item
-               to="/institutions"
+              to="/institutions"
               class="q-ml-xl"
               active-class="q-item-no-link-highlighting"
-                 :header-inset-level="0.85"
+              :header-inset-level="0.85"
             >
               <q-item-section avatar>
                 <q-icon name="history_edu" />
@@ -273,9 +270,9 @@
               </q-item>
               <!-- discplinas -->
               <q-item
-                :to="`/education/${item.education.id}/module${getRouteForDiscipline(
-                  item.education.name
-                )}`"
+                :to="`/education/${
+                  item.education.id
+                }/module${getRouteForDiscipline(item.education.name)}`"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
               >
@@ -302,7 +299,9 @@
                 </q-item-section>
               </q-item>
               <q-item
-                :to="`/education/${item.education.id}${getRoute(item.education.name)}`"
+                :to="`/education/${item.education.id}${getRoute(
+                  item.education.name
+                )}`"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
               >
@@ -310,7 +309,9 @@
                   <q-icon name="school" />
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>{{ getName(item.education.name) }}</q-item-label>
+                  <q-item-label>{{
+                    getName(item.education.name)
+                  }}</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item
@@ -331,7 +332,7 @@
           <q-expansion-item icon="map" label="Controle Financeiro">
             <q-list class="q-pl-lg">
               <q-item
-                 :to="{ name: 'invoices' }"
+              :to="`/finance/institution/${user.userDetails.institutionId}/invoices`"
                 active-class="q-item-no-link-highlighting"
               >
                 <q-item-section avatar>
@@ -342,7 +343,7 @@
                 </q-item-section>
               </q-item>
               <q-item
-                 :to="{ name: 'receipts' }"
+              :to="`/finance/institution/${user.userDetails.institutionId}/receipts/`"
                 active-class="q-item-no-link-highlighting"
               >
                 <q-item-section avatar>
@@ -352,7 +353,7 @@
                   <q-item-label>Recibos</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item
+              <!-- <q-item
                 to="/finance/expenses-categories"
                 active-class="q-item-no-link-highlighting"
               >
@@ -373,7 +374,7 @@
                 <q-item-section>
                   <q-item-label>Despensas</q-item-label>
                 </q-item-section>
-              </q-item>
+              </q-item> -->
             </q-list>
           </q-expansion-item>
 
@@ -420,7 +421,8 @@
 
         <!-- Menu do funcionario professor -->
         <div
-          v-if="user?.userDetails?.userType?.name === 'Funcionario' &&
+          v-if="
+            user?.userDetails?.userType?.name === 'Funcionario' &&
             user.userDetails.teacher?.toLowerCase() === 'sim'
           "
         >

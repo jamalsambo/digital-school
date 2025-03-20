@@ -255,7 +255,7 @@
                 ref="userChild"
                 :data="student"
                 :entity="entity"
-                :userTypeId="'5adc9f0f-2175-4f29-8a77-43eb1c2d5fae'"
+                :userTypeId="'ac1e5c66-3814-46cc-a6dd-e4f0978b5bf6'"
               >
                 <template #actions>
                   <div class="row justify-end q-gutter-sm">
@@ -276,7 +276,7 @@
                 ref="userChild"
                 :data="contacts"
                 :entity="'guardian'"
-                :userTypeId="'637c12c9-5e26-417d-8fa2-96c5486ce0e3'"
+                :userTypeId="'93526c17-594c-478e-94e8-ac4314044096'"
               >
                 <template #actions>
                   <div class="row justify-end q-gutter-sm">

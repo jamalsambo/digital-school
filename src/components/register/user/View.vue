@@ -100,7 +100,7 @@ const handleSubmit = async () => {
         userStore.update(userId.value, {...form.value});
         notifySuccess("Senha recuperada com sucesso!");
       } else {
-        await userStore.create({...form.value,  institutionId: employee.value.institutionId});
+        await userStore.create({...form.value,  institutionId: employee.value.institutionId || student.value.institutionId});
 
         if (userStore.user.id) {
           /* Se o usuario for estudante */

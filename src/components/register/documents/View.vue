@@ -129,12 +129,12 @@ const saveChanges = async () => {
     const entity =
       props.entity === "employee"
         ? { employeeId: route.params.id }
-        : { studentId: route.params.studentId };
+        : { studentId: route.params.id };
 
     const formData = new FormData();
     formData.append("file", file.value);
     const response = await axios.post(
-      "http://localhost:4000/upload/single",
+      "https://educar-api-zymx.onrender.com/upload/single",
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
