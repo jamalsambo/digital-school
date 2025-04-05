@@ -13,7 +13,9 @@ import {
   paymentsRoutes,
   scheduleRoutes,
   invoiceRoutes,
-  receiptsRoutes
+  receiptsRoutes,
+  planRoutes,
+  studentRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -196,7 +198,9 @@ const routes = [
       ...paymentsRoutes,
       ...scheduleRoutes,
       ...invoiceRoutes,
-      ...receiptsRoutes
+      ...receiptsRoutes,
+      ...planRoutes,
+      ...studentRoutes
     ],
   },
 
@@ -223,7 +227,7 @@ const routes = [
   },
   {
     path: "/sige/:schoolSlug",
-    name: "logout",
+    name: "school-site",
     component: () => import("pages/site/institution/main.vue"),
   },
 ];

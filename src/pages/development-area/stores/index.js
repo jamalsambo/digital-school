@@ -21,7 +21,7 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
 
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore?.user?.userDetails;
+      const { institutionId } = authStore?.user;
       const { data, error } = await api.post("development-area", {
         ...params,
         institutionId: institutionId,

@@ -3,7 +3,7 @@ const columns = [
     name: "number",
     align: "left",
     label: "Número do Estudante",
-    field: "number",
+    field: "id",
     sortable: true,
   },
   {

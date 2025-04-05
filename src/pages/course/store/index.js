@@ -15,7 +15,7 @@ export const useCourseStores = defineStore("course", {
   actions: {
     async list(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get("/course", { params: {...params,  institutionId: institutionId}});
       if (error) throw error;
       this.courses = data;
@@ -23,7 +23,7 @@ export const useCourseStores = defineStore("course", {
 
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/course", {...params, institutionId: institutionId });
       if (error) throw error;
       return data;

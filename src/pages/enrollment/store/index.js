@@ -15,7 +15,7 @@ export const useEnrollmentStores = defineStore("enrollment", {
   actions: {
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/enrollment", {...params, institutionId: institutionId});
       if (error) throw error;
       this.enrollment = data;

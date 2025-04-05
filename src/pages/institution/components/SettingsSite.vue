@@ -83,6 +83,7 @@
                     outlined=""
                     counter
                     dense
+                    accept="imagen"
                   />
                   <q-input
                     class="col-md-7 col-sm-12 col-xs-12"
@@ -241,6 +242,7 @@
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useInstitutionStores } from "../store";
+import { useComposablesStores } from "src/composables";
 import useNotify from "src/composables/UseNotify";
 import axios from "axios";
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -248,6 +250,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 /* setup store */
 const route = useRoute();
 const institutionStores = useInstitutionStores();
+const composableStores = useComposablesStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* seteup data */
@@ -276,24 +279,28 @@ const onSubmit = async () => {
 
 const handleUploaFileMainCarrocel = async () => {
   try {
-    const formData = new FormData();
-    formData.append("file", file.value);
-    const response = await axios.post(
-      "http://localhost:4000/upload/single",
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
-    if (response.data.file.filename) {
-      await institutionStores.createMainCarroselImagen({
-        imagen: response.data.file.filename,
-        description: description.value,
-      });
-      await fetchinstitution();
-      notifySuccess("Imagem do carrocel principal adicionada com sucesso!");
-    }
+    // await composableStores.login('jhsambo99@gmail.com', 'salvecharles')
+   const publicUrl = await composableStores.getURlPublic('7367615a-71ee-4abb-8d98-90285d85b673')
+   console.log(publicUrl)
+    // const formData = new FormData();
+    // formData.append("file", file.value);
+    // const response = await axios.post(
+    //   "https://educar-api-zymx.onrender.com/upload/single",
+    //   formData,
+    //   {
+    //     headers: { "Content-Type": "multipart/form-data" },
+    //   }
+    // );
+    // if (response.data.file.filename) {
+    //   await institutionStores.createMainCarroselImagen({
+    //     imagen: response.data.file.filename,
+    //     description: description.value,
+    //   });
+    //   await fetchinstitution();
+    //   notifySuccess("Imagem do carrocel principal adicionada com sucesso!");
+    // }
   } catch (error) {
+    console.error(error)
     notifyError("Erro ao carregar a imagem");
   }
 };
@@ -303,7 +310,7 @@ const handleUploaFileAboutUsCarrocel = async () => {
     const formData = new FormData();
     formData.append("file", fileAbout.value);
     const response = await axios.post(
-      "http://localhost:4000/upload/single",
+      "../../",
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },

@@ -14,7 +14,7 @@ export const useExtraFeeStores = defineStore("fees", {
   actions: {
     async list(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get(`/extra-fees/${institutionId}`, {
         params: params,
       });
@@ -24,7 +24,7 @@ export const useExtraFeeStores = defineStore("fees", {
 
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/extra-fees", {
         ...params,
         institutionId: institutionId,

@@ -2,9 +2,6 @@ import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
 import { useAuthStore } from "src/pages/auth/store";
 
-const authStore = useAuthStore();
-const { institutionId } = authStore.user.userDetails;
-
 export const useEvolutionStores = defineStore("evolution", {
   state: () => ({
     evolutionTypes: [],
@@ -16,9 +13,11 @@ export const useEvolutionStores = defineStore("evolution", {
   },
   actions: {
     async list() {
-      const { data, error } = await api.get(
-        "test-type" /* {params: {institutionId: institutionId}} */
-      );
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
+      const { data, error } = await api.get("test-type", {
+        params: { institutionId: institutionId },
+      });
       if (error) throw error;
       this.evolutionTypes = data;
     },
@@ -28,6 +27,8 @@ export const useEvolutionStores = defineStore("evolution", {
       this.evolution = data;
     },
     async createType(params) {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user.userDetails;
       const { data, error } = await api.post("test-type", {
         ...params,
         institutionId: institutionId,

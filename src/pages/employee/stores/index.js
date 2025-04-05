@@ -15,8 +15,8 @@ export const useEmployeeStores = defineStore("employee", {
   actions: {
     async list() {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
-      const { data, error } = await api.get("/employee");
+      const { institutionId } = authStore.user.institutionId;
+      const { data, error } = await api.get("/employee",{params: {institutionId: institutionId}});
       if (error) throw error;
       this.employees = data;
     },

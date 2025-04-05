@@ -12,3 +12,5 @@ export { default as paymentsRoutes } from "../pages/finance/payments/router";
 export { default as scheduleRoutes } from "../pages/schedule/router";
 export { default as invoiceRoutes } from "../pages/finance/invoice/router";
 export { default as receiptsRoutes } from "../pages/finance/receipt/router";
+export { default as planRoutes} from "../pages/plan/router";
+export { default as studentRoutes } from "../pages/student/router";

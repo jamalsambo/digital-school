@@ -100,10 +100,13 @@ import axios from "axios";
 import { useRoute } from "vue-router";
 import { useDocumentStores } from "./store";
 import useNotify from "src/composables/UseNotify";
+import { useComposablesStores } from "src/composables";
+
 
 // store
 const route = useRoute();
 const documentStores = useDocumentStores();
+const composableStores = useComposablesStores();
 const { notifyError, notifySuccess } = useNotify();
 
 // props
@@ -131,26 +134,15 @@ const saveChanges = async () => {
         ? { employeeId: route.params.id }
         : { studentId: route.params.id };
 
-    const formData = new FormData();
-    formData.append("file", file.value);
-    const response = await axios.post(
-      "https://educar-api-zymx.onrender.com/upload/single",
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
+    const publicUrl = await composableStores.uploadFromSupabase(file.value, 'student')
 
-    // Ajuste o caminho conforme a resposta do backend
-    form.link = response.data.file.path || response.data.file.destination;
-
-    if (form.link) {
+    if (publicUrl) {
       const payload = {
         type: form.value.type,
-        name: response.data.file.originalname,
+        name: form.value.type,
         number: form.value.number,
         expiration: form.value.expiration,
-        link: form.link,
+        link: publicUrl,
       };
 
       await documentStores.create(payload);

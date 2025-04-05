@@ -6,14 +6,18 @@ export const useStudentStores = defineStore("student", {
   state: () => ({
     students: [],
     student: {},
-    studentPaternity: {}
+    studentPaternity: {},
   }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
   },
   actions: {
     async list(params) {
-      const { data, error } = await api.get("/student", {params: params});
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
+      const { data, error } = await api.get("/student", {
+        params: { ...params, institutionId: institutionId },
+      });
       if (error) throw error;
       this.students = data;
     },
@@ -26,7 +30,7 @@ export const useStudentStores = defineStore("student", {
 
     async create() {
       const authStore = useAuthStore();
-const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/student", {
         institutionId: institutionId,
       });
@@ -56,7 +60,6 @@ const { institutionId } = authStore.user.userDetails;
       const { data, error } = await api.post(`/student/payment-type`, params);
       if (error) throw error;
       return data;
-    }
-
+    },
   },
 });

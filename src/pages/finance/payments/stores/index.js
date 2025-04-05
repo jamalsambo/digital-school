@@ -26,7 +26,7 @@ export const usePaymentStores = defineStore("payment", {
     },
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/payment", {
         ...params,
         institutionId: institutionId,
@@ -43,7 +43,7 @@ export const usePaymentStores = defineStore("payment", {
     /* sessao tipos de pagamentos */
     async findPaymentTypes() {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get("/payment-type", {params: {institutionId: institutionId}});
       if (error) throw error;
       this.paymentTypes = data;
@@ -98,5 +98,11 @@ export const usePaymentStores = defineStore("payment", {
       if (error) throw error;
       this.items = data;
     },
+
+    async payMpsa(params) {
+      const { data, error } = await api.post("/payment/pay-mpsa",params);
+      if (error) throw error;
+      return data;
+    }
   },
 });

@@ -17,7 +17,7 @@ export const useShiftStores = defineStore("shift", {
   actions: {
     async list() {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get(
         `shift/institution/${institutionId}`
       );
@@ -27,7 +27,7 @@ export const useShiftStores = defineStore("shift", {
 
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("shift", {
         ...params,
         institutionId: institutionId,
@@ -44,7 +44,7 @@ export const useShiftStores = defineStore("shift", {
 
     async createActivitiesFixes(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/shift/activities-fixes", {...params, institutionId: institutionId});
       if (error) throw error;
       this.activityFixe = data;
@@ -52,7 +52,7 @@ export const useShiftStores = defineStore("shift", {
 
     async findActivityFixe() {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get(`shift/activities-fixes/institution/${institutionId}`);
       if (error) throw error;
       this.activitiesFixes = data;
@@ -60,7 +60,7 @@ export const useShiftStores = defineStore("shift", {
 
     async createShiftFixe(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/shift/fixes", {...params, institutionId: institutionId});
       if (error) throw error;
       this.scheduleFixe = data;
@@ -68,7 +68,7 @@ export const useShiftStores = defineStore("shift", {
 
     async findShiftFixe() {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get(`shift/fixes/institution/${institutionId}`);
       if (error) throw error;
       this.scheduleFixes = data;

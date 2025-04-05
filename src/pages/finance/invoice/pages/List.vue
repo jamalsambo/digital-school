@@ -44,13 +44,21 @@
               v-model="classe"
               :options="stages"
               label="Estagios"
-              option-label="name"
-              option-value="id"
+              option-label="classe.name"
+              option-value="classe.id"
               dense
               outlined
               map-options
               @update:model-value="updateClasseSelect"
             >
+              <template v-slot:selected>
+                <span v-if="classe"
+                  >{{ classe.classe.name }} -
+                  {{ classe.classe.course.name }}</span
+                >
+                <span v-else>Selecione um estágio</span>
+              </template>
+
               <template v-slot:option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section>
@@ -99,10 +107,10 @@
             flat
             bordered
             :pagination="{ rowsPerPage: 10 }"
-              @row-click="handleRowClick"
+            @row-click="handleRowClick"
           >
             <!-- Configuração da expansão -->
-            <template  v-slot:body="props">
+            <template v-slot:body="props">
               <q-tr :props="props">
                 <!-- Colunas principais -->
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
@@ -124,7 +132,28 @@
               <!-- Linha expandida com multas -->
               <q-tr v-show="props.expand" :props="props">
                 <q-td colspan="100%">
-                  <div class="q-pa-md bg-grey-2">
+                  <div class="q-pa-md bg-grey-2" v-if="props.row.items">
+                    <div class="text-h6 q-mb-md">Items da factura</div>
+
+                    <q-list bordered v-if="props.row.items">
+                      <q-item
+                        v-for="(iten, index) in props.row.items"
+                        :key="index"
+                      >
+                        <q-item-section>
+                          <q-item-label>{{ iten.amount }}</q-item-label>
+                          <q-item-label caption>{{
+                            iten.description
+                          }}</q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+
+                    <div v-else class="text-caption text-grey">
+                      Nenhuma multa aplicada
+                    </div>
+                  </div>
+                  <div class="q-pa-md bg-grey-2" v-if="props.row.penalts">
                     <div class="text-h6 q-mb-md">Multas Aplicadas</div>
 
                     <q-list bordered v-if="props.row.penalts">
@@ -133,10 +162,10 @@
                         :key="index"
                       >
                         <q-item-section>
-                          <q-item-label>{{
-                            fine.amount
+                          <q-item-label>{{ fine.amount }}</q-item-label>
+                          <q-item-label caption>{{
+                            fine.paymentNote
                           }}</q-item-label>
-                          <q-item-label caption>{{ fine.paymentNote }}</q-item-label>
                           <q-item-label caption>{{
                             fine?.createdAt
                           }}</q-item-label>
@@ -147,6 +176,9 @@
                     <div v-else class="text-caption text-grey">
                       Nenhuma multa aplicada
                     </div>
+                  </div>
+                  <div class="text-caption text-grey">
+                    <q-btn color="primary" icon="check" v-if="!props.row.number" label="Gerar factura" @click="handleRowClick(props.row.month, props.row.amount)" />
                   </div>
                 </q-td>
               </q-tr>
@@ -199,35 +231,36 @@ const months = ref([
 ]);
 
 /* setup methods */
-const handleRowClick = (row) => {
-  console.log(row)
-  // const startDate = new Date(year.value, props.row.month.id);
-  // const endDate = new Date(startDate);
-  // endDate.setMonth(endDate.getMonth() + 1);
+const handleRowClick = async (month,amount) => {
+  const startDate = new Date(year.value);
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
 
-  // const payload = {
-  //   paymentTypeId: paymentTypeSelected.value.id,
-  //   classId: classe.value.classe.id,
-  //   studentId: student.value.id,
-  //   issueDate: new Date(),
-  //   dueDate: endDate,
-  //   month: props.row.month.month,
-  //   amount: props.row.amount,
-  //   status: "Pendente",
-  //   note: `Factura referente ao de ${props.row.month.month}`,
-  // };
+  const payload = {
+    paymentTypeId: paymentTypeSelected.value.id,
+    classId: classe.value.classe.id,
+    studentId: student.value.id,
+    issueDate: new Date(),
+    dueDate: endDate,
+    month: month,
+    amount: parseInt(amount),
+    status: "Pendente",
+    total: parseInt(amount),
+    note: `Factura referente ao de ${month}`,
+    year: parseInt(new Date().getFullYear())
+  };
 
-  // try {
-  //   await invoiceStores.create(payload);
-  //   await fetchInvoices();
-  //   notifySuccess(
-  //     `Factura referente ao de ${props.row.month.month} gerado com sucesso!`
-  //   );
-  // } catch (error) {
-  //   notifyError(
-  //     `Erro a gerar factura referente ao de ${props.row.month.month}!`
-  //   );
-  // }
+  try {
+    await invoiceStores.create(payload);
+    await fetchInvoices();
+    notifySuccess(
+      `Factura referente ao de ${month} gerado com sucesso!`
+    );
+  } catch (error) {
+    notifyError(
+      `Erro a gerar factura referente ao de ${month}!`
+    );
+  }
 };
 
 const fetchInvoices = async () => {

@@ -72,7 +72,7 @@
             <div class="row justify-between">
               <div>Operador</div>
               <div style="margin-right: 5px">
-                {{ authStore.user.userDetails?.basicInformation?.fullName }}
+                {{ authStore.user.displayName }}
               </div>
             </div>
           </div>
@@ -107,6 +107,41 @@
           separator="cell"
           class="bold-header"
         >
+          <template v-slot:body="props">
+            <!-- Linha principal da fatura -->
+            <q-tr :props="props">
+              <q-td key="number">{{ props.row.invoice.number }}</q-td>
+              <q-td key="note">{{ props.row.invoice.note }}</q-td>
+              <q-td key="issueDate">{{
+                formatDate(props.row.invoice.issueDate)
+              }}</q-td>
+              <q-td key="total">{{ props.row.invoice.total }}</q-td>
+              <q-td key="amount">{{ props.row.amount }}</q-td>
+              <q-td key="remaining">{{
+                parseFloat(props.row.invoice.total) -
+                parseFloat(props.row.invoice.paidAmount)
+              }}</q-td>
+            </q-tr>
+
+            <!-- Exibir itens apenas se houver itens na fatura -->
+            <template
+              v-if="props.row.invoice.items && props.row.invoice.items.length"
+            >
+              <q-tr
+                v-for="item in props.row.invoice.items"
+                :key="item.id"
+                class="q-tr--no-hover"
+              >
+                <q-td colspan="5" class="text-left q-pl-xl">
+                  <q-icon name="arrow_forward" />
+                  <strong>Item:</strong> {{ item.description }} |
+                  <strong>Qtd:</strong> {{ 1 }} |
+                  <strong>Valor Unitário:</strong> | <strong>Total:</strong>
+                  {{ item.amount }}
+                </q-td>
+              </q-tr>
+            </template>
+          </template>
         </q-table>
         <div class="row justify-end q-mt-md">
           <div class="col-auto text-right">
@@ -133,7 +168,7 @@
             <span
               >Impresso por:
               {{
-                authStore?.user?.userDetails?.basicInformation?.fullName
+                authStore?.user?.displayName
               }} </span
             ><br />
             <span>Data: {{ formatDate(new Date()) }}</span>
@@ -168,6 +203,8 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useAuthStore } from "src/pages/auth/store";
 import { useReceiptStores } from "../stores";
+import { useInstitutionStores } from "src/pages/institution/store";
+import { useUserStores } from "src/pages/user/store";
 import scripts from "src/composables/Scripts";
 import { useRoute, useRouter } from "vue-router";
 
@@ -178,13 +215,14 @@ const router = useRouter();
 /* use stores */
 const authStore = useAuthStore();
 const receiptStores = useReceiptStores();
-const { getActiveClass, formatDate, formatToMZN, numberForExtension } =
+const institutionStores = useInstitutionStores();
+const { getActiveClass, formatDate, numberForExtension } =
   scripts();
 
 /* Data */
-const { receiptId} = route.params
+const { receiptId } = route.params;
 
-const institution = computed(() => authStore.user.userDetails.institution);
+const institution = computed(() => institutionStores.institution);
 const student = ref();
 const receipt = ref();
 const classe = ref();
@@ -196,7 +234,7 @@ const fetchReceipt = async () => {
     await receiptStores.findOne(receiptId);
     receipt.value = receiptStores.receipt;
     student.value = receipt.value.student;
-    classe.value = getActiveClass(student.value.enrollments);
+    classe.value = await getActiveClass(student.value.enrollments);
     invoices.value = receipt.value.payments;
   } catch (error) {
     console.error("Erro ao carregar o recibo:", error);
@@ -236,7 +274,6 @@ const exportToPDF = async () => {
     // Abrir o PDF em uma nova aba para impressão
     const pdfBlob = pdf.output("bloburl");
     window.open(pdfBlob, "_blank");
-    props.handleModal();
   } catch (error) {
     console.error("Erro ao gerar o PDF:", error);
   }

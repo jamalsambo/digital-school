@@ -16,7 +16,7 @@
         <div class="q-gutter-sm gt-sm">
           <q-btn flat label="Sobre" @click="scrollTo('sobre')" />
           <q-btn flat label="Vantagens" @click="scrollTo('vantagens')" />
-          <q-btn flat label="Clientes" @click="scrollTo('clientes')" />
+          <q-btn flat label="Contacto" @click="scrollTo('clientes')" />
           <q-btn flat label="Preços" @click="scrollTo('precos')" />
         </div>
       </q-toolbar>
@@ -95,30 +95,16 @@
       <div class="text-center q-mb-xl">
         <h2 class="text-h4">Instituições que confiam</h2>
       </div>
-      <q-carousel
-        animated
-        arrows
-        infinite
-        control-type="flat"
-        control-color="primary"
-        class="rounded-borders"
-      >
-        <q-carousel-slide
-          v-for="(institution, index) in institutions"
-          :key="index"
-          :name="index"
-        >
-          <div class="row q-col-gutter-lg justify-center">
-            <div
-              v-for="(logo, i) in institution"
-              :key="i"
-              class="col-4 col-md-2"
-            >
-              <q-img :src="logo" ratio="1" />
-            </div>
-          </div>
-        </q-carousel-slide>
-      </q-carousel>
+      <!-- Contato -->
+    <q-card class="q-mt-md">
+      <q-card-section>
+        <div class="text-h5">Entre em Contato</div>
+        <q-input v-model="contact.name" label="Nome" class="q-mt-md" outlined />
+        <q-input v-model="contact.email" label="E-mail" class="q-mt-md" outlined />
+        <q-input v-model="contact.message" label="Mensagem" type="textarea" class="q-mt-md" outlined />
+        <q-btn label="Enviar" color="primary" class="q-mt-md" @click="sendContact" />
+      </q-card-section>
+    </q-card>
     </section>
 
     <!-- Preços -->
@@ -196,22 +182,7 @@
     </div>
   </section>
 
-     <!-- Área de Parceiros -->
-     <section id="parceiros" class="q-pa-xl bg-grey-3">
-          <div class="text-center q-mb-xl">
-            <h2 class="text-h4">Parceiros Tecnológicos</h2>
-          </div>
-          <div class="row q-col-gutter-lg justify-center items-center">
-            <div v-for="(partner, index) in partners" :key="index" class="col-4 col-md-2">
-              <q-img
-                :src="partner.logo"
-                :ratio="1"
-                spinner-color="primary"
-                class="q-pa-sm"
-              />
-            </div>
-          </div>
-        </section>
+
     <!-- Footer -->
     <footer class="q-pa-xl bg-dark text-white">
           <div class="container">
@@ -270,82 +241,86 @@
   </q-layout>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      annualPayment: false,
-      features: [
-        { icon: "school", text: "Gestão de Alunos" },
-        { icon: "date_range", text: "Controle Acadêmico" },
-        { icon: "payments", text: "Financeiro Integrado" },
-        { icon: "assessment", text: "Relatórios Personalizados" },
-      ],
-      benefits: [
-      {
-          icon: 'cloud',
-          title: 'Acesso Remoto',
-          description: 'Acesse de qualquer dispositivo com internet 24/7'
-        },
-        {
-          icon: 'security',
-          title: 'Segurança de Dados',
-          description: 'Criptografia avançada e backups diários'
-        },
-        {
-          icon: 'update',
-          title: 'Atualizações Constantes',
-          description: 'Melhorias contínuas sem custo adicional'
-        },
-        {
-          icon: 'support_agent',
-          title: 'Suporte Especializado',
-          description: 'Equipe técnica disponível 12h/dia'
-        }
-        // Adicionar mais benefícios
-      ],
-      partners: [
-        { logo: '../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg' },
-        { logo: '../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg' },
-        { logo: '../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg' },
-        { logo: '../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg' }
-      ],
-      institutions: [
-        [ { logo: '../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg' }, "../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg", "../../assets/products/john-fornander-m2WpKnlLcEc-unsplash.jpg"],
-        // Adicionar mais slides
-      ],
-      basicFeatures: [
-        'Até 100 estudantes',
-        '5 turmas & 3 disciplinas',
-        'Controle de pagamentos',
-        'Website básico (5 páginas)',
-        'Suporte por email'
-      ],
-      intermediateFeatures: [
-        'Até 500 estudantes',
-        'Turmas & disciplinas ilimitadas',
-        'Integração com WhatsApp',
-        'Relatórios financeiros',
-        'Suporte prioritário'
-      ],
-      steps: [
-        {
-          title: "Cadastro",
-          content: "Registre sua instituição em nosso sistema",
-        },
-        // Adicionar mais passos
-      ],
-    };
+<script setup>
+import { ref } from "vue";
+
+const annualPayment = ref(false);
+
+const features = ref([
+  { icon: "school", text: "Gestão de Alunos" },
+  { icon: "date_range", text: "Controle Acadêmico" },
+  { icon: "payments", text: "Financeiro Integrado" },
+  { icon: "assessment", text: "Relatórios Personalizados" },
+]);
+
+const benefits = ref([
+  {
+    icon: "cloud",
+    title: "Acesso Remoto",
+    description: "Acesse de qualquer dispositivo com internet 24/7",
   },
-  methods: {
-    scrollTo(id) {
-      document.getElementById(id).scrollIntoView({
-        behavior: "smooth",
-      });
-    },
+  {
+    icon: "security",
+    title: "Segurança de Dados",
+    description: "Criptografia avançada e backups diários",
   },
+  {
+    icon: "update",
+    title: "Atualizações Constantes",
+    description: "Melhorias contínuas sem custo adicional",
+  },
+  {
+    icon: "support_agent",
+    title: "Suporte Especializado",
+    description: "Equipe técnica disponível 12h/dia",
+  },
+]);
+
+const partners = ref([
+  { logo: "../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg" },
+  { logo: "../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg" },
+  { logo: "../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg" },
+  { logo: "../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg" },
+]);
+
+const institutions = ref([
+  [
+    { logo: "../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg" },
+    "../../assets/products/giorgio-trovato-K62u25Jk6vo-unsplash.jpg",
+    "../../assets/products/john-fornander-m2WpKnlLcEc-unsplash.jpg",
+  ],
+]);
+
+const basicFeatures = ref([
+  "Até 100 estudantes",
+  "5 turmas & 3 disciplinas",
+  "Controle de pagamentos",
+  "Website básico (5 páginas)",
+  "Suporte por email",
+]);
+
+const intermediateFeatures = ref([
+  "Até 500 estudantes",
+  "Turmas & disciplinas ilimitadas",
+  "Integração com WhatsApp",
+  "Relatórios financeiros",
+  "Suporte prioritário",
+]);
+const contact = ref({ name: '', email: '', message: '' });
+const steps = ref([
+  {
+    title: "Cadastro",
+    content: "Registre sua instituição em nosso sistema",
+  },
+]);
+
+const scrollTo = (id) => {
+  document.getElementById(id)?.scrollIntoView({
+    behavior: "smooth",
+  });
 };
 </script>
+
 
 <style scoped>
 .q-stepper__step-inner {

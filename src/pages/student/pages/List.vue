@@ -1,52 +1,3 @@
-<script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useStudentStores } from "src/pages/student/store";
-import columns from "src/pages/student/components/ColumnsStudentsList";
-import useNotify from "src/composables/UseNotify";
-
-// Referências e variáveis reativas
-const filter = ref("");
-const pagination = ref({
-  rowsPerPage: 10,
-});
-const students = ref([]);
-
-// Acessos aos stores e router
-const router = useRouter();
-const studentStores = useStudentStores();
-const { notifyInfo, notifyError } = useNotify();
-
-// Funções
-const addStudents = async () => {
-  await studentStores.create();
-  router.push({
-    name: "student-space",
-    params: { id: studentStores.student.id, created: "create" },
-  });
-};
-
-const editStudent = async (student) => {
-  router.push({
-    name: "student-space",
-    params: { id: student.id, created: "edit" },
-  });
-};
-// Função para buscar os planos curriculares
-const fetchStudents = async () => {
-  try {
-    await studentStores.list();
-    students.value = studentStores.students;
-  } catch (error) {
-    notifyError("Falha ao carregar os estudantes.");
-  }
-};
-
-onMounted(() => {
-  fetchStudents();
-});
-</script>
-
 <template>
   <q-page padding>
     <div class="row q-col-gutter-sm">
@@ -82,6 +33,7 @@ onMounted(() => {
                   no-caps
                   class="q-ml-sm"
                   @click="addStudents"
+                v-if="hasCreateStudents"
                 />
               </template>
 
@@ -101,3 +53,56 @@ onMounted(() => {
     </div>
   </q-page>
 </template>
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useStudentStores } from "src/pages/student/store";
+import { useUserStores } from "src/pages/user/store";
+import columns from "src/pages/student/components/ColumnsStudentsList";
+import useNotify from "src/composables/UseNotify";
+import { computed } from "vue";
+
+// Referências e variáveis reativas
+const filter = ref("");
+const pagination = ref({
+  rowsPerPage: 10,
+});
+const students = ref([]);
+
+// Acessos aos stores e router
+const router = useRouter();
+const studentStores = useStudentStores();
+const userStores = useUserStores();
+const { notifyInfo, notifyError } = useNotify();
+const hasCreateStudents = computed(() => userStores.hasCreateStudents)
+
+// Funções
+const addStudents = async () => {
+  await studentStores.create();
+  router.push({
+    name: "student-space",
+    params: { id: studentStores.student.id, created: "create" },
+  });
+};
+
+const editStudent = async (student) => {
+  router.push({
+    name: "student-space",
+    params: { id: student.id, created: "edit" },
+  });
+};
+// Função para buscar os planos curriculares
+const fetchStudents = async () => {
+  try {
+    await studentStores.list();
+    students.value = studentStores.students;
+  } catch (error) {
+    notifyError("Falha ao carregar os estudantes.");
+  }
+};
+
+onMounted(() => {
+  fetchStudents();
+});
+</script>
+

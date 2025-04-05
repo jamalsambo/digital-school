@@ -81,25 +81,27 @@
   </q-card>
 </template>
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import Tables from "src/components/Tables.vue";
 import FormPaymentTypesComponent from "../components/forms/PaymentTypes.vue";
 import columnsPaymentTypes from "../components/columns/PaymentTypes";
 import PenaltyRulesComponent from "../components/modal/PenaltyRules.vue";
 import { usePaymentStores } from "../stores";
+import { useUserStores } from "src/pages/user/store";
 import useNotify from "src/composables/UseNotify";
 
 /* use store */
 const route = useRoute();
-const { institutionId, educationId } = route.params;
+const { institutionId } = route.params;
 const paymentStores = usePaymentStores();
+const userStores = useUserStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* data */
 const isEditing = ref(false);
 const institution = ref(institutionId);
-const educationLevelId = ref(educationId);
+const educationLevelId = computed(() => userStores.user?.employee?.institution?.educationLevel?.id);
 const paymentTypes = ref([]);
 const penaltyRulesChild = ref()
 const paymentTypeSelected = ref()

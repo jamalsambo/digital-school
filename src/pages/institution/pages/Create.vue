@@ -164,8 +164,8 @@
             dense
           />
         </div>
-        <div v-if="id">
-          <div class="text-h7 text-primary q-mt-lg">Imagem</div>
+        <div v-if="institutionId">
+          <div class="text-h7 text-primary q-mt-lg">Logo tipo da instituição</div>
           <q-separator spaced />
           <q-file
             class="col-md-6 col-sm-12 col-xs-12"
@@ -177,6 +177,7 @@
             @update:model-value="uploadFile"
           />
         </div>
+      
         <div class="row justify-end q-gutter-sm">
           <q-btn
             label="Cancelar"
@@ -208,11 +209,14 @@ import { useInstitutionStores } from "src/pages/institution/store";
 import { useComposablesStores } from "src/composables";
 import useNotify from "src/composables/UseNotify";
 import scripts from "src/composables/Scripts";
+import { usePlanStores } from "src/pages/plan/stores";
+
 
 const router = useRouter();
 const route = useRoute();
 const institutionStore = useInstitutionStores();
 const composablesStores = useComposablesStores();
+const planStores = usePlanStores();
 const { notifyError, notifySuccess } = useNotify();
 const { filterFn } = scripts();
 
@@ -341,6 +345,18 @@ const fetchinstitution = async () => {
     notifyError("Erro ao buscar Instituição");
   }
 };
+
+const fetchPlans = async () => {
+  try {
+    await planStores.list(institutionId || parent);
+    regimeOptions.value = planStores.plans.map((plan) => ({
+      label: plan.name,
+      value: plan.id,
+    }));
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 watchEffect(() => {
   if (institutionId) {

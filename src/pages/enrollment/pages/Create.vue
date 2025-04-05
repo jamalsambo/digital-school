@@ -9,19 +9,7 @@
         <q-form @submit="onSubmit">
           <div class="row q-col-gutter-sm">
             <q-select
-              class="col-md-4 col-sm-12 col-xs-12"
-              v-model="education"
-              :options="educationsLevels"
-              option-label="name"
-              option-value="id"
-              label="Ensino"
-              outlined
-              dense
-              map-options
-              @update:model-value="onEducationChange"
-            />
-            <q-select
-              class="col-md-4 col-sm-12 col-xs-12"
+              class="col-md-6 col-sm-12 col-xs-12"
               v-model="course"
               :options="courses"
               option-label="name"
@@ -33,7 +21,7 @@
               @update:model-value="onCourseChange"
             />
             <q-select
-              class="col-md-4 col-sm-12 col-xs-12"
+              class="col-md-6 col-sm-12 col-xs-12"
               v-model="classe"
               :options="classes"
               label="Turma"
@@ -105,13 +93,13 @@
   </q-page>
 </template>
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useAuthStore } from "src/pages/auth/store";
 import { useCourseStores } from "src/pages/course/store";
 import { useEnrollmentStores } from "../store";
 import { usePaymentStores } from "src/pages/finance/payments/stores";
 import { useInvoiceStores } from "src/pages/finance/invoice/stores";
+import { useUserStores } from "src/pages/user/store";
 import useNotify from "src/composables/UseNotify";
 
 /* setup router */
@@ -119,11 +107,11 @@ const router = useRouter();
 const route = useRoute();
 
 /* setup router */
-const authStore = useAuthStore();
 const courseStores = useCourseStores();
 const enrollmentStores = useEnrollmentStores();
 const paymentStores = usePaymentStores();
 const invoiceStores = useInvoiceStores();
+const userStores = useUserStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* setup data */
@@ -133,17 +121,6 @@ const course = ref();
 const classes = ref([]);
 const classe = ref();
 const month = new Date().toLocaleString("pt-BR", { month: "long" });
-const educationsLevels = computed(() =>
-  authStore.user?.userDetails?.institution?.institutionLevels.map(
-    (education) => {
-      return {
-        id: education.education.id,
-        name: education.education.name,
-      };
-    }
-  )
-);
-const education = ref();
 const paymentType = ref();
 
 /* setup methods */
@@ -154,7 +131,6 @@ const onSubmit = async () => {
   );
   const payload = {
     classId: classe.value.id,
-    educationId: education.value.id,
     studentId: studentId,
   };
   try {
@@ -164,6 +140,7 @@ const onSubmit = async () => {
         paymentTypeId: paymentType.value.id,
         classId: classe.value.id,
         studentId: studentId,
+        employeeId: userStores.user?.employee?.id,
         issueDate: new Date(),
         dueDate: new Date(),
         month: month,
@@ -186,6 +163,18 @@ const onSubmit = async () => {
         await invoiceStores.createItems(payloadPayment);
       }
 
+      if (classe.value.extraFeesEnrollments.length > 0) {
+        classe.value.extraFeesEnrollments.map(async (value) => {
+          const invoiceItems = {
+            invoiceId: invoiceStores.invoice.id,
+            description: value.name,
+            amount: parseInt(value.amount),
+          };
+
+          await invoiceStores.createItems(invoiceItems);
+        });
+      }
+
       router.back();
       notifySuccess("Matricula registada, aguardando pagamento!");
     } else {
@@ -201,9 +190,6 @@ const onCourseChange = async (value) => {
 };
 const onClasseChange = async (value) => {
   classe.value = value;
-};
-const onEducationChange = async (value) => {
-  await fetchCourses(value.id);
 };
 
 /* fetchdata */
@@ -226,6 +212,7 @@ const fetchPaymentType = async () => {
 };
 
 onMounted(async () => {
+  await fetchCourses()
   await fetchPaymentType();
 });
 </script>

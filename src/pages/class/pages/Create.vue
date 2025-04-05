@@ -258,7 +258,7 @@ const classe = ref();
 const toogleRenew = ref(false);
 
 /* setup computed */
-const instituttion = computed(() => authStore.user?.userDetails?.institution);
+const instituttion = computed(() => authStore.user?.institutionId);
 
 const form = ref({
   courseId: internshipId,
@@ -371,6 +371,7 @@ const fetchEmployees = async () => {
       };
     });
   } catch (error) {
+    console.log(error);
     notifyError("Erro no carregemento...");
   }
 };

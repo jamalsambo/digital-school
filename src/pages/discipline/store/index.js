@@ -13,7 +13,7 @@ export const useDisciplineStores = defineStore("discipline", {
   actions: {
     async list(educationId) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get(
         `/discipline/${institutionId}/${educationId}`
       );
@@ -23,7 +23,7 @@ export const useDisciplineStores = defineStore("discipline", {
 
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/discipline", {
         ...params,
         institutionId: institutionId,

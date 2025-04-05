@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useEmployeeStores } from "../stores";
+import { useAuthStore } from "src/pages/auth/store";
 import columns from "src/pages/employee/components/ColumnsEmployeesList";
 import useNotify from "src/composables/UseNotify";
 
@@ -15,11 +16,13 @@ const employees = ref([]);
 // Acessos aos stores e router
 const router = useRouter();
 const employeeStores = useEmployeeStores();
+const authStores = useAuthStore();
 const { notifyInfo, notifyError } = useNotify();
 
 // Funções
 const addEmployee = async () => {
-  await employeeStores.create();
+  const institutionId = authStores.user.userDetails.institutionId
+  await employeeStores.create({institutionId: institutionId});
   router.push({
     name: "create-employee",
     params: { id: employeeStores.employee.id, created: "create" },

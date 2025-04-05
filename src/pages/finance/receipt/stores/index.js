@@ -13,7 +13,7 @@ export const useReceiptStores = defineStore("receipt", {
   actions: {
     async list() {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get(
         `receipt/institution/${institutionId}`
       );
@@ -23,7 +23,7 @@ export const useReceiptStores = defineStore("receipt", {
 
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("receipt", {
         ...params,
         institutionId: institutionId,

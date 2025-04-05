@@ -13,7 +13,7 @@ export const useRoomStores = defineStore("room", {
   actions: {
     async list() {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get(
         `room/institution/${institutionId}`
       );
@@ -23,7 +23,7 @@ export const useRoomStores = defineStore("room", {
 
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("room", {
         ...params,
         institutionId: institutionId,

@@ -11,8 +11,8 @@ export const useInstitutionStores = defineStore("institution", {
     // doubleCount: (state) => state.counter * 2,
   },
   actions: {
-    async list() {
-      const { data, error } = await api.get("/institution");
+    async list(params) {
+      const { data, error } = await api.get("/institution", {params: params});
       if (error) throw error;
       this.institutions = data;
     },
@@ -39,12 +39,6 @@ export const useInstitutionStores = defineStore("institution", {
       const { data, error } = await api.get(`/institution/domain/${domain}`);
       if (error) throw error;
       this.institution = data;
-    },
-
-    async addEducationLevel(educationLevelId, institutionId) {
-      const { data, error } = await api.post(`/institution/education-level/${educationLevelId}/${institutionId}`);
-      if (error) throw error;
-      return data;
     },
 
     async deleteInstitutionEducation(params) {

@@ -115,8 +115,8 @@
             <q-item-label>Dashboard D-School</q-item-label>
           </q-item-section>
         </q-item>
-
-        <div v-if="user?.userDetails?.userType?.name === 'Super'">
+        <!-- Menu Super usuario -->
+        <div v-if="user?.userType === 'Super'">
           <q-expansion-item icon="menu_open" label="Instituição">
             <q-item
               to="/institutions"
@@ -144,22 +144,29 @@
               </q-item-section>
             </q-item>
           </q-expansion-item>
+          <q-item to="/plans" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="dashboard" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Planos</q-item-label>
+          </q-item-section>
+        </q-item>
         </div>
 
         <!-- Menu do funcionario -->
         <div
-          v-if="
-            user?.userDetails?.userType?.name === 'Funcionario' &&
-            (user?.userDetails?.teacher?.toLowerCase() === 'nao' ||
-              user.userDetails.teacher === null)
-          "
+           v-if="user?.userType === 'Funcionario'"
         >
-          <q-expansion-item icon="menu_open" label="Instituição">
+          <q-expansion-item icon="menu_open" label="Instituição"
+          v-if="userStores.hasViewInstitution || userStores.hasViewRooms || userStores.hasViewHoraryInstitution"
+          >
             <q-item
               to="/institutions"
               class="q-ml-xl"
               active-class="q-item-no-link-highlighting"
               :header-inset-level="0.85"
+              v-if="userStores.hasViewInstitution"
             >
               <q-item-section avatar>
                 <q-icon name="history_edu" />
@@ -172,6 +179,7 @@
               to="/rooms"
               class="q-ml-xl"
               active-class="q-item-no-link-highlighting"
+              v-if="userStores.hasViewRooms"
             >
               <q-item-section avatar>
                 <q-icon name="room" />
@@ -184,11 +192,13 @@
               :header-inset-level="0.85"
               label="Horarios"
               icon="schedule"
+              v-if="userStores.hasViewHoraryInstitution"
             >
               <q-item
                 to="/periods"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
+                 v-if="userStores.hasViewHoraryInstitution"
               >
                 <q-item-section avatar>
                   <q-icon name="calendar_month" />
@@ -222,44 +232,51 @@
                 </q-item-section>
               </q-item>
             </q-expansion-item>
-            <q-item
-              to="/students"
-              class="q-ml-xl"
-              active-class="q-item-no-link-highlighting"
-            >
-              <q-item-section avatar>
-                <q-icon name="diversity_3" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Estudantes</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item
-              to="/employees"
-              class="q-ml-xl"
-              active-class="q-item-no-link-highlighting"
-            >
-              <q-item-section avatar>
-                <q-icon name="groups_2" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Funcionarios</q-item-label>
-              </q-item-section>
-            </q-item>
+
           </q-expansion-item>
 
-          <q-expansion-item icon="map" label="Controle Academico">
-            <q-expansion-item
-              v-for="(item, index) in educationsLevels"
-              :key="index"
-              :header-inset-level="0.85"
-              :label="item.education.name"
-              :icon="getIcon(item.name)"
-            >
+          <q-expansion-item icon="diversity_3" label="Estudantes" v-if="hasViewStudents">
+            <q-list class="q-pl-lg">
+              <q-item
+                to="/students"
+                active-class="q-item-no-link-highlighting"
+                v-if="hasViewStudents"
+              >
+                <q-item-section avatar>
+                  <q-icon name="list" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Listar</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-expansion-item>
+
+          <q-expansion-item icon="groups_2" label="Funcionarios" v-if="userStores.hasViewEmployees">
+            <q-list class="q-pl-lg">
+              <q-item
+                to="/employees"
+                active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasViewEmployees"
+              >
+                <q-item-section avatar>
+                  <q-icon name="list" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Listar</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-expansion-item>
+
+          <q-expansion-item icon="map" label="Controle Academico"
+          v-if="userStores.hasViewCalendar || userStores.hasViewEvolutionTypes ||userStores.hasCreateDisciplines||userStores.hasCreateCurriculum"
+          >
               <q-item
                 to="/academic-calendar"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasViewCalendar"
               >
                 <q-item-section avatar>
                   <q-icon name="calendar_month" />
@@ -268,28 +285,43 @@
                   <q-item-label>Calendario academico</q-item-label>
                 </q-item-section>
               </q-item>
+              <q-item
+                to="/evolution/types"
+                style="margin-left: 55px !important"
+                active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasViewEvolutionTypes"
+              >
+                <q-item-section avatar>
+                  <q-icon name="trending_up" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Tipos de avaliaçoês</q-item-label>
+                </q-item-section>
+              </q-item>
               <!-- discplinas -->
               <q-item
                 :to="`/education/${
-                  item.education.id
-                }/module${getRouteForDiscipline(item.education.name)}`"
+                  educationLevel?.id
+                }/module${getRouteForDiscipline(educationLevel?.name)}`"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasCreateDisciplines"
               >
                 <q-item-section avatar>
                   <q-icon name="psychology" />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{
-                    getNameForDiscipline(item.education.name)
+                    getNameForDiscipline(educationLevel?.name)
                   }}</q-item-label>
                 </q-item-section>
               </q-item>
               <!-- curriculums -->
               <q-item
-                :to="`/education/${item.education.id}/curriculums`"
+                :to="`/education/${educationLevel?.id}/curriculums`"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasCreateCurriculum"
               >
                 <q-item-section avatar>
                   <q-icon name="check_box_outline_blank" />
@@ -299,25 +331,27 @@
                 </q-item-section>
               </q-item>
               <q-item
-                :to="`/education/${item.education.id}${getRoute(
-                  item.education.name
+                :to="`/education/${educationLevel?.id}${getRoute(
+                  educationLevel?.name
                 )}`"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
+                 v-if="userStores.hasCreateClasse"
               >
                 <q-item-section avatar>
                   <q-icon name="school" />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{
-                    getName(item.education.name)
+                    getName(educationLevel?.name)
                   }}</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item
-                :to="`/education/${item.education.id}/enrollments`"
+                :to="`/education/${educationLevel?.id}/enrollments`"
                 style="margin-left: 55px !important"
                 active-class="q-item-no-link-highlighting"
+                v-if="userStores?.hasViewEnrollment"
               >
                 <q-item-section avatar>
                   <q-icon name="school" />
@@ -326,14 +360,30 @@
                   <q-item-label>Matriculas</q-item-label>
                 </q-item-section>
               </q-item>
-            </q-expansion-item>
+              <q-item
+                :to="`/education/${educationLevel?.id}/bulletins`"
+                style="margin-left: 55px !important"
+                active-class="q-item-no-link-highlighting"
+                v-if="userStores?.hasViewBulletins"
+              >
+                <q-item-section avatar>
+                  <q-icon name="school" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Boletins</q-item-label>
+                </q-item-section>
+              </q-item>
+
           </q-expansion-item>
 
-          <q-expansion-item icon="map" label="Controle Financeiro">
+          <q-expansion-item icon="map" label="Controle Financeiro"
+           v-if="userStores.hasViewInvoices || userStores.hasViewReceipts || userStores.hasViewPaymentsExtras || userStores.hasViewPaymentsExtras"
+          >
             <q-list class="q-pl-lg">
               <q-item
-              :to="`/finance/institution/${user.userDetails.institutionId}/invoices`"
+              :to="`/finance/institution/${user.institutionId}/invoices/`"
                 active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasViewInvoices"
               >
                 <q-item-section avatar>
                   <q-icon name="map" />
@@ -343,8 +393,9 @@
                 </q-item-section>
               </q-item>
               <q-item
-              :to="`/finance/institution/${user.userDetails.institutionId}/receipts/`"
+              :to="`/finance/institution/${user.institutionId}/receipts/`"
                 active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasViewReceipts"
               >
                 <q-item-section avatar>
                   <q-icon name="map" />
@@ -353,9 +404,35 @@
                   <q-item-label>Recibos</q-item-label>
                 </q-item-section>
               </q-item>
-              <!-- <q-item
+              <q-item
+               :to="`/finance/institution/${user.institutionId}/payment-types/`"
+                active-class="q-item-no-link-highlighting"
+                  v-if="userStores.hasViewPaymentsTypes"
+              >
+                <q-item-section avatar>
+                  <q-icon name="bubble_chart" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Tipos de pagamento</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item
+                to="/extras-fees"
+                active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasViewPaymentsExtras"
+              >
+                <q-item-section avatar>
+                  <q-icon name="bubble_chart" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Pagamentos extras</q-item-label>
+                </q-item-section>
+
+              </q-item>
+               <q-item
                 to="/finance/expenses-categories"
                 active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasViewExpensesCategories"
               >
                 <q-item-section avatar>
                   <q-icon name="map" />
@@ -367,6 +444,7 @@
               <q-item
                 to="/financial-control/expenses"
                 active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasViewExpenses"
               >
                 <q-item-section avatar>
                   <q-icon name="map" />
@@ -374,36 +452,14 @@
                 <q-item-section>
                   <q-item-label>Despensas</q-item-label>
                 </q-item-section>
-              </q-item> -->
+              </q-item> 
             </q-list>
           </q-expansion-item>
 
-          <q-expansion-item icon="map" label="Extras">
+          <q-expansion-item icon="notifications" label="Notificações"
+          v-if="userStores.hasViewNotifications || userStores.hasCreateNotifications || userStores.hasEditNotifications "
+          >
             <q-list class="q-pl-lg">
-              <q-item
-                to="/evolution/types"
-                active-class="q-item-no-link-highlighting"
-              >
-                <q-item-section avatar>
-                  <q-icon name="trending_up" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>Tipos de avaliaçoês</q-item-label>
-                </q-item-section>
-              </q-item>
-
-              <q-item
-                to="/extras-fees"
-                active-class="q-item-no-link-highlighting"
-              >
-                <q-item-section avatar>
-                  <q-icon name="bubble_chart" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>Pagamentos extras</q-item-label>
-                </q-item-section>
-              </q-item>
-
               <q-item
                 to="/notifications"
                 active-class="q-item-no-link-highlighting"
@@ -412,23 +468,16 @@
                   <q-icon name="notifications" />
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>Notificações</q-item-label>
+                  <q-item-label>Listar</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
           </q-expansion-item>
-        </div>
 
-        <!-- Menu do funcionario professor -->
-        <div
-          v-if="
-            user?.userDetails?.userType?.name === 'Funcionario' &&
-            user.userDetails.teacher?.toLowerCase() === 'sim'
-          "
-        >
           <q-item
-            :to="`/employee/${user.userDetails.id}/teachings`"
+            :to="`/employee/${userStores?.user?.employee?.id}/teachings`"
             active-class="q-item-no-link-highlighting"
+            v-if="user?.teacher === 'Sim'"
           >
             <q-item-section avatar>
               <q-icon name="school" />
@@ -437,20 +486,11 @@
               <q-item-label>Turmas</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item to="/tasks" active-class="q-item-no-link-highlighting">
-            <q-item-section avatar>
-              <q-icon name="school" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Tarefas</q-item-label>
-            </q-item-section>
-          </q-item>
         </div>
 
-        <!-- Menu do estudante -->
-        <div v-if="user?.userDetails?.userType?.name === 'Estudante'">
+        <div v-if="user?.userType === 'Estudante'">
           <q-item
-            :to="`/student/${user.userDetails.id}/evolutions/normal`"
+            :to="`/student/${userStores?.user?.student?.id}/evolutions/normal`"
             active-class="q-item-no-link-highlighting"
           >
             <q-item-section avatar>
@@ -462,7 +502,7 @@
           </q-item>
 
           <q-item
-            :to="`/student/${user.userDetails.id}/enrollments`"
+            :to="`/student/${userStores?.user?.student?.id}/enrollments`"
             active-class="q-item-no-link-highlighting"
           >
             <q-item-section avatar>
@@ -473,7 +513,7 @@
             </q-item-section>
           </q-item>
           <q-item
-            :to="`/student/${user.userDetails.id}/payments/${'view'}`"
+            :to="`/student/${userStores?.user?.student?.id}/payments/${'view'}`"
             active-class="q-item-no-link-highlighting"
           >
             <q-item-section avatar>
@@ -484,7 +524,7 @@
             </q-item-section>
           </q-item>
           <q-item
-            :to="`/student/${user.userDetails.id}/attendances`"
+            :to="`/student/${userStores?.user?.student?.id}/attendances`"
             active-class="q-item-no-link-highlighting"
           >
             <q-item-section avatar>
@@ -497,7 +537,7 @@
         </div>
 
         <!-- Menu do encarregado -->
-        <div v-if="user?.userDetails?.userType?.name === 'Encarregado'">
+        <div v-if="user?.userType === 'Encarregado'">
           <q-list>
             <q-expansion-item
               v-for="student in students"
@@ -555,35 +595,6 @@
             </q-expansion-item>
           </q-list>
         </div>
-
-        <!-- <div v-else>
-          <q-expansion-item icon="menu_open" label="Instituição">
-            <q-item
-              to="/institutions"
-              class="q-ml-xl"
-              active-class="q-item-no-link-highlighting"
-            >
-              <q-item-section avatar>
-                <q-icon name="history_edu" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Listar</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item
-              to="/employees"
-              class="q-ml-xl"
-              active-class="q-item-no-link-highlighting"
-            >
-              <q-item-section avatar>
-                <q-icon name="groups_2" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Funcionarios</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-expansion-item>
-        </div> -->
       </q-list>
     </q-drawer>
 
@@ -600,34 +611,30 @@ import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import { useAuthStore } from "src/pages/auth/store";
 import { useStudentStores } from "src/pages/student/store";
+import { useUserStores } from "src/pages/user/store";
+import { useInstitutionStores } from "src/pages/institution/store";
 import useNotify from "src/composables/UseNotify";
 
+/* setup router */
 const router = useRouter();
+
+/* setup router */
 const authStore = useAuthStore();
 const studentStores = useStudentStores();
+const institutionStores = useInstitutionStores()
+const userStores = useUserStores()
 const { notifyError, notifyInfo } = useNotify();
 
+/* setup data */
 const leftDrawerOpen = ref(false);
 const $q = useQuasar();
-
 const user = computed(() => authStore.user);
 const students = computed(() => studentStores.students);
-const educationsLevels = computed(
-  () => authStore.user?.userDetails?.institution?.institutionLevels
-);
+const educationLevel = ref()
 
-const getIcon = (name) => {
-  switch (name) {
-    case "Ensino Infantil":
-      return "child_care";
-    case "Ensino Fundamental":
-      return "school";
-    case "Ensino Médio":
-      return "menu_book";
-    default:
-      return "help_outline";
-  }
-};
+const hasViewStudents = ref()
+const hasViewEmployees = ref()
+
 
 const getName = (name) => {
   switch (name) {
@@ -703,8 +710,29 @@ const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 };
 
-onMounted(() => {
-  if (user.value && user.value.userDetails?.userType?.name === "Encarregado") {
+/* fetch data */
+const fetchInstitution = async() => {
+  try {
+    await institutionStores.findOne(user.value.institutionId)
+    educationLevel.value = institutionStores.institution.educationLevel
+  } catch (error) {
+
+  }
+}
+const fetchUser = async ()=> {
+  try {
+    await userStores.findOne(user.value.sub)
+    hasViewStudents.value = userStores.hasViewStudents
+    hasViewEmployees.value = userStores.hasViewEmployees
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+onMounted( async () => {
+  await fetchUser()
+  await fetchInstitution()
+  if (user.value && user.value.userType === "Encarregado") {
     try {
       studentStores.list({
         telephone: user.value.username,

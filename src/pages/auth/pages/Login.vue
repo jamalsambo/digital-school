@@ -11,7 +11,7 @@
           <q-card-section>
             <div class="text-center q-pt-lg">
               <div class="col text-h6 ellipsis">
-                Log in
+               Tela de login
               </div>
             </div>
           </q-card-section>
@@ -21,18 +21,20 @@
               @submit.prevent="handleLogin"
             >
               <q-input
-                filled
+                outlined
                  v-model="form.username"
                 label="Username"
                 lazy-rules
+                dense
               />
 
               <q-input
                 type="password"
-                filled
+                outlined
                  v-model="form.password"
                 label="Password"
                 lazy-rules
+                dense
               />
 
               <div>

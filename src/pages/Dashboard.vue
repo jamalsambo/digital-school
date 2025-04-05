@@ -1,12 +1,81 @@
 <template>
   <q-page padding>
     <div
-      v-if="user?.userDetails?.userType?.name === 'Funcionario'
-        && user.userDetails.teacher?.toLowerCase() === 'nao'
-      "
+      class="bg-white text-dark shadow-sm q-pa-md row justify-between items-center"
     >
-      <div class="text-h6 q-mb-lg">Painel de Controlo</div>
-      <div class="row q-col-gutter-x-md">
+      <div class="text-bold text-primary">
+        Bem vindo a Escola Sedundaria geral
+      </div>
+
+      <div class="text-bold text-primary row items-center">
+        <span>Ano lectivo {{ new Date().getFullYear() }}</span>
+        <q-icon name="school" size="20px" class="q-ml-sm text-primary" />
+      </div>
+    </div>
+
+    <div v-if="user?.userType === 'Funcionario'">
+      <div class="quick-links-container q-mt-md">
+        <q-card flat class="quick-links">
+      <q-card-section class="text-center">
+        <div class="text-h6 text-weight-bold">Atalhos Rápidos</div>
+      </q-card-section>
+      <q-separator />
+      <q-card-section class="row justify-around">
+        <q-btn unelevated class="quick-link" @click="goTo('cadastrar-aluno')">
+          <q-icon name="group_add" size="md" />
+          <span>Cadastrar Novo Aluno</span>
+        </q-btn>
+        <q-btn unelevated class="quick-link" @click="goTo('student-reports')">
+          <q-icon name="assignment" size="md" />
+          <span>Relatório de Alunos</span>
+        </q-btn>
+        <q-btn unelevated class="quick-link" @click="goTo('gerar-fatura')">
+          <q-icon name="receipt_long" size="md" />
+          <span>Gerar Fatura</span>
+        </q-btn>
+        <q-btn unelevated class="quick-link" @click="goTo('emitir-recibo')">
+          <q-icon name="receipt" size="md" />
+          <span>Emitir Recibo</span>
+        </q-btn>
+      </q-card-section>
+    </q-card>
+  </div>
+      <div class="row q-col-gutter-x-md q-mt-lg">
+        <div class="col-md-4 col-sm-12 col-xs-12">
+          <Teachers
+            :item="{
+              title: 'Professores',
+              value: 50,
+              color1: '#17a2b8',
+              color2: '#17a2c1',
+              img: teacherImg,
+            }"
+          />
+        </div>
+        <div class="col-md-4 col-sm-12 col-xs-12">
+          <Teachers
+            :item="{
+              title: 'Estudantes',
+              value: 50,
+              color1: '#17a2b8',
+              color2: '#17a2c1',
+              img: studentImg,
+            }"
+          />
+        </div>
+        <div class="col-md-4 col-sm-12 col-xs-12">
+          <Teachers
+            :item="{
+              title: 'Estudantes activos',
+              value: 50,
+              color1: '#17a2b8',
+              color2: '#17a2c1',
+              img: studentImg,
+            }"
+          />
+        </div>
+      </div>
+      <div class="row q-col-gutter-x-md q-mt-lg">
         <div class="col-md-3 col-sm-12 col-xs-12">
           <Card :item="itemTotalPayment" />
         </div>
@@ -104,25 +173,101 @@
           />
         </div>
       </div>
-      <!-- <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-12">
-          <Graphic :payments="payments" />
+      <!-- Graficos de barras anuais e diarios -->
+      <div class="row q-col-gutter-x-md q-mt-lg">
+        <div class="col-md-6 col-sm-12 col-xs-12">
+          <LineChart
+            title="Anual"
+            :labels="monthlyLabels"
+            :dataset1="annualDataset1"
+            :dataset2="annualDataset2"
+          />
         </div>
-      </div> -->
+        <div class="col-md-6 col-sm-12 col-xs-12">
+          <LineChart
+            title="Diário"
+            :labels="dailyLabels"
+            :dataset1="dailyDataset"
+            :dataset2="{}"
+          />
+        </div>
+      </div>
+
+      <div class="row q-col-gutter-x-md q-mt-lg">
+        <div class="col-md-6 col-sm-12 col-xs-12">
+          <q-card class="col-5 q-pa-md">
+            <div class="row justify-between items-center">
+              <div class="text-bold">Activities & Events</div>
+              <q-btn outline rounded color="green" label="View All" size="sm" />
+            </div>
+
+            <q-separator class="q-my-sm" />
+
+            <q-list bordered>
+              <q-item v-for="(event, index) in events" :key="index" clickable>
+                <q-item-section>
+                  <q-item-label class="text-primary">{{ event }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-card>
+        </div>
+        <div
+          class="row q-gutter-md justify-center col-md-6 col-sm-12 col-xs-12"
+        >
+          <q-card
+            v-for="(student, index) in ranking"
+            :key="index"
+            class="col-3 q-pa-md text-center shadow-2"
+            :style="{
+              backgroundColor: student.bgColor,
+              color: 'white',
+              borderRadius: '12px',
+            }"
+          >
+            <q-icon name="account_circle" size="50px" class="q-mb-sm" />
+            <div class="text-bold">{{ student.name }}</div>
+            <div class="text-h6">{{ student.score }}%</div>
+            <q-chip
+              :color="student.badgeColor"
+              text-color="white"
+              class="q-mt-sm"
+            >
+              {{ student.rank }}
+            </q-chip>
+          </q-card>
+        </div>
+      </div>
+
+      <div class="row q-col-gutter-x-md q-mt-lg">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <q-card class="q-pa-md">
+            <q-card-section>
+              <div class="text-h6 text-center">Divisão de alunos por curso</div>
+            </q-card-section>
+            <q-card-section>
+              <canvas ref="chartCanvas"></canvas>
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
     </div>
 
-    <div  v-if="user?.userDetails?.userType?.name === 'Funcionario' &&
-            user.userDetails.teacher?.toLowerCase() === 'sim'
-          ">
-      <TeachearDash/>
+    <div
+      v-if="
+        user?.userType === 'Funcionario' &&
+        user?.teacher.toLowerCase() === 'sim'
+      "
+    >
+      <TeachearDash />
     </div>
 
-    <div v-if="user?.userType?.name === 'Estudante'">
-      <StudantDash/>
+    <div v-if="user?.userType === 'Estudante'">
+      <StudantDash />
     </div>
 
-    <div v-if="user?.userDetails?.userType?.name === 'Encarregado'">
-      <GuardianDash/>
+    <div v-if="user?.userType === 'Encarregado'">
+      <GuardianDash />
     </div>
   </q-page>
 </template>
@@ -135,6 +280,7 @@ import { useExpenseStores } from "./finance/expense/store";
 import Card from "src/components/dashboard/Card.vue";
 import SubCard from "src/components/dashboard/Sub-Card.vue";
 import InOutCard from "src/components/dashboard/InOut-Card.vue";
+import Teachers from "src/components/dashboard/Teachers.vue";
 import scripts from "src/composables/Scripts";
 import useNotify from "src/composables/UseNotify";
 // import Graphic from "src/components/dashboard/Graphic.vue";
@@ -142,6 +288,18 @@ import { useAuthStore } from "src/pages/auth/store";
 import TeachearDash from "./TeachearDash.vue";
 import StudantDash from "./StudentDash.vue";
 import GuardianDash from "./GuardianDash.vue";
+import teacherImg from "src/assets/teacher.png";
+import studentImg from "src/assets/student.png";
+
+import Chart from "chart.js/auto";
+import LineChart from "src/components/dashboard/LineChart.vue";
+const chartCanvas = ref(null);
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+
+
 /* use store */
 const authStore = useAuthStore();
 const invoiceStores = useInvoiceStores();
@@ -158,6 +316,78 @@ const users = ref();
 const currentDate = new Date();
 const month = currentDate.toLocaleString("pt-BR", { month: "long" });
 
+const events = ref([
+  "Elimination Game",
+  "Freshman Orientation",
+  "Spring Sports Rally",
+]);
+
+const ranking = ref([
+  {
+    name: "Rovan Hossam",
+    score: 99.88,
+    rank: "1st",
+    bgColor: "#28a745",
+    badgeColor: "green",
+  },
+  {
+    name: "Rony Beyablo",
+    score: 98.17,
+    rank: "2nd",
+    bgColor: "#6f42c1",
+    badgeColor: "purple",
+  },
+  {
+    name: "Adam Hisham",
+    score: 97.32,
+    rank: "3rd",
+    bgColor: "#ffc107",
+    badgeColor: "orange",
+  },
+]);
+
+const monthlyLabels = [
+  "Jan",
+  "Fev",
+  "Mar",
+  "Abr",
+  "Mai",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Set",
+  "Out",
+  "Nov",
+  "Dez",
+];
+const annualDataset1 = {
+  label: "Curva Azul",
+  data: [50000, 275000, 20000, 5000, 1000, 800, 600, 500, 400, 300, 200, 100],
+  borderColor: "blue",
+  fill: true,
+  backgroundColor: "rgba(0, 0, 255, 0.2)",
+};
+const annualDataset2 = {
+  label: "Curva Vermelha",
+  data: [
+    200000, 250000, 225000, 210000, 200000, 205000, 215000, 220000, 225000,
+    230000, 235000, 240000,
+  ],
+  borderColor: "red",
+  fill: false,
+};
+
+const dailyLabels = Array.from({ length: 31 }, (_, i) => i + 1);
+const dailyDataset = {
+  label: "Diário",
+  data: [
+    5000, 10000, 2000, 5000, 12000, 8000, 25000, 5000, 10000, 2000, 35000, 5000,
+    10000, 32000, 15000, 5000, 8000, 6000, 10000, 5000, 12000, 10000, 7000,
+    9000, 1000, 2000, 5000, 25000, 5000, 2000, 1000,
+  ],
+  borderColor: "red",
+  fill: false,
+};
 /* computed */
 const totalPayments = computed(() =>
   formatToMZN(
@@ -172,10 +402,11 @@ const totalPaymentsToday = computed(() =>
     invoices.value
       .filter(
         (payment) =>
-          new Date(payment.updatedAt).getFullYear() === currentDate.getFullYear() &&
+          new Date(payment.updatedAt).getFullYear() ===
+            currentDate.getFullYear() &&
           new Date(payment.updatedAt).getMonth() === currentDate.getMonth() &&
           new Date(payment.updatedAt).getDate() === currentDate.getDate() &&
-          payment.status === "Pago",
+          payment.status === "Pago"
       )
       .reduce((acc, value) => {
         return acc + parseInt(value.paidAmount);
@@ -186,7 +417,11 @@ const totalPaymentsToday = computed(() =>
 const totalPaymentsMonth = computed(() =>
   formatToMZN(
     invoices.value
-      .filter((payment) => payment.month.toLowerCase() === month.toLowerCase() && payment.status === "Pago")
+      .filter(
+        (payment) =>
+          payment.month.toLowerCase() === month.toLowerCase() &&
+          payment.status === "Pago"
+      )
       .reduce((acc, value) => {
         return acc + parseFloat(value.paidAmount);
       }, 0)
@@ -198,28 +433,40 @@ const totalPaymentsDone = computed(() =>
     invoices.value
       .filter((payment) => payment.status === "Pago") // Filtra apenas os atrasados
       .reduce((acc, value) => {
-        return acc + parseInt(value.paidAmount) ;
+        return acc + parseInt(value.paidAmount);
       }, 0)
   )
 );
 
 const totalPaymentsLate = computed(() =>
-formatToMZN(
- invoices.value
-  .filter((invoice) => invoice.status === "Pendente" || invoice.status === "Parcial")
-  .reduce((acc, invoice) => {
-    const restante = parseFloat(invoice.total) - parseFloat(invoice.paidAmount || 0);
-    return acc + (restante > 0 ? restante : 0); // Evita valores negativos
-  }, 0)));
+  formatToMZN(
+    invoices.value
+      .filter(
+        (invoice) =>
+          invoice.status === "Pendente" || invoice.status === "Parcial"
+      )
+      .reduce((acc, invoice) => {
+        const restante =
+          parseFloat(invoice.total) - parseFloat(invoice.paidAmount || 0);
+        return acc + (restante > 0 ? restante : 0); // Evita valores negativos
+      }, 0)
+  )
+);
 
 const totalPaymentsLateMonth = computed(() =>
-formatToMZN(
- invoices.value
-  .filter((invoice) => (invoice.status === "Pendente" || invoice.status === "Parcial") &&  invoice.month.toLowerCase() === month.toLowerCase())
-  .reduce((acc, invoice) => {
-    const restante = parseFloat(invoice.total) - parseFloat(invoice.paidAmount || 0);
-    return acc + (restante > 0 ? restante : 0); // Evita valores negativos
-  }, 0))
+  formatToMZN(
+    invoices.value
+      .filter(
+        (invoice) =>
+          (invoice.status === "Pendente" || invoice.status === "Parcial") &&
+          invoice.month.toLowerCase() === month.toLowerCase()
+      )
+      .reduce((acc, invoice) => {
+        const restante =
+          parseFloat(invoice.total) - parseFloat(invoice.paidAmount || 0);
+        return acc + (restante > 0 ? restante : 0); // Evita valores negativos
+      }, 0)
+  )
 );
 
 const totalPaymentToYear = computed(() =>
@@ -227,8 +474,7 @@ const totalPaymentToYear = computed(() =>
     invoices.value
       .filter(
         (payment) =>
-          payment.year === new Date().getFullYear() &&
-          payment.status === "Pago"
+          payment.year === new Date().getFullYear() && payment.status === "Pago"
       ) // Filtro
       .reduce((acc, value) => acc + parseInt(value.paidAmount), 0)
   )
@@ -283,12 +529,17 @@ const totalExpensesMonthLate = computed(() =>
   )
 );
 
+const goTo = (route) => {
+  router.push({ name: route });
+};
+
 /* fetch data */
 const fetchInvoices = async () => {
   try {
     await invoiceStores.find();
     invoices.value = invoiceStores.invoices;
   } catch (error) {
+    console.log(error);
     notifyError("Erro ao buscar pagamentos");
   }
 };
@@ -311,10 +562,33 @@ const fetchUsers = async () => {
   }
 };
 
-onMounted(async() => {
+onMounted(async () => {
   await fetchInvoices();
   fetchUsers();
   fetchExpenses();
+  new Chart(chartCanvas.value, {
+    type: "bar",
+    data: {
+      labels: ["INFO", "ELET", "MECA", "SEGU", "MEAM", "SEIN"],
+      datasets: [
+        {
+          label: "Total de alunos",
+          data: [10, 2, 3, 1, 2, 2],
+          backgroundColor: "#2E3192", // Azul escuro
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: "top",
+        },
+      },
+    },
+  });
 });
 
 const itemTotalPayment = ref({
@@ -357,3 +631,40 @@ const itemPaymentToYear = ref({
   color2: "#17a2b8",
 });
 </script>
+<style scoped>
+.text-primary {
+  color: #2c1e5d;
+}
+canvas {
+  height: 300px;
+}
+.quick-links-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.quick-links {
+  background: #f5f7fa;
+  padding: 15px;
+  border-radius: 10px;
+  width: 80%;
+}
+
+.quick-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  width: 160px;
+  height: 80px;
+  text-transform: none;
+}
+.quick-link span {
+  font-size: 14px;
+  margin-top: 5px;
+}
+</style>

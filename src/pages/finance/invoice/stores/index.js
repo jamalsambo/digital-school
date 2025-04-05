@@ -15,7 +15,7 @@ export const useInvoiceStores = defineStore("invoice", {
 
     async find(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get(`/invoice/${institutionId}`, {params: params});
       if (error) throw error;
       this.invoices = data;
@@ -23,7 +23,7 @@ export const useInvoiceStores = defineStore("invoice", {
 
     async create(params) {
       const authStore = useAuthStore();
-      const { id, institutionId } = authStore.user.userDetails;
+      const { id, institutionId } = authStore.user;
       const { data, error } = await api.post("/invoice", {
         ...params,
         institutionId: institutionId,

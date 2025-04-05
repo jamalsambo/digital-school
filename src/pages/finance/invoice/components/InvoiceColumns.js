@@ -11,7 +11,7 @@ const columns = [
   {
     name: "note",
     label: "Produto",
-    field:  (row) => row.note,
+    field:  (row) => row.month,
     sortable: true,
     align: "left",
   },

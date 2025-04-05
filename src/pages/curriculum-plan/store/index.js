@@ -13,7 +13,7 @@ export const useCurriculumPlanStores = defineStore("curriculum-plan", {
   actions: {
     async list(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get("/curriculum-plan", { params: {...params, institutionId:institutionId}});
       if (error) throw error;
       this.curriculumPlans = data;
@@ -21,7 +21,7 @@ export const useCurriculumPlanStores = defineStore("curriculum-plan", {
 
     async create(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/curriculum-plan", {
         ...params,
         institutionId: institutionId,

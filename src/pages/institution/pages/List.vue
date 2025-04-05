@@ -6,18 +6,6 @@
           <q-card-section class="q-pa-none">
             <Tables :columns="columns" :rows="institutions">
               <template #new>
-                <q-input
-                  borderless
-                  dense
-                  debounce="300"
-                  v-model="filter"
-                  placeholder="Pesquisar"
-                >
-                  <template v-slot:append>
-                    <q-icon name="search" />
-                  </template>
-                </q-input>
-
                 <q-btn
                   color="primary"
                   icon="add"
@@ -25,12 +13,13 @@
                   no-caps
                   @click="createInstitution"
                   class="q-ml-sm"
+                  v-if="authStore.user.userType === 'Super'"
                 />
               </template>
 
               <template #actions="{ props }">
                 <q-btn
-                  v-if="props.row.status === 'Activo'"
+                 v-if="authStore.user.userType === 'Super'"
                   flat
                   round
                   icon="settings"
@@ -41,7 +30,7 @@
                 </q-btn>
 
                 <q-btn
-                  v-if="props.row.status === 'Activo'"
+                  v-if="props.row.status === 'Activo' && userStores.hasEditInstitution"
                   flat
                   round
                   icon="edit"
@@ -52,10 +41,7 @@
                 </q-btn>
 
                 <q-btn
-                  v-if="
-                    props.row.status === 'Activo' ||
-                    props.row.status === 'Suspenso'
-                  "
+                   v-if="authStore.user.userType === 'Super'"
                   flat
                   round
                   icon="delete"
@@ -66,7 +52,7 @@
                 </q-btn>
 
                 <q-btn
-                  v-if="!props.row.parentId && props.row.status === 'Activo'"
+                  v-if="!props.row.parentId && authStore.user.userType === 'Super'"
                   flat
                   round
                   icon="escalator_warning"
@@ -77,6 +63,7 @@
                 </q-btn>
 
                 <q-btn
+                v-if="userStores.hasSettingsSiteInstitution"
                   flat
                   round
                   icon="language"
@@ -86,6 +73,7 @@
                   <q-tooltip> Configurar o site </q-tooltip>
                 </q-btn>
                 <q-btn
+                 v-if="userStores.hasCreateEmployees"
                   flat
                   round
                   icon="person"
@@ -107,6 +95,8 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useInstitutionStores } from "../store";
+import { useAuthStore } from "src/pages/auth/store";
+import { useUserStores } from "src/pages/user/store";
 import useNotify from "src/composables/UseNotify";
 import Tables from "src/components/Tables.vue";
 import columns from "../components/InstitutionColumns";
@@ -117,10 +107,13 @@ const router = useRouter();
 
 /* setup store */
 const institutuinStores = useInstitutionStores();
+const authStore = useAuthStore();
 const employeeStores = useEmployeeStores();
+const userStores = useUserStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* setup data */
+const { institutionId} = authStore.user
 const institutions = ref([]);
 
 /* methods */
@@ -155,7 +148,7 @@ const deleteInstitution = async (institution) => {
 
 const createEmployee = async (institution) => {
   try {
-    await employeeStores.create({institutionId: institution.id});
+    await employeeStores.create({institutionId: institution.id, teacher: 'Sim'});
     router.push({
       name: "create-employee",
       params: { id: employeeStores.employee.id, created: "create" },
@@ -182,9 +175,15 @@ const handleSettingsSite = (row) => {
 /* fetch data */
 const fetchInstitutions = async () => {
   try {
+    if (authStore.user.userDetails?.userType.name === "Super") {
     await institutuinStores.list();
     institutions.value = institutuinStores.institutions;
+    }else {
+      await institutuinStores.list({institutionId:institutionId});
+      institutions.value = institutuinStores.institutions;
+    }
   } catch (error) {
+    console.log(error);
     notifyError("Erro ao carregar Instituições");
   }
 };

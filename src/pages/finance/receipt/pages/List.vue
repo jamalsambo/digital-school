@@ -36,19 +36,25 @@
                 </q-item>
               </template>
             </q-select>
-
             <q-select
               class="col-md-4 col-sm-12 col-xs-12"
               v-model="classe"
               :options="stages"
-              label="Estagios"
-              option-label="name"
-              option-value="id"
+              label="Estágios"
+              option-label="classe.name"
+              option-value="classe.id"
               dense
               outlined
               map-options
-              @update:model-value="updateClasseSelect"
             >
+              <template v-slot:selected>
+                <span v-if="classe"
+                  >{{ classe.classe.name }} -
+                  {{ classe.classe.course.name }}</span
+                >
+                <span v-else>Selecione um estágio</span>
+              </template>
+
               <template v-slot:option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section>
@@ -60,6 +66,7 @@
                 </q-item>
               </template>
             </q-select>
+
             <q-select
               class="col-md-4 col-sm-12 col-xs-12"
               label="Tipo de Pagamento"
@@ -70,7 +77,8 @@
               map-options
               outlined
               dense
-              clearable=""
+              clearable
+              @update:model-value="updatePaymentTypeSelect"
             />
             <div class="row q-mt-md justify-end">
               <q-btn
@@ -98,7 +106,6 @@
             flat
             bordered
             :pagination="{ rowsPerPage: 10 }"
-            @row-click="handleRowClick"
           >
             <!-- Configuração da expansão -->
             <template v-slot:body="props">
@@ -135,6 +142,27 @@
               <q-tr v-show="props.expand" :props="props">
                 <q-td colspan="100%">
                   <div class="q-pa-md bg-grey-2">
+                    <div class="q-pa-md bg-grey-2" v-if="props.row.items">
+                      <div class="text-h6 q-mb-md">Items da factura</div>
+
+                      <q-list bordered v-if="props.row.items">
+                        <q-item
+                          v-for="(iten, index) in props.row.items"
+                          :key="index"
+                        >
+                          <q-item-section>
+                            <q-item-label>{{ iten.amount }}</q-item-label>
+                            <q-item-label caption>{{
+                              iten.description
+                            }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+
+                      <div v-else class="text-caption text-grey">
+                        Nenhuma multa aplicada
+                      </div>
+                    </div>
                     <div class="text-h6 q-mb-md">Multas Aplicadas</div>
 
                     <q-list bordered v-if="props.row.penalts">
@@ -182,14 +210,14 @@
                 </div>
                 <div>
                   Total de multas:
-                  <strong>{{ formatToMZN(totalPenalty) }}</strong>
+                  <strong>{{ totalPenalty }}</strong>
                 </div>
                 <div>
                   Total de mensalidades:
-                  <strong>{{ formatToMZN(totalMonthFees) }}</strong>
+                  <strong>{{ totalMonthFees }}</strong>
                 </div>
                 <div>
-                  Total Geral: <strong>{{ formatToMZN(totalPayments) }}</strong>
+                  Total Geral: <strong>{{ totalPayments }}</strong>
                 </div>
               </div>
             </template>
@@ -255,7 +283,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { cloneVNode, computed, onMounted, ref } from "vue";
 import { useStudentStores } from "src/pages/student/store";
 import { usePaymentStores } from "../../payments/stores";
 import { useInvoiceStores } from "../../invoice/stores";
@@ -274,7 +302,7 @@ const paymentStores = usePaymentStores();
 const invoiceStores = useInvoiceStores();
 const receiptStores = useReceiptStores();
 const { notifyError, notifySuccess } = useNotify();
-const { formatToMZN, formatDate } = scripts();
+const { formatDate, formatToMZN } = scripts();
 
 /* setup data */
 const students = ref([]);
@@ -289,6 +317,7 @@ const paymentTypeSelected = ref(null);
 const code = ref(null);
 const method = ref(null);
 const receiptId = ref();
+const paymentTypeFind = ref();
 
 /* setup methods */
 const fetchInvoices = async () => {
@@ -300,7 +329,7 @@ const fetchInvoices = async () => {
     });
 
     invoices.value = invoiceStores.invoices.filter((value) =>
-      ["Pendente", "Parcial", "Pago"].includes(value.status)
+      ["Pendente", "Parcial"].includes(value.status)
     );
   } catch (error) {
     notifyError("Erro ao buscar facturas");
@@ -312,17 +341,29 @@ const handlePaid = async () => {
     const payloadReceipt = {
       transactionCode: code.value || "",
       paymentMethod: method.value,
-      note: "dfdfdfd",
+      studentId: student.value.id,
+      note: "",
     };
+    const monthFristPay = new Date(
+      classe.value.classe?.startDate
+    ).toLocaleString("pt-BR", { month: "long" });
 
-    await receiptStores.create(payloadReceipt);
-    receiptId.value = receiptStores.receipt.id;
-
+    if ((method.value = "Mpesa")) {
+      const responseMpesa = await paymentStores.payMpsa({
+        amount: parseInt(classe.value.classe.monthlyFee),
+        msisdn: 258845751142,
+        transactionRef: "T12344C",
+        thirdPartyRef: `ref4`,
+      });
+      if (responseMpesa.output_ResponseCode === "INS-0") {
+        await receiptStores.create(payloadReceipt);
+        receiptId.value = receiptStores.receipt.id;
+      }
+    }
     if (receiptId.value) {
       const requests = invoices.value.map(async (invoice) => {
         const totalPenalty =
-          invoice.penalts?.reduce((sum, p) => sum + parseFloat(p.amount), 0) ||
-          0;
+          invoice.penalts?.reduce((sum, p) => sum + parseInt(p.amount), 0) || 0;
 
         if (invoice.status === "Parcial") {
           await paymentStores.create({
@@ -331,7 +372,7 @@ const handlePaid = async () => {
             amount: totalPenalty, // Mantém valores decimais
             paymentDate: new Date(),
           });
-          const paid = parseFloat(invoice.paidAmount) + totalPenalty;
+          const paid = parseInt(invoice.paidAmount) + totalPenalty;
 
           if (paymentStores.payment.id) {
             await invoiceStores.update(invoice.id, {
@@ -343,16 +384,16 @@ const handlePaid = async () => {
             });
           }
         } else {
-          const paid = parseFloat(invoice.amount) + totalPenalty;
+          const paid = parseInt(invoice.amount) + totalPenalty;
 
-          if (paid >= parseFloat(invoice.total)) invoice.status = "Pago";
+          if (paid >= parseInt(invoice.total)) invoice.status = "Pago";
           else if (paid > 0) invoice.status = "Parcial";
           else invoice.status = "Pendente";
 
           await paymentStores.create({
             invoiceId: invoice.id,
             receiptId: receiptId.value,
-            amount: parseFloat(paid), // Mantém valores decimais
+            amount: parseInt(paid), // Mantém valores decimais
             paymentDate: new Date(),
           });
 
@@ -366,6 +407,26 @@ const handlePaid = async () => {
                 await paymentStores.updateInvoicePenalts(invoice.id, {
                   status: true,
                 });
+              }
+              if (
+                classe.value.classe.monthlyFeeIncluse &&
+                paymentTypeSelected.value.name === "Matricula"
+              ) {
+                const payload = {
+                  paymentTypeId: paymentTypeFind.value.id,
+                  classId: classe.value.classe.id,
+                  studentId: student.value.id,
+                  issueDate: new Date(),
+                  dueDate: classe.value.classe.endDate,
+                  month: monthFristPay,
+                  amount: parseInt(classe.value.classe.monthlyFee),
+                  paidAmount: parseInt(classe.value.classe.monthlyFee),
+                  total: parseInt(classe.value.classe.monthlyFee),
+                  status: "Pago",
+                  year: new Date().getFullYear(),
+                  note: `Factura de Mensalidade referente o mes de ${monthFristPay}`,
+                };
+                await invoiceStores.create(payload);
               }
             }
           }
@@ -412,9 +473,10 @@ const deletePenalty = (invoiceId, penaltyId) => {
 const updateStudentSelect = (student) => {
   stages.value = student.enrollments;
 };
-
-const updateClasseSelect = (classe) => {
-  amount.value = classe.classe.monthlyFee;
+const updatePaymentTypeSelect = () => {
+  paymentTypeFind.value = paymentTypes.value.find(
+    (p) => p.name === "Matricula"
+  );
 };
 
 const fetchStudents = async () => {

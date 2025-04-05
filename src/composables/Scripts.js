@@ -106,9 +106,10 @@ export default function scripts() {
 
     return enrollments.find((enrollment) => {
       const { startDate, endDate } = enrollment.classe;
+
       const start = new Date(startDate);
       const end = new Date(endDate);
-
+      console.log(end)
       return today >= start && today <= end;
     })?.classe || null;
   };

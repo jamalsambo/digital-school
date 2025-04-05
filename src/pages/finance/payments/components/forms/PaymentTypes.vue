@@ -43,6 +43,7 @@
       />
 
       <q-select
+        outlined
         class="col-md-3 col grow col-sm-12 col-xs-12"
         v-model="form.hasPenalty"
         :options="[

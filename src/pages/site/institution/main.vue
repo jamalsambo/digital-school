@@ -39,7 +39,7 @@
           <q-btn-dropdown label="Ensinos" flat="">
             <q-list>
               <q-item clickable v-close-popup v-for="(item, index) in educationsLevels" :key="index">
-                <q-tab name="cursos" :label="item.name" />
+                <q-tab name="cursos" :label="item.education.name" no-caps />
               </q-item>
             </q-list>
           </q-btn-dropdown>
@@ -972,7 +972,7 @@ onMounted(async () => {
     mainCarroselImagens.value = siteStores.institution.mainCarroselImagens;
     aboutUsCarroselImagens.value =
       siteStores.institution.aboutUsCarroselImagens;
-      educationsLevels.value = siteStores.institution.educationsLevels
+      educationsLevels.value = siteStores.institution.institutionLevels
   } catch (error) {
     console.error("Erro ao carregar dados:", error);
   }

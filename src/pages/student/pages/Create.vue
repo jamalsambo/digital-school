@@ -9,7 +9,7 @@
         <div class="row items-center justify-between">
           <div class="text-h6 text-primary">Matriculas</div>
           <q-btn
-           v-if="!actualEnrollment"
+           v-if="!actualEnrollment && hasCreateEnrrolment"
             color="primary"
             icon="edit"
             label="Nova Matricula"
@@ -305,6 +305,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useStudentStores } from "../store";
 import { usePaymentStores } from "src/pages/finance/payments/stores";
 import { useBasicStores } from "src/components/register/personal_information/store";
+import { useUserStores } from "src/pages/user/store";
 import useNotify from "src/composables/UseNotify";
 import PersonalInformationComponent from "src/components/register/personal_information/view.vue";
 import PaternityComponent from "src/components/register/personal_information/paternity.vue";
@@ -322,9 +323,12 @@ const router = useRouter();
 const studentStores = useStudentStores();
 const paymentStores = usePaymentStores();
 const basicStores = useBasicStores();
+const userStores = useUserStores();
 const { notifySuccess, notifyError } = useNotify();
 const { getActiveClass } = scripts();
 
+/* setup computed */
+const hasCreateEnrrolment = computed(() => userStores.hasCreateEnrrolment)
 // data
 const isLoading = ref(true);
 const tab = ref("student");
