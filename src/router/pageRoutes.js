@@ -14,3 +14,4 @@ export { default as invoiceRoutes } from "../pages/finance/invoice/router";
 export { default as receiptsRoutes } from "../pages/finance/receipt/router";
 export { default as planRoutes} from "../pages/plan/router";
 export { default as studentRoutes } from "../pages/student/router";
+export { default as stockRoutes} from "../pages/inventory/router"

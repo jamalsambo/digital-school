@@ -39,7 +39,7 @@ watch(selectedYear, () => {
 
 const renderChart = () => {
   chartInstance.value = new Chart(chartCanvas.value, {
-    type: "line",
+    type: "bar",
     data: {
       labels: props.labels,
       datasets: [props.dataset1, props.dataset2],
@@ -54,6 +54,21 @@ const renderChart = () => {
         },
       },
     },
+    scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "Valor (R$)",
+          },
+        },
+        x: {
+          title: {
+            display: true,
+            text: "Tipo de Pagamento",
+          },
+        },
+      },
   });
 };
 </script>

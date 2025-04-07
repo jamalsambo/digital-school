@@ -15,7 +15,8 @@ import {
   invoiceRoutes,
   receiptsRoutes,
   planRoutes,
-  studentRoutes
+  studentRoutes,
+  stockRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -200,7 +201,8 @@ const routes = [
       ...invoiceRoutes,
       ...receiptsRoutes,
       ...planRoutes,
-      ...studentRoutes
+      ...studentRoutes,
+      ...stockRoutes
     ],
   },
 

@@ -16,36 +16,40 @@
     <div v-if="user?.userType === 'Funcionario'">
       <div class="quick-links-container q-mt-md">
         <q-card flat class="quick-links">
-      <q-card-section class="text-center">
-        <div class="text-h6 text-weight-bold">Atalhos Rápidos</div>
-      </q-card-section>
-      <q-separator />
-      <q-card-section class="row justify-around">
-        <q-btn unelevated class="quick-link" @click="goTo('cadastrar-aluno')">
-          <q-icon name="group_add" size="md" />
-          <span>Cadastrar Novo Aluno</span>
-        </q-btn>
-        <q-btn unelevated class="quick-link" @click="goTo('student-reports')">
-          <q-icon name="assignment" size="md" />
-          <span>Relatório de Alunos</span>
-        </q-btn>
-        <q-btn unelevated class="quick-link" @click="goTo('gerar-fatura')">
-          <q-icon name="receipt_long" size="md" />
-          <span>Gerar Fatura</span>
-        </q-btn>
-        <q-btn unelevated class="quick-link" @click="goTo('emitir-recibo')">
-          <q-icon name="receipt" size="md" />
-          <span>Emitir Recibo</span>
-        </q-btn>
-      </q-card-section>
-    </q-card>
-  </div>
+          <q-card-section class="text-center">
+            <div class="text-h6 text-weight-bold">Atalhos Rápidos</div>
+          </q-card-section>
+          <q-separator />
+          <q-card-section class="row justify-around">
+            <q-btn unelevated class="quick-link" @click="goTo('students')">
+              <q-icon name="group_add" size="md" />
+              <span>Cadastrar Novo Aluno</span>
+            </q-btn>
+            <q-btn
+              unelevated
+              class="quick-link"
+              @click="goTo('student-reports')"
+            >
+              <q-icon name="assignment" size="md" />
+              <span>Relatório de Alunos</span>
+            </q-btn>
+            <q-btn unelevated class="quick-link" @click="goTo('invoices')">
+              <q-icon name="receipt_long" size="md" />
+              <span>Gerar Fatura</span>
+            </q-btn>
+            <q-btn unelevated class="quick-link" @click="goTo('receipts')">
+              <q-icon name="receipt" size="md" />
+              <span>Emitir Recibo</span>
+            </q-btn>
+          </q-card-section>
+        </q-card>
+      </div>
       <div class="row q-col-gutter-x-md q-mt-lg">
         <div class="col-md-4 col-sm-12 col-xs-12">
           <Teachers
             :item="{
               title: 'Professores',
-              value: 50,
+              value: employees?.length,
               color1: '#17a2b8',
               color2: '#17a2c1',
               img: teacherImg,
@@ -56,7 +60,7 @@
           <Teachers
             :item="{
               title: 'Estudantes',
-              value: 50,
+              value: students?.length,
               color1: '#17a2b8',
               color2: '#17a2c1',
               img: studentImg,
@@ -67,7 +71,7 @@
           <Teachers
             :item="{
               title: 'Estudantes activos',
-              value: 50,
+              value: students?.length,
               color1: '#17a2b8',
               color2: '#17a2c1',
               img: studentImg,
@@ -176,20 +180,19 @@
       <!-- Graficos de barras anuais e diarios -->
       <div class="row q-col-gutter-x-md q-mt-lg">
         <div class="col-md-6 col-sm-12 col-xs-12">
-          <LineChart
-            title="Anual"
-            :labels="monthlyLabels"
-            :dataset1="annualDataset1"
-            :dataset2="annualDataset2"
-          />
+          <!-- Grafico de comparacao de ano actual e anterior -->
+          <q-card>
+            <q-card-section>
+              <canvas ref="chartReportTwoYear"></canvas>
+            </q-card-section>
+          </q-card>
         </div>
         <div class="col-md-6 col-sm-12 col-xs-12">
-          <LineChart
-            title="Diário"
-            :labels="dailyLabels"
-            :dataset1="dailyDataset"
-            :dataset2="{}"
-          />
+          <q-card>
+            <q-card-section>
+              <canvas ref="chartReportDaily"></canvas>
+            </q-card-section>
+          </q-card>
         </div>
       </div>
 
@@ -277,44 +280,51 @@ import { computed, onMounted, ref } from "vue";
 import { useInvoiceStores } from "./finance/invoice/stores";
 import { useUserStores } from "./user/store";
 import { useExpenseStores } from "./finance/expense/store";
+import { useInstitutionStores } from "./institution/store";
 import Card from "src/components/dashboard/Card.vue";
 import SubCard from "src/components/dashboard/Sub-Card.vue";
 import InOutCard from "src/components/dashboard/InOut-Card.vue";
 import Teachers from "src/components/dashboard/Teachers.vue";
 import scripts from "src/composables/Scripts";
 import useNotify from "src/composables/UseNotify";
-// import Graphic from "src/components/dashboard/Graphic.vue";
 import { useAuthStore } from "src/pages/auth/store";
 import TeachearDash from "./TeachearDash.vue";
 import StudantDash from "./StudentDash.vue";
 import GuardianDash from "./GuardianDash.vue";
 import teacherImg from "src/assets/teacher.png";
 import studentImg from "src/assets/student.png";
-
 import Chart from "chart.js/auto";
-import LineChart from "src/components/dashboard/LineChart.vue";
-const chartCanvas = ref(null);
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 
 const router = useRouter();
-
-
 
 /* use store */
 const authStore = useAuthStore();
 const invoiceStores = useInvoiceStores();
 const expensesStores = useExpenseStores();
 const userStores = useUserStores();
+const institutionStores = useInstitutionStores();
 const { formatToMZN } = scripts();
 const { notifyError } = useNotify();
 
 /* use data */
+const chartCanvas = ref(null);
+const chartReportTwoYear = ref(null);
+const chartReportDaily = ref(null);
 const user = computed(() => authStore.user);
 const invoices = ref([]);
 const expenses = ref([]);
 const users = ref();
+const employees = computed(() => institutionStores.institution.employees);
+const students = computed(() => institutionStores.institution.students);
 const currentDate = new Date();
 const month = currentDate.toLocaleString("pt-BR", { month: "long" });
+const valuesPerMonthCurrentYear = ref(new Array(12).fill(0)); // [0, 0, ..., 0]
+const valuesPerMonthLastYear = ref(new Array(12).fill(0)); // [0, 0, ..., 0]
+// const dailyLabels = Array.from({ length: 31 }, (_, i) => i + 1);
+const currentYear = currentDate.getFullYear();
+const lastYear = currentYear - 1;
+const valuesPerDayCurrentYear = ref({});
 
 const events = ref([
   "Elimination Game",
@@ -360,34 +370,7 @@ const monthlyLabels = [
   "Nov",
   "Dez",
 ];
-const annualDataset1 = {
-  label: "Curva Azul",
-  data: [50000, 275000, 20000, 5000, 1000, 800, 600, 500, 400, 300, 200, 100],
-  borderColor: "blue",
-  fill: true,
-  backgroundColor: "rgba(0, 0, 255, 0.2)",
-};
-const annualDataset2 = {
-  label: "Curva Vermelha",
-  data: [
-    200000, 250000, 225000, 210000, 200000, 205000, 215000, 220000, 225000,
-    230000, 235000, 240000,
-  ],
-  borderColor: "red",
-  fill: false,
-};
 
-const dailyLabels = Array.from({ length: 31 }, (_, i) => i + 1);
-const dailyDataset = {
-  label: "Diário",
-  data: [
-    5000, 10000, 2000, 5000, 12000, 8000, 25000, 5000, 10000, 2000, 35000, 5000,
-    10000, 32000, 15000, 5000, 8000, 6000, 10000, 5000, 12000, 10000, 7000,
-    9000, 1000, 2000, 5000, 25000, 5000, 2000, 1000,
-  ],
-  borderColor: "red",
-  fill: false,
-};
 /* computed */
 const totalPayments = computed(() =>
   formatToMZN(
@@ -529,17 +512,54 @@ const totalExpensesMonthLate = computed(() =>
   )
 );
 
-const goTo = (route) => {
-  router.push({ name: route });
-};
+const distributedStudents = computed(() => {
 
+  const distributedStudents = {};
+  const totalStudents = students.value?.length;
+
+  students.value?.forEach((student) => {
+    student.enrollments.forEach((enrollment) => {
+      const studentClass = enrollment.classe;
+    distributedStudents[studentClass.course.name] = (distributedStudents[studentClass] || 0) + 1;
+    })
+  });
+
+  return { ...distributedStudents };
+})
+const goTo = (route) => {
+  router.push({
+    name: route,
+    params: { institutionId: user.value.institutionId },
+  });
+};
 /* fetch data */
 const fetchInvoices = async () => {
   try {
     await invoiceStores.find();
     invoices.value = invoiceStores.invoices;
+
+    invoices.value.forEach((invoice) => {
+      const data = new Date(invoice.issueDate); // ou fatura.dueDate
+      const mesIndex = data.getMonth(); // 0 = Janeiro, 1 = Fevereiro, ...
+      const invoiceYear = data.getFullYear();
+      const invoiceDay = data.toISOString().split("T")[0];
+      const paidAmount = parseInt(invoice.paidAmount || 0);
+
+      if (invoiceYear === currentYear) {
+        valuesPerMonthCurrentYear.value[mesIndex] += parseInt(
+          invoice.paidAmount || 0
+        );
+        if (!valuesPerDayCurrentYear.value[invoiceDay]) {
+          valuesPerDayCurrentYear.value[invoiceDay] = 0;
+        }
+        valuesPerDayCurrentYear.value[invoiceDay] += paidAmount;
+      } else if (invoiceYear === lastYear) {
+        valuesPerMonthLastYear.value[mesIndex] += parseInt(
+          invoice.paidAmount || 0
+        );
+      }
+    });
   } catch (error) {
-    console.log(error);
     notifyError("Erro ao buscar pagamentos");
   }
 };
@@ -566,14 +586,15 @@ onMounted(async () => {
   await fetchInvoices();
   fetchUsers();
   fetchExpenses();
+
   new Chart(chartCanvas.value, {
     type: "bar",
     data: {
-      labels: ["INFO", "ELET", "MECA", "SEGU", "MEAM", "SEIN"],
+      // labels: ["INFO", "ELET", "MECA", "SEGU", "MEAM", "SEIN"],
       datasets: [
         {
           label: "Total de alunos",
-          data: [10, 2, 3, 1, 2, 2],
+          data: distributedStudents.value,
           backgroundColor: "#2E3192", // Azul escuro
         },
       ],
@@ -585,6 +606,69 @@ onMounted(async () => {
         legend: {
           display: true,
           position: "top",
+        },
+      },
+    },
+  });
+
+  const comparativeChart = chartReportTwoYear.value.getContext("2d");
+  new Chart(comparativeChart, {
+    type: "line", // Tipo de gráfico
+    data: {
+      labels: monthlyLabels, // Meses
+      datasets: [
+        {
+          label: new Date().getFullYear() - 1, // Ano anterior
+          data: valuesPerMonthLastYear.value, // Exemplos de valores de pagamento para o ano de 2024
+          borderColor: "rgba(75, 192, 192, 1)",
+          fill: false,
+        },
+        {
+          label: new Date().getFullYear(), // Ano atual
+          data: valuesPerMonthCurrentYear.value, // Exemplos de valores de pagamento para o ano de 2025
+          borderColor: "rgba(153, 102, 255, 1)",
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: `Comparação de Pagamentos: ${
+            new Date().getFullYear() - 1
+          } vs  ${new Date().getFullYear()} `,
+        },
+      },
+    },
+  });
+
+  const dailyChart = chartReportDaily.value.getContext("2d");
+  new Chart(dailyChart, {
+    type: "line", // Tipo de gráfico
+    data: {
+      datasets: [
+        {
+          label: new Date().getFullYear(), // Ano anterior
+          data: valuesPerDayCurrentYear.value, // Exemplos de valores de pagamento para o ano de 2024
+          borderColor: "rgba(75, 192, 192, 1)",
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: `Pagamentos diarios`,
         },
       },
     },
