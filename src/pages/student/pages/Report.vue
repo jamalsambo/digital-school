@@ -4,9 +4,11 @@
       <q-card>
         <q-card-section>
           <q-select
-                v-model="selectedMonth"
-                :options="months"
+                v-model="student"
+                :options="students"
                 label="Selecione o estudante"
+                option-label="name"
+                option-value="id"
                 outlined
                 dense
                 class="q-mb-sm"
@@ -70,7 +72,6 @@
         <q-card>
           <q-card-section>
             <h6>Relatório de Presenças por Dia</h6>
-
             <div class="q-mb-md">
               <q-select
                 v-model="selectedMonth"
@@ -108,10 +109,18 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { Chart, registerables } from "chart.js";
+import { useStudentStores } from "../store";
 
 Chart.register(...registerables);
 
-// Filtros
+/* setup stores */
+const studentsStores = useStudentStores()
+
+/* setup data */
+const students = ref([])
+const student = ref(null);
+
+/* Setup Filtros */
 const selectedMonth = ref(null);
 const showPresent = ref(true);
 const showAbsent = ref(true);
@@ -277,6 +286,21 @@ const months = [
   { label: 'Fevereiro 2023', value: '02/2023' },
 ];
 
+/* Fetch data */
+const fetchStudents = async () => {
+  try {
+    await studentsStores.list()
+    students.value = studentsStores.students.map((student) =>{
+      return {
+        name: student.basicInformation.fullName,
+        id: student.id
+      }
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 // Filtrar os dados
 const filteredRows = computed(() => {
   return rows2.filter(row => {
@@ -289,7 +313,8 @@ const filteredRows = computed(() => {
   });
 });
 
-onMounted(() => {
+onMounted(async() => {
+  await fetchStudents()
   const globalCtx = chartCanvas.value.getContext("2d");
   new Chart(globalCtx, {
     type: "line",
