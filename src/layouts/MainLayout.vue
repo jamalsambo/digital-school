@@ -377,7 +377,7 @@
               </q-item-section>
             </q-item>
             <q-item
-              :to="`/education/${educationLevel?.id}/bulletins`"
+              to="/bulletins"
               style="margin-left: 55px !important"
               active-class="q-item-no-link-highlighting"
               v-if="userStores?.hasViewBulletins"

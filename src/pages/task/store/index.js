@@ -3,7 +3,7 @@ import { api } from "src/boot/axios";
 import { useAuthStore } from "src/pages/auth/store";
 
 const authStore = useAuthStore();
-const { institutionId } = authStore.user.userDetails;
+
 
 export const useTaskStores = defineStore("task", {
   state: () => ({
@@ -15,6 +15,7 @@ export const useTaskStores = defineStore("task", {
   },
   actions: {
     async list(params) {
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get("/task", {
         params: params,
         institutionId: institutionId,

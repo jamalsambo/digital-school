@@ -24,9 +24,10 @@
   </q-page>
 </template>
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAttendanceStores } from "../store";
+import { useUserStores } from "src/pages/user/store";
 import Tables from "src/components/Tables.vue";
 import columns from "../components/columns/ClassAttendanceColumns";
 
@@ -34,6 +35,8 @@ import columns from "../components/columns/ClassAttendanceColumns";
 const route = useRoute();
 const router = useRouter();
 const attendanceStores = useAttendanceStores();
+const userStores = useUserStores()
+const user = computed(() => userStores.user)
 
 /* data */
 const { classe, discipline } = route.params;
@@ -46,6 +49,7 @@ const newAttendance = async () => {
     await attendanceStores.createClassAttendance({
       classId: classe,
       disciplineId: discipline,
+      teacherId: user?.value.employee?.id,
       classDate: new Date()
     });
     classAttendance.value = attendanceStores.classAttendance;
@@ -56,7 +60,7 @@ const newAttendance = async () => {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
 };
 

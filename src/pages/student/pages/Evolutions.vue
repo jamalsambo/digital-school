@@ -39,7 +39,7 @@
               dense
               expand-separator
               icon="note"
-              :label="index + 1 + ' Trimestre'"
+              :label="index + 1 + `${getRegimeName(institution?.regime)}`"
             >
               <!-- Conteúdo da disciplina -->
               <q-list bordered class="rounded-borders q-pa-md">
@@ -63,7 +63,9 @@
                           v-for="(e, index) in getNotasPorRegime(
                             evolutions.value ?? [],
                             regi,
-                            discipline.id
+                            discipline.id,
+                            discipline.cicle,
+                            discipline.year
                           )"
                           :key="index"
                         >
@@ -98,13 +100,15 @@
 import { computed, onMounted, ref } from "vue";
 import { onBeforeRouteUpdate, useRoute } from "vue-router";
 import { useStudentStores } from "../store";
+import { useInstitutionStores } from "src/pages/institution/store";
 import scripts from "src/composables/Scripts";
 import useNotify from "src/composables/UseNotify";
 
 /* use store */
 const route = useRoute();
 const studentStores = useStudentStores();
-const { filterEnrollmentsByYear, getNotasPorRegime } = scripts();
+const institutionStores = useInstitutionStores()
+const { filterEnrollmentsByYear, getNotasPorRegime, getRegimeName } = scripts();
 const { notifyError } = useNotify();
 
 /* data */
@@ -114,6 +118,7 @@ const evolutionType = ref();
 const student = ref({});
 const enrollments = ref([]);
 const evolutions = ref([]);
+const institution = computed(() => institutionStores.institution)
 
 /* computed */
 /* Funcao que busca a matricala actual do estudante */
@@ -129,10 +134,13 @@ const disciplines = computed(
   () => actualEnrollment.value?.classe?.course.curriculum.developmentAreas.flatMap(
           (area) => {
             return area.developmentAreaActivities.map((dev) => {
-
+              console.log(dev)
               return {
                 id: dev.activity.id,
-                name: dev.activity.name, // ou qualquer outro dado relevante
+                name: dev.activity.name,
+                cicle: dev.activity.cicle,
+                year: dev.activity.year
+                // ou qualquer outro dado relevante
               }; // ou qualquer outro dado relevante
             });
           })

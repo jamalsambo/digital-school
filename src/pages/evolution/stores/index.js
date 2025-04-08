@@ -14,7 +14,7 @@ export const useEvolutionStores = defineStore("evolution", {
   actions: {
     async list() {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.get("test-type", {
         params: { institutionId: institutionId },
       });
@@ -28,7 +28,7 @@ export const useEvolutionStores = defineStore("evolution", {
     },
     async createType(params) {
       const authStore = useAuthStore();
-      const { institutionId } = authStore.user.userDetails;
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("test-type", {
         ...params,
         institutionId: institutionId,

@@ -28,6 +28,30 @@ export default function scripts() {
     }
   };
 
+  const getRegimeName = (regime) => {
+    switch (regime) {
+      case 3:
+        return "Trimestre";
+      case 6:
+        return "Semestre";
+      case 12:
+        return "Anual";
+      default:
+        return "Unico";
+    }
+  };
+
+  const getActualRegime = (regime) => {
+    const month = new Date().getMonth() + 1;
+    if ((regime === 3)) {
+      if (month <= 5) return 1;
+      if (month <= 8) return 2;
+      if (month <= 9) return 3;
+    } else {
+      return month <= 6 ? 1 : 2;
+    }
+  };
+
   const addMinutes = (timeString, duration) => {
     // Converter o tempo para um objeto Date
     const [hours, minutes, seconds] = timeString.split(":").map(Number);
@@ -104,14 +128,16 @@ export default function scripts() {
   const getActiveClass = (enrollments) => {
     const today = new Date();
 
-    return enrollments.find((enrollment) => {
-      const { startDate, endDate } = enrollment.classe;
+    return (
+      enrollments.find((enrollment) => {
+        const { startDate, endDate } = enrollment.classe;
 
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      console.log(end)
-      return today >= start && today <= end;
-    })?.classe || null;
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        console.log(end);
+        return today >= start && today <= end;
+      })?.classe || null
+    );
   };
 
   /* Funcao para formatar data */
@@ -246,7 +272,7 @@ export default function scripts() {
     return { firstName, lastName };
   };
 
-  const getNotasPorRegime = (evolution, regime, discipline) => {
+  const getNotasPorRegime = (evolution, regime, discipline, cicle = null, year = null) => {
     const regimes = {
       1: { start: "01-01", end: "04-30" }, // Janeiro - Abril
       2: { start: "05-01", end: "08-31" }, // Maio - Agosto
@@ -258,20 +284,30 @@ export default function scripts() {
     }
 
     return evolution
-      .filter(({ dateCompletion, disciplineId}) => {
-        const monthDay = dateCompletion?.slice(5); // Pega apenas MM-DD
+    .filter(({ dateCompletion, disciplineId, year: y, cicle: c }) => {
+      if (cicle && year) {
+        // Se cicle e year foram passados, ignora monthDay e filtra com eles
+        return c === regime && y === year && disciplineId === discipline;
+      } else {
+        // Caso contrário, usa o filtro por regime
+        const monthDay = dateCompletion?.slice(5); // Pega MM-DD
         return (
           monthDay >= regimes[regime].start &&
           monthDay <= regimes[regime].end &&
           disciplineId === discipline
         );
-      })
-      .map((note) => note);
+      }
+    })
+    .map((note) => note);
+
   };
 
-  const formatToMZN = (value)  => {
-    return value.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' });
-  }
+  const formatToMZN = (value) => {
+    return value.toLocaleString("pt-MZ", {
+      style: "currency",
+      currency: "MZN",
+    });
+  };
 
   const getProgramName = (name) => {
     switch (name) {
@@ -307,9 +343,34 @@ export default function scripts() {
         return "Disciplina";
       default:
         return "Disciplines";
-
     }
+  };
+
+  const  getCurrentYearOfProgram =(startDate, endDate, currentDate = new Date()) =>{
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const current = new Date(currentDate);
+    console.log(start)
+
+    if (current < start) return 0; // Ainda não começou
+    if (current > end) return -1; // Já terminou
+
+    const diffYears = (current - start) / (1000 * 60 * 60 * 24 * 365.25); // anos com fração
+
+    return Math.floor(diffYears) + 1;
   }
+
+  const enumerateProgramYears = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const diffYears = Math.floor((end - start) / (1000 * 60 * 60 * 24 * 365.25)); // calcula anos inteiros
+    const totalYears = diffYears + 1; // +1 para incluir o ano de início
+
+    return Array.from({ length: totalYears }, (_, i) => i + 1);
+  }
+
+
 
   return {
     determineRegime,
@@ -325,6 +386,10 @@ export default function scripts() {
     getProgramName,
     getNameForDiscipline,
     getNameForDisciplineEducation,
-    getActiveClass
+    getActiveClass,
+    getRegimeName,
+    getActualRegime,
+    getCurrentYearOfProgram,
+    enumerateProgramYears
   };
 }

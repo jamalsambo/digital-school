@@ -1,9 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
-import { useAuthStore } from "src/pages/auth/store";
 
-const authStore = useAuthStore();
-const { institutionId, id } = authStore.user.userDetails;
 
 export const useAttendanceStores = defineStore("attendance", {
   state: () => ({
@@ -47,8 +44,7 @@ export const useAttendanceStores = defineStore("attendance", {
     /* routa de classe attendance */
     async createClassAttendance(params) {
       const { data, error } = await api.post(`/attendance/class`, {
-        ...params,
-        teacherId: id,
+        ...params
       });
       if (error) throw error;
       this.classAttendance = data;

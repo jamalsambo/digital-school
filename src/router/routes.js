@@ -16,7 +16,9 @@ import {
   receiptsRoutes,
   planRoutes,
   studentRoutes,
-  stockRoutes
+  stockRoutes,
+  bulletinRoutes,
+  evolutionsRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -67,17 +69,7 @@ const routes = [
         component: () => import("pages/schedule/pages/Create.vue"),
       },
 
-      /* Rotas de Evolução */
-      {
-        path: "/evolution/class/:classe/discipline/:discipline",
-        name: "evolution-create",
-        component: () => import("pages/evolution/pages/Create.vue"),
-      },
-      {
-        path: "/evolution/types",
-        name: "evolution-types",
-        component: () => import("pages/evolution/pages/Types.vue"),
-      },
+
 
       /* Rotas de Pagamentos */
       {
@@ -202,7 +194,9 @@ const routes = [
       ...receiptsRoutes,
       ...planRoutes,
       ...studentRoutes,
-      ...stockRoutes
+      ...stockRoutes,
+      ...bulletinRoutes,
+      ...evolutionsRoutes
     ],
   },
 

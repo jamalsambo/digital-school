@@ -15,3 +15,5 @@ export { default as receiptsRoutes } from "../pages/finance/receipt/router";
 export { default as planRoutes} from "../pages/plan/router";
 export { default as studentRoutes } from "../pages/student/router";
 export { default as stockRoutes} from "../pages/inventory/router"
+export { default as bulletinRoutes} from "../pages/academic/bulletin/router"
+export { default as evolutionsRoutes } from "../pages/evolution/router"
