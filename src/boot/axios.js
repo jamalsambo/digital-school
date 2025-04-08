@@ -1,7 +1,7 @@
 import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 import { getLocalToken } from 'src/pages/auth/store/storage'
-const apiUrl = import.meta.env.VITE_API_URL_BACKEND;
+const apiUrl = import.meta.env.VITE_API_URL;
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
