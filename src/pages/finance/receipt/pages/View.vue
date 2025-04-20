@@ -204,7 +204,6 @@ import html2canvas from "html2canvas";
 import { useAuthStore } from "src/pages/auth/store";
 import { useReceiptStores } from "../stores";
 import { useInstitutionStores } from "src/pages/institution/store";
-import { useUserStores } from "src/pages/user/store";
 import scripts from "src/composables/Scripts";
 import { useRoute, useRouter } from "vue-router";
 

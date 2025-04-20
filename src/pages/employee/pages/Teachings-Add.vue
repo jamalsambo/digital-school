@@ -96,19 +96,20 @@ const visibleSemeters = ref(false);
 
 // methods
 const updateSelection = async (discipline) => {
-  const index = selectedDisciplines.value.findIndex(
-    (d) => d.id === discipline.id
-  );
+
 
   const payload = {
     employeeId: employee.value.id,
-    disciplineId: discipline.id,
+    developmentAreaActivityId: discipline.id,
     classId: id,
   };
 
   try {
-    if (index !== -1) {
+    if (!discipline.checked) {
       // Uncheck: Remove a disciplina selecionada
+      await employeeStores.removeTeachings(employee.value.id,discipline.id)
+      notifySuccess("Disciplina adicionada");
+
     } else {
       // check: Remove a disciplina selecionada
       await employeeStores.addTeachings(payload);
@@ -138,12 +139,13 @@ const fetchClass = async () => {
     if (classStores.classe.curriculumId) {
       console.log("tem curriculum");
     } else {
-      disciplines.value =
-        classStores.classe.course.curriculum.developmentAreas.flatMap(
+      const curriculum =  classStores.classe.course.curriculums.find((f) => f.status==='ACTIVO')
+      disciplines.value = curriculum.developmentAreas.flatMap(
           (area) => {
             return area.developmentAreaActivities.map((dev) => {
+              console.log(dev)
               return {
-                id: dev.activity.id,
+                id: dev.id,
                 name: dev.activity.name, // ou qualquer outro dado relevante
               }; // ou qualquer outro dado relevante
             });
@@ -151,7 +153,7 @@ const fetchClass = async () => {
         );
     }
   } catch (error) {
-    notifyError("Erro no carregamento");
+    notifyError("Erro no carregamentos");
   }
 };
 
@@ -167,7 +169,7 @@ const onchangeSelectedEmployee = async (val) => {
     const employeeDisciplines = employeeStores.teachings;
 
     const isAssociated = employeeDisciplines.some(
-      (emp) => emp.discipline.id === d.id && emp.classId === id
+      (emp) => emp.developmentAreaActivityId === d.id && emp.classId === id
     );
 
     return {

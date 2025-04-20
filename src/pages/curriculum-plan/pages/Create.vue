@@ -71,13 +71,14 @@ const curriculumPlanStore = useCurriculumPlanStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* setup data */
-const { educationId, curriculumId } = route.params;
+const { educationId, curriculumId, courseId } = route.params;
 const isLoading = ref(false);
 const isEditing = ref(false);
 const form = ref({
   educationId: educationId,
   name: "",
   status: "ACTIVO",
+  courseId: courseId
 });
 
 const statuses = [

@@ -52,5 +52,11 @@ export const useEmployeeStores = defineStore("employee", {
       if (error) throw error;
       this.teachings = data;
     },
+
+    async removeTeachings(employeeId, developmentAreaActivityId) {
+      const { data, error} = await api.delete(`/employee/${employeeId}/discipline/${developmentAreaActivityId}`)
+      if (error) throw error;
+      return data
+    }
   },
 });

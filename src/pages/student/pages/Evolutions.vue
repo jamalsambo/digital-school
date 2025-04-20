@@ -120,6 +120,7 @@ const enrollments = ref([]);
 const evolutions = ref([]);
 const institution = computed(() => institutionStores.institution)
 
+
 /* computed */
 /* Funcao que busca a matricala actual do estudante */
 const actualEnrollment = computed(() =>
@@ -129,14 +130,17 @@ const actualEnrollment = computed(() =>
 const regime = computed(
   () => actualEnrollment.value?.classe?.course.institution.regime
 );
+const curriculum = computed(() =>actualEnrollment.value?.classe?.course.curriculums.find((f) => f.status ==='ACTIVO') )
 /* Funcao que lista as disciplinas */
 const disciplines = computed(
-  () => actualEnrollment.value?.classe?.course.curriculum.developmentAreas.flatMap(
+  () =>
+
+  curriculum?.value?.developmentAreas.flatMap(
           (area) => {
             return area.developmentAreaActivities.map((dev) => {
               console.log(dev)
               return {
-                id: dev.activity.id,
+                id: dev.id,
                 name: dev.activity.name,
                 cicle: dev.activity.cicle,
                 year: dev.activity.year
@@ -145,6 +149,8 @@ const disciplines = computed(
             });
           })
 );
+
+console.log(disciplines.value)
 /* Funcao  que lista o total de anos tem a matricula */
 const yearsList = computed(() => {
   const startYear = new Date(

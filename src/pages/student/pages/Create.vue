@@ -255,7 +255,7 @@
                 ref="userChild"
                 :data="student"
                 :entity="entity"
-                :userTypeId="'ac1e5c66-3814-46cc-a6dd-e4f0978b5bf6'"
+                :userTypeId="'5adc9f0f-2175-4f29-8a77-43eb1c2d5fae'"
               >
                 <template #actions>
                   <div class="row justify-end q-gutter-sm">

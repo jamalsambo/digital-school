@@ -17,3 +17,4 @@ export { default as studentRoutes } from "../pages/student/router";
 export { default as stockRoutes} from "../pages/inventory/router"
 export { default as bulletinRoutes} from "../pages/academic/bulletin/router"
 export { default as evolutionsRoutes } from "../pages/evolution/router"
+export { default as assetsRoutes} from "../pages/asset/router"

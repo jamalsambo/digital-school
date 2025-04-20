@@ -27,7 +27,6 @@
                   :disable="!activity.hours"
                 />
                 <q-input
-
                   class="col-md-2 col-sm-12 col-xs-12"
                   v-model="activity.hours"
                   type="number"
@@ -60,22 +59,19 @@
                   map-options
                 />
                 <q-select
-                  v-if="!invalidViewsCicle.includes(education.name)"
                   class="col-md-2 col-sm-12 col-xs-12"
                   v-model="activity.cicle"
-
-                  :options="[
-                    { label: '1 Semestre', value: 1 },
-                    { label: '2 Semestre', value: 2 },
-                  ]"
-
-                  label="Cicle no ano"
+                  :options="cicles"
+                  label="Ciclo no ano"
                   outlined
                   dense
                   map-options
+                  multiple
+                  use-chips
                 />
+
                 <q-input
-                   v-if="!invalidViewsCicle.includes(education.name)"
+                  v-if="!invalidViewsCicle.includes(education.name)"
                   class="col-md-2 col-sm-12 col-xs-12"
                   v-model="activity.year"
                   type="number"
@@ -101,10 +97,11 @@
   </q-page>
 </template>
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDisciplineStores } from "src/pages/discipline/store";
 import { useDevelopmentAreaStores } from "../stores";
+import { useInstitutionStores } from "src/pages/institution/store";
 import useNotify from "src/composables/UseNotify";
 import scripts from "src/composables/Scripts";
 
@@ -115,6 +112,7 @@ const router = useRouter();
 /* setup activity stores */
 const disciplineStores = useDisciplineStores();
 const developmentAreaStore = useDevelopmentAreaStores();
+const institutionStores = useInstitutionStores();
 const { notifyError } = useNotify();
 const { getNameForDisciplineEducation } = scripts();
 
@@ -128,6 +126,23 @@ const invalidViewsCicle = ref([
   "Ensino Infantil",
   "Ensino Fundamental",
 ]);
+const institution = computed(() => institutionStores.institution);
+const regime = computed(() =>
+  Array.from({ length: institution.value.regime }, (_, i) => i + 1)
+);
+const cicles = computed(() => {
+  const tipo =
+    institution.value.regime === 1
+      ? "Ano"
+      : institution.value.regime === 2
+      ? "Semestre"
+      : "Trimestre";
+
+  return regime.value.map((r) => ({
+    label: `${r}º ${tipo}`,
+    value: r,
+  }));
+});
 
 /* methods */
 const updateSelection = async (activity, checked) => {
@@ -139,11 +154,15 @@ const updateSelection = async (activity, checked) => {
       hours: parseInt(activity.hours),
       credit: parseInt(activity.credit),
       exame: activity.exame?.value || false,
-      cicle: parseInt(activity.cicle?.value),
-      year: parseInt(activity.year),
+      year: parseInt(activity.year) || 1,
     };
     if (checked) {
-      await developmentAreaStore.addDevelopmentActivity(dAreaId, payload);
+      activity.cicle.forEach(async (cicle) => {
+        await developmentAreaStore.addDevelopmentActivity(dAreaId, {
+          ...payload,
+          cicle: cicle.value,
+        });
+      });
     } else {
       await developmentAreaStore.deleteDevelopmentActivity(
         dAreaId,
@@ -160,27 +179,45 @@ const updateSelection = async (activity, checked) => {
 const fetchActivities = async () => {
   try {
     await disciplineStores.list(educationId);
-    activities.value = disciplineStores.disciplines.map((activity) => {
-      const developmentActivity = developmentAreaActivities.value.find(
-        (developmentAreaActivity) =>
-          developmentAreaActivity.activityId === activity.id
-      );
 
-      return {
-        id: activity.id,
-        name: activity.name,
-        hours: developmentActivity?.hours,
-        credit: developmentActivity?.credit,
-        exame: developmentActivity?.exame,
-        cicle: developmentActivity?.cicle,
-        year: developmentActivity?.year,
-        checked: !!developmentActivity,
-      };
+    // Inicializa o mapa com todas as disciplinas
+    const grouped = new Map();
+    disciplineStores.disciplines.forEach((discipline) => {
+      grouped.set(discipline.id, {
+        id: discipline.id,
+        name: discipline.name,
+        hours: 0,
+        credit: 0,
+        exame: false,
+        year: null,
+        cicle: [],
+        checked: false,
+      });
     });
+
+    // Preenche com os dados vindos das alocações
+    developmentAreaActivities.value.forEach((dev) => {
+      const entry = grouped.get(dev.activityId);
+      if (entry) {
+        entry.hours = dev.hours;
+        entry.credit = dev.credit;
+        entry.exame = dev.exame;
+        entry.year = dev.year;
+        entry.checked = true;
+
+        if (!entry.cicle.includes(dev.cicle)) {
+          entry.cicle.push(dev.cicle);
+        }
+      }
+    });
+
+    // Converte para array reativo
+    activities.value = Array.from(grouped.values());
   } catch (error) {
     notifyError("Erro no carregamento...");
   }
 };
+
 
 const fetchDevelopmentArea = async () => {
   try {

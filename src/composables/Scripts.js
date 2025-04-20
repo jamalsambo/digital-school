@@ -272,31 +272,13 @@ export default function scripts() {
     return { firstName, lastName };
   };
 
-  const getNotasPorRegime = (evolution, regime, discipline, cicle = null, year = null) => {
-    const regimes = {
-      1: { start: "01-01", end: "04-30" }, // Janeiro - Abril
-      2: { start: "05-01", end: "08-31" }, // Maio - Agosto
-      3: { start: "09-01", end: "12-31" }, // Setembro - Dezembro
-    };
-
-    if (!regimes[regime]) {
-      throw new Error("Regime inválido! Use 1, 2 ou 3.");
-    }
-
+  const getNotasPorRegime = (evolution, regime, discipline, year = null) => {
+    console.log(discipline)
     return evolution
-    .filter(({ dateCompletion, disciplineId, year: y, cicle: c }) => {
-      if (cicle && year) {
+    .filter(({ developmentAreaActivityId, year: y, cicle: c }) => {
         // Se cicle e year foram passados, ignora monthDay e filtra com eles
-        return c === regime && y === year && disciplineId === discipline;
-      } else {
-        // Caso contrário, usa o filtro por regime
-        const monthDay = dateCompletion?.slice(5); // Pega MM-DD
-        return (
-          monthDay >= regimes[regime].start &&
-          monthDay <= regimes[regime].end &&
-          disciplineId === discipline
-        );
-      }
+        return c === regime && y === year && developmentAreaActivityId === discipline;
+
     })
     .map((note) => note);
 

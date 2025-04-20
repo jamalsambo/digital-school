@@ -123,6 +123,7 @@ const fetchEmployeeTeachings = async () => {
     await employeeStores.findTeachings(id);
     teachings.value = groupDataByClass(employeeStores.teachings);
   } catch (error) {
+    console.log(error)
     notifyError("Falha ao carregar os disciplinas.");
   }
 };
@@ -175,8 +176,8 @@ const groupDataByClass = (data) => {
       };
     }
     grouped[item.classEntity.name].disciplines.push({
-      name: item.discipline.name,
-      id: item.discipline.id,
+      name: item.developmentAreaActivy.activity.name,
+      id: item.developmentAreaActivy.id,
     });
   });
   return Object.values(grouped);

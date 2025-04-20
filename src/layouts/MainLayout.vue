@@ -555,6 +555,63 @@
             </q-list>
           </q-expansion-item>
 
+          <q-expansion-item icon="temple_hindu" label="Patrimonios">
+            <q-list class="q-pl-lg">
+              <q-item
+                :to="`/assets/move`"
+                active-class="q-item-no-link-highlighting"
+              >
+                <q-item-section avatar>
+                  <q-icon name="compare_arrows" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Movimentos</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item
+                :to="`/assets/`"
+                active-class="q-item-no-link-highlighting"
+              >
+                <q-item-section avatar>
+                  <q-icon name="list" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Listar</q-item-label>
+                </q-item-section>
+              </q-item>
+
+
+              <q-expansion-item label="Categorias" icon="conveyor_belt">
+                <q-item
+                  :to="`/assets/categories`"
+                  style="margin-left: 55px !important"
+                  active-class="q-item-no-link-highlighting"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="list" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Listar</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-expansion-item>
+              <q-expansion-item label="Locais" icon="pin_drop">
+                <q-item
+                  :to="`/assets/locations`"
+                  style="margin-left: 55px !important"
+                  active-class="q-item-no-link-highlighting"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="list" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Listar</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-expansion-item>
+            </q-list>
+          </q-expansion-item>
+
           <q-expansion-item
             icon="notifications"
             label="Notificações"

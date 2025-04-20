@@ -4,16 +4,16 @@
       <q-card>
         <q-card-section>
           <q-select
-                v-model="student"
-                :options="students"
-                label="Selecione o estudante"
-                option-label="name"
-                option-value="id"
-                outlined
-                dense
-                class="q-mb-sm"
-                clearable=""
-              />
+            v-model="student"
+            :options="students"
+            label="Selecione o estudante"
+            option-label="name"
+            outlined
+            dense
+            class="q-mb-sm"
+            clearable=""
+            @update:model-value="updateStudent(student)"
+          />
         </q-card-section>
       </q-card>
     </div>
@@ -28,6 +28,15 @@
       <div class="col-md-6 col-sm-12 col-xs-12">
         <q-card>
           <q-card-section>
+            <q-select
+              class="q-pa-none"
+              v-model="cicloSelecionado"
+              :options="ciclosDisponiveis"
+              label="Selecionar Ciclo"
+              @update:model-value="renderChart"
+              dense
+            />
+
             <canvas ref="unitChartCanvas1"></canvas>
           </q-card-section>
         </q-card>
@@ -36,7 +45,7 @@
         <q-card>
           <q-card-section>
             <h6>Pagamentos</h6>
-            <canvas ref="paymentChartCanvas"></canvas>
+            <canvas id="graficoPagamentos" width="400" height="200"></canvas>
           </q-card-section>
         </q-card>
       </div>
@@ -45,8 +54,8 @@
           <q-card-section>
             <h6>Relatório de Pagamentos Mensais</h6>
             <q-table
-              :rows="rows"
-              :columns="columns"
+              :rows="invoices"
+              :columns="columnsPayments"
               row-key="month"
               flat
               bordered
@@ -59,8 +68,8 @@
           <q-card-section>
             <h6>Relatório de Assiduidade</h6>
             <q-table
-              :rows="rows1"
-              :columns="columns1"
+              :rows="summaryAttendances"
+              :columns="columnsSummaryAttendances"
               row-key="month"
               flat
               bordered
@@ -94,7 +103,7 @@
 
             <q-table
               :rows="filteredRows"
-              :columns="columns2"
+              :columns="columnsAttedanceDay"
               row-key="day"
               flat
               bordered
@@ -110,17 +119,31 @@
 import { ref, onMounted, computed } from "vue";
 import { Chart, registerables } from "chart.js";
 import { useStudentStores } from "../store";
+import { useInstitutionStores } from "src/pages/institution/store";
+import scripts from "../scripits";
+import columnsPayments from "../components/ColumnsPaymentsReport";
+import columnsAttedanceDay from "../components/ColumnsAttendancesReports";
+import columnsSummaryAttendances from "../components/ColumnsSummaryAttendances";
 
 Chart.register(...registerables);
 
-/* setup stores */
-const studentsStores = useStudentStores()
+/* ==== STORES & SCRIPTS ==== */
+const studentsStores = useStudentStores();
+const institutionStores = useInstitutionStores();
+const { groupedByCicleFinalNotes } = scripts();
 
-/* setup data */
-const students = ref([])
+/* ==== REATIVIDADE PRINCIPAL ==== */
+const students = ref([]);
 const student = ref(null);
+const evolutions = ref([]);
+const invoices = ref([]);
+const attendances = ref([]);
+const summaryAttendances = ref([]);
 
-/* Setup Filtros */
+const institution = computed(() => institutionStores.institution);
+const cicloSelecionado = ref(1);
+const ciclosDisponiveis = computed(() => Array.from({ length: institution.value.regime }, (_, i) => i + 1))
+
 const selectedMonth = ref(null);
 const showPresent = ref(true);
 const showAbsent = ref(true);
@@ -128,323 +151,233 @@ const showJustified = ref(true);
 
 const chartCanvas = ref(null);
 const unitChartCanvas1 = ref(null);
-const paymentChartCanvas = ref(null);
-// Definição das colunas da tabela
-const columns = [
-  {
-    name: "month",
-    required: true,
-    label: "Mês",
-    align: "left",
-    field: "month",
-  },
-  {
-    name: "paymentStatus",
-    label: "Status do Pagamento",
-    align: "center",
-    field: "paymentStatus",
-  },
-  {
-    name: "fine",
-    label: "Multa",
-    align: "center",
-    field: "fine",
-  },
-  {
-    name: "fineStatus",
-    label: "Status da Multa",
-    align: "center",
-    field: "fineStatus",
-  },
-];
-
-// Dados dos pagamentos mensais
-const rows = [
-  {
-    month: "Janeiro",
-    paymentStatus: "Pago",
-    fine: "Não",
-    fineStatus: "-",
-  },
-  {
-    month: "Fevereiro",
-    paymentStatus: "Pago",
-    fine: "Sim",
-    fineStatus: "Paga",
-  },
-  {
-    month: "Março",
-    paymentStatus: "Não Pago",
-    fine: "Sim",
-    fineStatus: "Não Paga",
-  },
-  {
-    month: "Abril",
-    paymentStatus: "Pago",
-    fine: "Não",
-    fineStatus: "-",
-  },
-];
-
-const columns1 = [
-  {
-    name: "month",
-    required: true,
-    label: "Mês",
-    align: "left",
-    field: "month",
-  },
-  {
-    name: "totalDays",
-    label: "Dias Totais",
-    align: "center",
-    field: "totalDays",
-  },
-  {
-    name: "presences",
-    label: "Presenças",
-    align: "center",
-    field: "presences",
-  },
-  {
-    name: "absences",
-    label: "Faltas",
-    align: "center",
-    field: "absences",
-  },
-  {
-    name: "attendanceRate",
-    label: "Taxa de Presença",
-    align: "center",
-    field: "attendanceRate",
-  },
-];
-
-// Dados das presenças por mês
-const rows1 = [
-  {
-    month: "Janeiro",
-    totalDays: 22,
-    presences: 20,
-    absences: 2,
-    attendanceRate: "90.9%",
-  },
-  {
-    month: "Fevereiro",
-    totalDays: 20,
-    presences: 18,
-    absences: 2,
-    attendanceRate: "90%",
-  },
-  {
-    month: "Março",
-    totalDays: 23,
-    presences: 21,
-    absences: 2,
-    attendanceRate: "91.3%",
-  },
-];
-
-const columns2 = [
-  {
-    name: "day",
-    required: true,
-    label: "Dia",
-    align: "left",
-    field: "day",
-  },
-  {
-    name: "status",
-    label: "Status",
-    align: "center",
-    field: "status",
-  },
-  {
-    name: "justification",
-    label: "Justificativa",
-    align: "center",
-    field: "justification",
-  },
-];
-
-// Dados das presenças por dia
-const rows2 = [
-  { day: "01/01", status: "Presente", justification: "-" },
-  { day: "02/01", status: "Falta", justification: "Problema de saúde" },
-  { day: "03/01", status: "Presente", justification: "-" },
-  { day: "04/01", status: "Falta", justification: "Viagem familiar" },
-  { day: "05/01", status: "Presente", justification: "-" },
-  { day: "06/01", status: "Presente", justification: "-" },
-  { day: "07/01", status: "Falta", justification: "Falta justificada" },
-  { day: "08/01", status: "Presente", justification: "-" },
-  { day: "09/01", status: "Presente", justification: "-" },
-  { day: "10/01", status: "Falta", justification: "Problema de transporte" },
-];
+let chart;
 
 const months = [
-  { label: 'Janeiro 2023', value: '01/2023' },
-  { label: 'Fevereiro 2023', value: '02/2023' },
+  { label: "Janeiro 2023", value: "01/2023" },
+  { label: "Fevereiro 2023", value: "02/2023" },
 ];
 
-/* Fetch data */
-const fetchStudents = async () => {
-  try {
-    await studentsStores.list()
-    students.value = studentsStores.students.map((student) =>{
-      return {
-        name: student.basicInformation.fullName,
-        id: student.id
-      }
-    })
-  } catch (error) {
-    console.log(error)
-  }
-}
+/* ==== FUNÇÃO PRINCIPAL: Quando Estudante é Selecionado ==== */
+const updateStudent = (value) => {
+  student.value = value;
+  evolutions.value = value.evolutions;
+  invoices.value = value.invoices;
+  attendances.value = value.attendances;
 
-// Filtrar os dados
-const filteredRows = computed(() => {
-  return rows2.filter(row => {
-    const matchesMonth = selectedMonth.value ? row.day.includes(selectedMonth.value.value) : true;
-    const matchesStatus =
-      (showPresent.value && row.status === 'Presente') ||
-      (showAbsent.value && row.status === 'Falta') ||
-      (showJustified.value && row.justification !== '-');
-    return matchesMonth && matchesStatus;
+  drawNotasGlobaisChart(value.evolutions);
+  drawGraficoPagamentos();
+  summaryAttendances.value = processarFrequenciasPorMes(attendances.value);
+
+  const ciclos = [...new Set(value.evolutions.map((e) => e.cicle))];
+  cicloSelecionado.value = ciclos[0] || 1;
+  renderChart();
+};
+
+/* ==== GRÁFICO: Notas Globais por Trimestre ==== */
+const drawNotasGlobaisChart = (evolutions) => {
+  const result = groupedByCicleFinalNotes(evolutions);
+  const labels = Object.keys(result);
+
+  const disciplinas = new Set();
+  labels.forEach((cicle) => {
+    Object.keys(result[cicle]).forEach((disciplina) => disciplinas.add(disciplina));
   });
-});
 
-onMounted(async() => {
-  await fetchStudents()
-  const globalCtx = chartCanvas.value.getContext("2d");
-  new Chart(globalCtx, {
+  const datasets = Array.from(disciplinas).map((disciplina) => {
+    const data = labels.map((cicle) => result[cicle][disciplina]?.avg ?? null);
+    return {
+      label: disciplina,
+      data,
+      borderColor: randomColor(),
+      fill: false,
+    };
+  });
+
+  const ctx = chartCanvas.value.getContext("2d");
+  new Chart(ctx, {
     type: "line",
-    data: {
-      labels: ["Trimestre 1", "Trimestre 2", "Trimestre 3", "Trimestre 4"],
-      datasets: [
-        {
-          label: "Matemática",
-          data: [85, 78, 92, 88],
-          borderColor: "rgba(75, 192, 192, 1)",
-          fill: false,
-        },
-        {
-          label: "Português",
-          data: [70, 82, 90, 85],
-          borderColor: "rgba(153, 102, 255, 1)",
-          fill: false,
-        },
-        {
-          label: "Ciências",
-          data: [88, 84, 79, 93],
-          borderColor: "rgba(255, 159, 64, 1)",
-          fill: false,
-        },
-      ],
-    },
+    data: { labels, datasets },
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          position: "top",
-        },
-        title: {
-          display: true,
-          text: "Notas Globais do Trimestre",
-        },
+        legend: { position: "top" },
+        title: { display: true, text: "Notas Globais do Trimestre" },
       },
     },
   });
+};
 
-  const unitCtx1 = unitChartCanvas1.value.getContext("2d");
-  new Chart(unitCtx1, {
+/* ==== GRÁFICO: Notas por Ciclo ==== */
+const gerarDadosPorCiclo = (cicle) => {
+  const filtrados = evolutions.value.filter((e) => e.cicle === cicle);
+  const disciplinasMap = {};
+
+  filtrados.forEach(({ developmentAreaActivity, evolutionType, note }) => {
+    const disciplina = developmentAreaActivity.activity.name;
+    const avaliacao = evolutionType.name;
+
+    if (!disciplinasMap[disciplina]) {
+      disciplinasMap[disciplina] = {};
+    }
+
+    disciplinasMap[disciplina][avaliacao] = Number(note);
+  });
+
+  const labels = Object.keys(disciplinasMap);
+  const avaliacaoSet = new Set();
+
+  Object.values(disciplinasMap).forEach((avals) => {
+    Object.keys(avals).forEach((av) => avaliacaoSet.add(av));
+  });
+
+  const avaliacoes = Array.from(avaliacaoSet);
+
+  const datasets = avaliacoes.map((avaliacao, index) => ({
+    label: avaliacao,
+    data: labels.map((disciplina) => disciplinasMap[disciplina][avaliacao] || 0),
+    borderColor: [
+      "rgba(75, 192, 192, 1)",
+      "rgba(153, 102, 255, 1)",
+      "rgba(255, 159, 64, 1)",
+      "rgba(255, 99, 132, 1)",
+    ][index % 4],
+    fill: false,
+  }));
+
+  return { labels, datasets };
+};
+
+const renderChart = () => {
+  const { labels, datasets } = gerarDadosPorCiclo(cicloSelecionado.value);
+  if (chart) chart.destroy();
+
+  const ctx = unitChartCanvas1.value.getContext("2d");
+  chart = new Chart(ctx, {
     type: "line",
-    data: {
-      labels: ["Matemática", "Português", "Ciências"],
-      datasets: [
-        {
-          label: "1 Avaliacao",
-          data: [85, 78, 92],
-          borderColor: "rgba(75, 192, 192, 1)",
-          fill: false,
-        },
-        {
-          label: "2 Avaliacao",
-          data: [70, 82, 90],
-          borderColor: "rgba(153, 102, 255, 1)",
-          fill: false,
-        },
-        {
-          label: "2 Avaliacao",
-          data: [88, 84, 79, 93],
-          borderColor: "rgba(255, 159, 64, 1)",
-          fill: false,
-        },
-      ],
-    },
+    data: { labels, datasets },
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          position: "top",
-        },
-        title: {
-          display: true,
-          text: "Notas Unitárias",
-        },
+        legend: { position: "top" },
+        title: { display: true, text: `Notas Unitárias - Ciclo ${cicloSelecionado.value}` },
       },
     },
   });
+};
 
-  const globalPayments = paymentChartCanvas.value.getContext("2d");
-  new Chart(globalPayments, {
+/* ==== GRÁFICO: Pagamentos ==== */
+const drawGraficoPagamentos = () => {
+  const agrupado = invoices.value.reduce((acc, invoice) => {
+    const tipo = invoice.paymentType.name;
+    acc[tipo] = (acc[tipo] || 0) + parseInt(invoice.amount);
+    return acc;
+  }, {});
+
+  const labels = Object.keys(agrupado);
+  const valores = Object.values(agrupado);
+  const backgroundColors = gerarCores(labels.length);
+  const borderColors = backgroundColors.map((cor) => cor.replace("0.2", "1"));
+
+  const ctx = document.getElementById("graficoPagamentos").getContext("2d");
+  new Chart(ctx, {
     type: "bar",
     data: {
-      labels: ["Matrícula", "Mensalidades", "Transportes"],
-      datasets: [
-        {
-          label: "Valores dos Pagamentos",
-          data: [500, 1200, 300], // Exemplo de valores
-          backgroundColor: [
-            "rgba(75, 192, 192, 0.2)", // Matrícula
-            "rgba(153, 102, 255, 0.2)", // Mensalidades
-            "rgba(255, 159, 64, 0.2)", // Transportes
-          ],
-          borderColor: [
-            "rgba(75, 192, 192, 1)", // Matrícula
-            "rgba(153, 102, 255, 1)", // Mensalidades
-            "rgba(255, 159, 64, 1)", // Transportes
-          ],
-          borderWidth: 1,
-        },
-      ],
+      labels,
+      datasets: [{
+        label: "Total por Tipo de Pagamento",
+        data: valores,
+        backgroundColor: backgroundColors,
+        borderColor: borderColors,
+        borderWidth: 1,
+      }],
     },
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          position: "top",
-        },
-        title: {
-          display: true,
-          text: "Pagamentos - Matrícula, Mensalidades e Transportes",
-        },
+        legend: { position: "top" },
+        title: { display: true, text: "Totais de Pagamentos Agrupados por Tipo" },
       },
       scales: {
         y: {
           beginAtZero: true,
-          title: {
-            display: true,
-            text: "Valor (R$)",
-          },
+          title: { display: true, text: "Valor Total (R$)" },
         },
         x: {
-          title: {
-            display: true,
-            text: "Tipo de Pagamento",
-          },
+          title: { display: true, text: "Tipo de Pagamento" },
         },
       },
     },
   });
+};
+
+/* ==== PROCESSADOR: Frequências Mensais ==== */
+const processarFrequenciasPorMes = (attendances) => {
+  const resumo = {};
+
+  attendances.forEach(({ classAttendance, status }) => {
+    const data = new Date(classAttendance.classDate);
+    const mesAno = data.toLocaleString("pt-PT", { month: "long", year: "numeric" });
+
+    if (!resumo[mesAno]) {
+      resumo[mesAno] = { month: mesAno, totalDays: 0, presences: 0, absences: 0 };
+    }
+
+    resumo[mesAno].totalDays++;
+    status === "Presente"
+      ? resumo[mesAno].presences++
+      : resumo[mesAno].absences++;
+  });
+
+  return Object.values(resumo).map((mes) => ({
+    ...mes,
+    attendanceRate: ((mes.presences / mes.totalDays) * 100).toFixed(2) + "%",
+  }));
+};
+
+/* ==== UTILS ==== */
+const gerarCores = (quantidade) =>
+  Array.from({ length: quantidade }, () => {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, 0.2)`;
+  });
+
+const randomColor = () =>
+  `rgba(${Math.floor(Math.random() * 200)}, ${Math.floor(Math.random() * 200)}, ${Math.floor(Math.random() * 200)}, 1)`;
+
+/* ==== FETCH INICIAL ==== */
+const fetchStudents = async () => {
+  try {
+    await studentsStores.list();
+    students.value = studentsStores.students.map((s) => ({
+      name: s.basicInformation?.fullName || "NA",
+      id: s.id,
+      ...s,
+    }));
+  } catch (error) {
+    console.error("Erro ao carregar estudantes:", error);
+  }
+};
+
+/* ==== FILTRO TABELA DE PRESENÇAS ==== */
+const filteredRows = computed(() => {
+  return attendances.value.filter((row) => {
+    const matchesMonth = selectedMonth.value
+      ? row.day.includes(selectedMonth.value.value)
+      : true;
+
+    const matchesStatus =
+      (showPresent.value && row.status === "Presente") ||
+      (showAbsent.value && row.status === "Ausente") ||
+      (showJustified.value && row.justification !== "-");
+
+    return matchesMonth && matchesStatus;
+  });
 });
+
+/* ==== ON MOUNT ==== */
+onMounted(fetchStudents);
 </script>
+

@@ -7,28 +7,6 @@
       <q-separator spaced />
       <q-card-section>
         <div class="border q-pa-md shadow-2">
-          <span class="text-weight-bold">Classes associadas</span>
-          <q-list bordered dense class="q-mt-lg">
-            <q-item v-for="course in courses" :key="course.id" clickable>
-              <q-item-section avatar>
-                <q-checkbox
-                  v-model="course.checked"
-                  :val="course.id"
-                  @update:model-value="
-                    updateSelection(course.checked, course.id)
-                  "
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>{{ course.name }}</q-item-label>
-                <span>{{ course?.curriculum?.name }}</span>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </div>
-      </q-card-section>
-      <q-card-section>
-        <div class="border q-pa-md shadow-2">
           <div class="row items-center justify-between">
             <span class="text-weight-bold">Areas de desenvolvimento</span>
             <q-btn
@@ -46,7 +24,7 @@
               <q-btn
                 color="secondary"
                 icon="add"
-                :label="getNameForDisciplineEducation(education.name)"
+                :label="getNameForDisciplineEducation(education?.name)"
                 no-caps
                 @click="addActivities(props)"
                 flat
@@ -89,22 +67,10 @@ const { getNameForDisciplineEducation } = scripts()
 
 /* setup data */
 const { curriculumId, educationId } = route.params;
-const courses = ref();
 const developmentAreas = ref([]);
 const education = ref();
 
 /* methods */
-const updateSelection = async (checked, courseId) => {
-  try {
-    if (checked) {
-      await courseStores.update(courseId, {curriculumId: curriculumId})
-    } else {
-      await courseStores.update(courseId, {curriculumId: curriculumId})
-    }
-  } catch (error) {
-    notifyError("Erro ao alocar curriculum")
-  }
-};
 const addDevelopmentArea = () => {
   router.push({
     name: "create-development-area",
@@ -124,34 +90,18 @@ const addActivities = (row) => {
   });
 }
 /* fetch data */
-const fetchCourses = async () => {
-  try {
-    await courseStores.list({ educationId: educationId });
-    courses.value = courseStores.courses.map((course) => {
-      return {
-        ...course,
-        checked: !!curriculumStores.curriculumPlan.courses.find(
-          (c) => c.id === course.id && curriculumId === course.curriculumId
-        ),
-      };
-    });
-  } catch (error) {
-    notifyError("Erro ao carregar corsos")
-  }
-};
-
 const fetchCurriculum = async () => {
   try {
     await curriculumStores.findOne(curriculumId);
     developmentAreas.value = curriculumStores.curriculumPlan.developmentAreas;
-    education.value = curriculumStores.curriculumPlan.educationLevel;
+
   } catch (error) {
+    console.log(error)
     notifyError("Erro ao carregar curriculums")
   }
 };
 
 onMounted(async () => {
   await fetchCurriculum();
-  await fetchCourses();
 });
 </script>

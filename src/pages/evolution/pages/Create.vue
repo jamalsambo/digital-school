@@ -181,7 +181,7 @@ const filteredEvolutions = (id) => {
   return students.value
     .flatMap((student) => ({
       evolutions: student.evolutions.filter(
-        (evolution) => evolution.disciplineId === discipline && evolution.studentId === id
+        (evolution) => evolution.developmentAreaActivityId === discipline && evolution.studentId === id && evolution.cicle === actualRegime.value
       ),
     }))
     .filter((student) => student.evolutions.length > 0)
@@ -202,7 +202,7 @@ const columns = ref([
 const saveGrades = async (value, note) => {
   const payload = {
     studentId: value.id,
-    disciplineId: discipline,
+    developmentAreaActivityId: discipline,
     classId: classe,
     testTypeId: evolutionType.value.id,
     note: note,
@@ -216,7 +216,8 @@ const saveGrades = async (value, note) => {
     (evolution) =>
       evolution.testTypeId === evolutionType.value.id &&
       evolution.studentId === value.id &&
-      evolution.disciplineId === discipline
+      evolution.developmentAreaActivityId === discipline &&
+      evolution.cicle === actualRegime.value
   );
 
   if (!evolutionExists) {
@@ -242,7 +243,7 @@ const changeEvolutionType = (value) => {
 
 const fetchStudents = async () => {
   try {
-    await studentStores.list({ classId: classe, disciplineId: discipline });
+    await studentStores.list({ classId: classe, developmentAreaActivityId: discipline });
     students.value = studentStores.students;
 
     await classStores.findOne(classe)

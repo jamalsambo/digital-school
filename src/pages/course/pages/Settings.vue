@@ -1,10 +1,50 @@
 <template>
   <q-page padding>
-    <q-card class="q-pa-md">
+    <q-card class="q-pa-md shadow-2">
       <q-card-section>
         <div class="text-h6">Configuração estágio</div>
       </q-card-section>
       <q-separator spaced />
+
+      <q-card-section>
+        <div class="border q-pa-md shadow-2">
+          <div class="row items-center justify-between">
+            <span class="text-weight-bold">Planos curriculares</span>
+            <q-btn
+              color="primary"
+              icon="add"
+              label="Adicionar"
+              class="q-mr-sm"
+              @click="addCurriculum"
+              flat
+            />
+          </div>
+
+          <Tables :rows="curriculuns" :columns="ColumnsCurriculum">
+            <template #actions="{ props }">
+              <q-btn
+                color="secondary"
+                icon="school"
+                label="Configuraçao"
+                no-caps
+                @click="settingsCurriculum(props)"
+                flat
+                dense
+              />
+              <q-btn
+                color="primary"
+                icon="edit"
+                label="Editar"
+                no-caps
+                @click="editClasse(props)"
+                flat
+                dense
+              />
+            </template>
+          </Tables>
+        </div>
+      </q-card-section>
+
       <q-card-section>
         <div class="border q-pa-md shadow-2">
           <div class="row items-center justify-between">
@@ -57,12 +97,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCourseStores } from "../store";
 import Tables from "src/components/Tables.vue";
 import useNotify from "src/composables/UseNotify";
 import ClasseColumns from "../components/ClasseColumns";
+import ColumnsCurriculum from "../components/ColumnsCurriculum";
 
 /* setup route */
 const route = useRoute();
@@ -74,7 +115,7 @@ const { notifyError } = useNotify();
 
 /* setup data */
 const { educationId, internshipId, program } = route.params;
-const developmentAreas = ref([]);
+const curriculuns = ref([]);
 const classes = ref([]);
 
 /* methods */
@@ -85,6 +126,26 @@ const addClasse = () => {
     params: { educationId: educationId, internshipId: internshipId },
   });
 };
+
+const addCurriculum = () => {
+  router.push({
+    name: 'create-curriculum',
+    params: {
+      educationId: educationId,
+      courseId: internshipId
+    }
+  })
+}
+
+const settingsCurriculum = (props) => {
+  router.push({
+    name: 'settings-curriculum',
+    params: {
+      educationId: educationId,
+      curriculumId: props.key
+    }
+  })
+}
 
 const editClasse = (row) => {
   router.push({
@@ -112,7 +173,8 @@ const te = (row) => {
 const fetchCourse = async () => {
   try {
     await courseStores.findOne(internshipId);
-    classes.value = courseStores.course.classes;
+      classes.value = courseStores.course.classes
+      curriculuns.value =  courseStores.course.curriculums
   } catch (error) {
     notifyError("Erro no carregamento");
   }
@@ -120,5 +182,6 @@ const fetchCourse = async () => {
 
 onMounted(async () => {
   await fetchCourse();
+
 });
 </script>
