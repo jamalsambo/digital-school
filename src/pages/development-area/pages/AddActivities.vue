@@ -17,7 +17,7 @@
             <q-item-section>
               <div class="row q-col-gutter-sm">
                 <q-checkbox
-                  class="col-md-4 col-sm-12 col-xs-12"
+                  class="col-md-12 col-sm-12 col-xs-12"
                   v-model="activity.checked"
                   :val="activity.id"
                   @update:model-value="
@@ -54,6 +54,32 @@
                     { label: 'Nao', value: false },
                   ]"
                   label="Exame"
+                  outlined=""
+                  dense
+                  map-options
+                />
+                <q-select
+                  v-if="education.name !== 'Ensino Infantil' || education.name!=='Ensino Médio'"
+                  class="col-md-2 col-sm-12 col-xs-12"
+                  v-model="activity.critical"
+                  :options="[
+                    { label: 'Sim', value: true },
+                    { label: 'Nao', value: false },
+                  ]"
+                  label="Importante na transição"
+                  outlined=""
+                  dense
+                  map-options
+                />
+                <q-select
+                  v-if="education.name !== 'Ensino Infantil'"
+                  class="col-md-2 col-sm-12 col-xs-12"
+                  v-model="activity.participation"
+                  :options="[
+                    { label: 'Sim', value: true },
+                    { label: 'Nao', value: false },
+                  ]"
+                  label="Participativa somente"
                   outlined=""
                   dense
                   map-options
@@ -154,6 +180,8 @@ const updateSelection = async (activity, checked) => {
       hours: parseInt(activity.hours),
       credit: parseInt(activity.credit),
       exame: activity.exame?.value || false,
+      critical: activity.critical?.value || false,
+      participation: activity.participation?.value || false,
       year: parseInt(activity.year) || 1,
     };
     if (checked) {
@@ -189,6 +217,8 @@ const fetchActivities = async () => {
         hours: 0,
         credit: 0,
         exame: false,
+        critical: false,
+        participation: false,
         year: null,
         cicle: [],
         checked: false,
@@ -202,6 +232,8 @@ const fetchActivities = async () => {
         entry.hours = dev.hours;
         entry.credit = dev.credit;
         entry.exame = dev.exame;
+        entry.critical = dev.critical;
+        entry.participation = dev.participation;
         entry.year = dev.year;
         entry.checked = true;
 
