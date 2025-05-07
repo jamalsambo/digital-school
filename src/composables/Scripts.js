@@ -32,9 +32,9 @@ export default function scripts() {
     switch (regime) {
       case 3:
         return "Trimestre";
-      case 6:
+      case 2:
         return "Semestre";
-      case 12:
+      case 1:
         return "Anual";
       default:
         return "Unico";

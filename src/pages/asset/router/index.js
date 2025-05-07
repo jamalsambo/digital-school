@@ -10,10 +10,16 @@ import CreateLocation from '../pages/location/Create.vue';
 
 const assetsRoutes= [
    { path: 'assets', name: 'assets', component: List },
-   { path: 'asset/create', name: 'asset-create', component: Create },
+   { path: 'asset/create', name: 'asset-create', component: Create,  meta: {
+    title: "Asset create"
+  }},
 
-   { path: 'asset/move', name: 'assets-move', component: ListMove },
-   { path: 'asset/move/create', name: 'move-create', component: MoveCreate },
+   { path: 'assets/move', name: 'assets-move', component: ListMove,  meta: {
+    title: "Move assets"
+  } },
+   { path: 'asset/:assetId/move', name: 'move create', component: MoveCreate, meta: {
+    title: "Move create"
+  } },
 
    { path: 'assets/categories', name: 'assets-categories', component: ListCategories },
    { path: 'assets/category/create', name: 'assets-category-create', component: CategoryCreate },

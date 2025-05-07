@@ -2,8 +2,8 @@ const columns = [
   {
     name: "number",
     align: "left",
-    label: "Número do Estudante",
-    field: "id",
+    label: "Número do Funcionario",
+    field: "number",
     sortable: true,
   },
   {

@@ -90,7 +90,7 @@ const newLocation = () => {
 /* setup methods */
 const fetchCategories = async () => {
   try {
-    await assetStores.locations();
+    await assetStores.findlocations();
     locations.value = assetStores.locations;
   } catch (error) {
     console.log(error);

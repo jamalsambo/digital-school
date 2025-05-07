@@ -50,6 +50,7 @@ export default function ControlAcademicScripts() {
     const grouped = {};
 
     evolutions.forEach((e) => {
+      const id = e.developmentAreaActivityId
       const name = e.developmentAreaActivity?.activity?.name;
       const exame = e.developmentAreaActivity.exame;
       const critical = e.developmentAreaActivity.critical;
@@ -57,6 +58,7 @@ export default function ControlAcademicScripts() {
 
       if (!grouped[name]) {
         grouped[name] = {
+          id: id,
           name: name,
           evolutions: [],
           exame: exame,
@@ -111,6 +113,7 @@ export default function ControlAcademicScripts() {
       }
 
       result.push({
+        id: group.id,
         discipline: group.name,
         exame: group.exame,
         observation: group.observation,
@@ -133,7 +136,9 @@ export default function ControlAcademicScripts() {
     let somaNotasPonderadas = 0;
     let somaPercentagens = 0;
 
-    evolutions.forEach((e) => {
+    evolutions
+    .filter((e) => e.evolutionType.type === 'Normal')
+    .forEach((e) => {
       const nota = parseFloat(e.note);
       const perc = parseFloat(e.perception);
 
@@ -142,6 +147,7 @@ export default function ControlAcademicScripts() {
         somaPercentagens += perc;
       }
     });
+
 
     if (somaPercentagens === 0) {
       return { approved: false, label: "Sem percentagem" };

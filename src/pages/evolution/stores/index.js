@@ -41,5 +41,10 @@ export const useEvolutionStores = defineStore("evolution", {
       if (error) throw error;
       this.evolutionType = data;
     },
+    async delete(id) {
+      const { data, error } = await api.delete(`/evolution/${id}`);
+      if (error) throw error;
+      return data;
+    },
   },
 });

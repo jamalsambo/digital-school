@@ -1,202 +1,124 @@
 <template>
   <q-page padding>
-    <div>
-      <q-card>
-        <q-card-section>
-          <q-select
-            v-model="evolutionType"
-            :options="[
-              { value: 'Normal', name: 'Normal' },
-              { value: 'Exame', name: 'Exame' },
-            ]"
-            label="Tipo de Avaliação"
-            outlined
-            dense
-            clearable
-            option-label="name"
-            option-disable="value"
-            emit-value
-            @update:model-value="onchangeEvolutionType"
-          />
-          <div class="row q-col-gutter-x-sm"></div>
-        </q-card-section>
-      </q-card>
-    </div>
-    <q-list bordered class="rounded-borders q-pa-md">
-      <q-item v-for="(year, index) in yearsList" :key="index">
-        <q-item-section>
-          <!-- Cabeçalho da Disciplina -->
-          <div
-            class="text-bold text-uppercase bg-primary text-white q-pa-sm rounded-borders"
-          >
-            {{ year }}
-          </div>
-
-          <q-list padding bordered class="rounded-borders">
-            <q-expansion-item
-              v-for="(regi, index) in regime"
-              :key="index"
-              dense
-              expand-separator
-              icon="note"
-              :label="index + 1 + `${getRegimeName(institution?.regime)}`"
-            >
-              <!-- Conteúdo da disciplina -->
-              <q-list bordered class="rounded-borders q-pa-md">
-                <q-item v-for="discipline in disciplines" :key="discipline.id">
-                  <q-item-section>
-                    <!-- Cabeçalho da Disciplina -->
-                    <div
-                      class="text-bold text-uppercase bg-primary text-white q-pa-sm rounded-borders"
-                    >
-                      {{ discipline.name }}
-                    </div>
-                    <!-- Conteúdo das notas -->
-                    <!-- Tabela de Avaliações -->
-                    <q-card
-                      flat
-                      bordered
-                      class="q-mt-sm q-pa-sm bg-grey-2 rounded-borders"
-                    >
-                      <q-list dense>
-                        <q-item
-                          v-for="(e, index) in getNotasPorRegime(
-                            evolutions.value ?? [],
-                            regi,
-                            discipline.id,
-                            discipline.cicle,
-                            discipline.year
-                          )"
-                          :key="index"
-                        >
-                          <q-item-section v-if="e.note">
-                            <div class="text-weight-medium">
-                              {{ e.evolutionType.name }}
-                            </div>
-                          </q-item-section>
-                          <q-item-section side v-if="e.note">
-                            <q-chip
-                              dense
-                              :color="getColor(e.note)"
-                              text-color="white"
-                            >
-                              {{ e.note }}
-                            </q-chip>
-                          </q-item-section>
-                        </q-item>
-                      </q-list>
-                    </q-card>
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-expansion-item>
-          </q-list>
-        </q-item-section>
-      </q-item>
-    </q-list>
+    <q-card class="q-pa-md shadow-2">
+      <q-card-section>
+        <div class="text-h6">Minhas Avaliações Acadêmicas</div>
+        <div class="text-subtitle2 text-grey-7">
+          Confira suas notas por disciplina e ciclo escolar.
+        </div>
+      </q-card-section>
+      <q-separator spaced />
+      <q-card-section>
+        <StudentDevelopmentCycle
+          :disciplines="disciplines"
+          :get-final-grade-status="getFinalGradeStatus"
+          :get-color="getColor"
+          :institution-type="institution.educationLevel?.name"
+        />
+      </q-card-section>
+      <q-card-section>
+        <StudentDisciplineFinalClassification  :final-averages="finalAverages" />
+      </q-card-section>
+      <q-card-section>
+        <StudentFinalClassification :averages="finalAverages" />
+      </q-card-section>
+    </q-card>
   </q-page>
 </template>
-<script setup>
-import { computed, onMounted, ref } from "vue";
-import { onBeforeRouteUpdate, useRoute } from "vue-router";
-import { useStudentStores } from "../store";
-import { useInstitutionStores } from "src/pages/institution/store";
-import scripts from "src/composables/Scripts";
-import useNotify from "src/composables/UseNotify";
 
-/* use store */
+<script setup>
+/* 📦 Importações */
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, onBeforeRouteUpdate } from 'vue-router';
+import { useStudentStores } from '../store';
+import { useInstitutionStores } from 'src/pages/institution/store';
+import { useEvolutionStores } from 'src/pages/evolution/stores';
+import ControlAcademicScripts from 'src/pages/academic/control/scripts';
+import scripts from 'src/composables/Scripts';
+import useNotify from 'src/composables/UseNotify';
+
+/* 🧩 Componentes */
+import StudentDevelopmentCycle from 'src/pages/academic/control/components/StudentDevelopmentCycle.vue';
+import StudentDisciplineFinalClassification from 'src/pages/academic/control/components/StudentDisciplineFinalClassification.vue';
+import StudentFinalClassification from 'src/pages/academic/control/components/StudentFinalClassification.vue';
+
+/* 🧠 Stores */
 const route = useRoute();
 const studentStores = useStudentStores();
-const institutionStores = useInstitutionStores()
-const { filterEnrollmentsByYear, getNotasPorRegime, getRegimeName } = scripts();
-const { notifyError } = useNotify();
+const institutionStores = useInstitutionStores();
+const evolutionStores = useEvolutionStores();
 
-/* data */
-const { id } = route.params;
-const studentId = ref(route.params.id || id);
-const evolutionType = ref();
+/* 🔧 Helpers */
+const { filterEnrollmentsByYear } = scripts();
+const { notifyError } = useNotify();
+const {
+  groupedDisciplineByYearAndCicle,
+  finalAveragesDisciplines,
+  getFinalGradeStatus,
+  getColor
+} = ControlAcademicScripts();
+
+/* 📌 States */
+const studentId = ref(route.params.id);
 const student = ref({});
 const enrollments = ref([]);
 const evolutions = ref([]);
-const institution = computed(() => institutionStores.institution)
+const disciplines = ref([]);
+const finalAverages = ref([]);
+const evolutionTypeExamIds = ref([]);
 
+/* 🧮 Computed */
+const institution = computed(() => institutionStores.institution);
 
-/* computed */
-/* Funcao que busca a matricala actual do estudante */
 const actualEnrollment = computed(() =>
   filterEnrollmentsByYear(enrollments.value, new Date().getFullYear())
 );
-/* Funcao que lista o regime (Semestral -2 / trimestral- 3) */
-const regime = computed(
-  () => actualEnrollment.value?.classe?.course.institution.regime
-);
-const curriculum = computed(() =>actualEnrollment.value?.classe?.course.curriculums.find((f) => f.status ==='ACTIVO') )
-/* Funcao que lista as disciplinas */
-const disciplines = computed(
-  () =>
 
-  curriculum?.value?.developmentAreas.flatMap(
-          (area) => {
-            return area.developmentAreaActivities.map((dev) => {
-              console.log(dev)
-              return {
-                id: dev.id,
-                name: dev.activity.name,
-                cicle: dev.activity.cicle,
-                year: dev.activity.year
-                // ou qualquer outro dado relevante
-              }; // ou qualquer outro dado relevante
-            });
-          })
+const regime = computed(() =>
+  actualEnrollment.value?.classe?.course.institution.regime
 );
 
-console.log(disciplines.value)
-/* Funcao  que lista o total de anos tem a matricula */
-const yearsList = computed(() => {
-  const startYear = new Date(
-    actualEnrollment.value?.classe?.startDate
-  ).getFullYear();
-  const endYear = new Date(
-    actualEnrollment.value?.classe?.endDate
-  ).getFullYear();
+const activeCurriculum = computed(() =>
+  actualEnrollment.value?.classe?.course.curriculums.find(c => c.status === 'ACTIVO')
+);
 
-  let years = [];
-  for (let year = startYear; year <= endYear; year++) {
-    years.push(year);
-  }
-
-  return years;
-});
-
-/* methods */
-const onchangeEvolutionType = async (value) => {
-  await fetchStudent();
-  evolutions.value = computed(() =>
-  student.value.evolutions.filter(
-      (e) => e.evolutionType.type === value
-    )
-  );
-};
-const fetchStudent = async () => {
+/* 🔄 Fetch data */
+const fetchStudentData = async () => {
   try {
     await studentStores.findOne(studentId.value);
     student.value = studentStores.student;
-    enrollments.value = student.value.enrollments
+    enrollments.value = student.value.enrollments;
+    evolutions.value = student.value.evolutions;
+
+    await evolutionStores.list();
+
+    evolutionTypeExamIds.value = evolutionStores.evolutionTypes
+      .filter(type => type.type === 'Exame')
+      .map(type => type.id);
+
+    disciplines.value = groupedDisciplineByYearAndCicle(
+      activeCurriculum.value,
+      evolutions.value
+    );
+
+    getFinalGradeStatus(evolutions.value);
+
+    finalAverages.value = finalAveragesDisciplines(
+      evolutions.value,
+      evolutionTypeExamIds.value,
+      regime.value
+    );
   } catch (error) {
-    notifyError("Erro ao carregar a estudnte");
+    notifyError('Erro ao carregar o estudante.');
   }
 };
 
-onBeforeRouteUpdate((to) => {
-  studentId.value = to.params.id || id;
-  fetchStudent();
+/* 🔁 Atualização de rota */
+onBeforeRouteUpdate(to => {
+  studentId.value = to.params.id;
+  fetchStudentData();
 });
 
-const getColor = (score) => {
-  if (score >= 9) return "green";
-  if (score >= 7) return "orange";
-  return "red";
-};
-
-onMounted(fetchStudent);
+/* 🚀 Inicialização */
+onMounted(fetchStudentData);
 </script>

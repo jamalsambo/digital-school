@@ -3,7 +3,7 @@ import { api } from "src/boot/axios";
 import { useAuthStore } from "src/pages/auth/store";
 
 const authStore = useAuthStore();
-const { institutionId } = authStore.user.userDetails;
+const { institutionId } = authStore.user;
 
 export const useGroupStores = defineStore("work-group", {
   state: () => ({

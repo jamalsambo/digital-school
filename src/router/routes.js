@@ -19,7 +19,8 @@ import {
   stockRoutes,
   bulletinRoutes,
   evolutionsRoutes,
-  assetsRoutes
+  assetsRoutes,
+  academicCalendarRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -54,12 +55,6 @@ const routes = [
         path: "/student/:id/enrollments",
         name: "student-enrollments",
         component: () => import("pages/student/pages/Enrollments.vue"),
-      },
-      {
-        path: "/student/:id/payments/:view",
-        name: "student-payments",
-        component: () =>
-          import("src/pages/finance/payments/pages/PaymentCreate.vue"),
       },
 
       /* Rotas do funcionario */
@@ -198,7 +193,8 @@ const routes = [
       ...stockRoutes,
       ...bulletinRoutes,
       ...evolutionsRoutes,
-      ...assetsRoutes
+      ...assetsRoutes,
+      ...academicCalendarRoutes
     ],
   },
 

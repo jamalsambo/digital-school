@@ -9,16 +9,7 @@
               title="Planos Curriculares"
               :columns="columns"
             >
-              <template #new>
-                <q-btn
-                  color="primary"
-                  icon="add"
-                  label="Adicionar"
-                  no-caps
-                  @click="addCurriculumPlan"
-                  class="q-ml-sm"
-                />
-              </template>
+
 
               <template #actions="{ props }">
                 <q-btn
@@ -66,13 +57,6 @@ const educationIdUpdated = ref(route.params.educationId || educationId);
 const curriculumPlans = ref([]);
 
 /* setup methods */
-const addCurriculumPlan = () => {
-  router.push({
-    name: "create-curriculum",
-    params: { educationId: educationIdUpdated.value },
-  });
-};
-
 const editCurriculumPlans = (curriculum) => {
   router.push({
     name: "edit-curriculum",

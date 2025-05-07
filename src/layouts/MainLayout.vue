@@ -155,7 +155,7 @@
         </div>
 
         <!-- Menu do funcionario -->
-        <div v-if="user?.userType === 'Funcionario'">
+        <div v-if="userStores.isEmployee">
           <q-expansion-item
             icon="menu_open"
             label="Instituição"
@@ -287,7 +287,8 @@
               userStores.hasViewCalendar ||
               userStores.hasViewEvolutionTypes ||
               userStores.hasCreateDisciplines ||
-              userStores.hasCreateCurriculum
+              userStores.hasCreateCurriculum ||
+              userStores.hasViewEvolutionGrade
             "
           >
             <q-item
@@ -377,7 +378,7 @@
               </q-item-section>
             </q-item>
             <q-item
-              to="/bulletins"
+              to="/academic-control"
               style="margin-left: 55px !important"
               active-class="q-item-no-link-highlighting"
               v-if="userStores?.hasViewBulletins"
@@ -386,7 +387,7 @@
                 <q-icon name="school" />
               </q-item-section>
               <q-item-section>
-                <q-item-label>Boletins</q-item-label>
+                <q-item-label>Acadêmico</q-item-label>
               </q-item-section>
             </q-item>
           </q-expansion-item>
@@ -477,11 +478,14 @@
             </q-list>
           </q-expansion-item>
 
-          <q-expansion-item icon="inventory_2" label="Controle estoque">
+          <q-expansion-item icon="inventory_2" label="Controle estoque"
+           v-if="userStores.hasCreateInStock || userStores.hasCreateInStock"
+          >
             <q-list class="q-pl-lg">
               <q-item
                 :to="`/stock/move`"
                 active-class="q-item-no-link-highlighting"
+                 v-if="userStores.hasMoveStock"
               >
                 <q-item-section avatar>
                   <q-icon name="compare_arrows" />
@@ -493,6 +497,7 @@
               <q-item
                 :to="`/stock/move/in`"
                 active-class="q-item-no-link-highlighting"
+                 v-if="userStores.hasCreateInStock"
               >
                 <q-item-section avatar>
                   <q-icon name="arrow_downward" />
@@ -504,7 +509,7 @@
               <q-item
                 :to="`/stock/move/out/`"
                 active-class="q-item-no-link-highlighting"
-                v-if="userStores.hasViewPaymentsTypes"
+                v-if="userStores.hasCreateOutStock"
               >
                 <q-item-section avatar>
                   <q-icon name="arrow_upward" />
@@ -519,6 +524,7 @@
                   to="/stock/products"
                   style="margin-left: 55px !important"
                   active-class="q-item-no-link-highlighting"
+                  v-if="userStores.hasViewProductStock"
                 >
                   <q-item-section avatar>
                     <q-icon name="list" />
@@ -531,6 +537,7 @@
                   to="/stock/products/categories"
                   style="margin-left: 55px !important"
                   active-class="q-item-no-link-highlighting"
+                   v-if="userStores.hasViewCategoryStock"
                 >
                   <q-item-section avatar>
                     <q-icon name="category" />
@@ -543,6 +550,7 @@
                   to="/stock/products/suppliers"
                   style="margin-left: 55px !important"
                   active-class="q-item-no-link-highlighting"
+                   v-if="userStores.hasViewSuplierStock"
                 >
                   <q-item-section avatar>
                     <q-icon name="local_shipping" />
@@ -555,11 +563,14 @@
             </q-list>
           </q-expansion-item>
 
-          <q-expansion-item icon="temple_hindu" label="Patrimonios">
+          <q-expansion-item icon="temple_hindu" label="Patrimonios"
+            v-if="userStores.hasMoveAsset || userStores.hasViewAsset"
+          >
             <q-list class="q-pl-lg">
               <q-item
                 :to="`/assets/move`"
                 active-class="q-item-no-link-highlighting"
+                v-if="userStores.hasMoveAsset"
               >
                 <q-item-section avatar>
                   <q-icon name="compare_arrows" />
@@ -571,6 +582,7 @@
               <q-item
                 :to="`/assets/`"
                 active-class="q-item-no-link-highlighting"
+                  v-if="userStores.hasViewAsset"
               >
                 <q-item-section avatar>
                   <q-icon name="list" />
@@ -586,6 +598,7 @@
                   :to="`/assets/categories`"
                   style="margin-left: 55px !important"
                   active-class="q-item-no-link-highlighting"
+                  v-if="userStores.hasViewCategoryAsset"
                 >
                   <q-item-section avatar>
                     <q-icon name="list" />
@@ -600,6 +613,7 @@
                   :to="`/assets/locations`"
                   style="margin-left: 55px !important"
                   active-class="q-item-no-link-highlighting"
+                   v-if="userStores.hasViewLocationAsset"
                 >
                   <q-item-section avatar>
                     <q-icon name="list" />
@@ -639,7 +653,7 @@
           <q-item
             :to="`/employee/${userStores?.user?.employee?.id}/teachings`"
             active-class="q-item-no-link-highlighting"
-            v-if="user?.teacher === 'Sim'"
+            v-if="userStores.isTeacher"
           >
             <q-item-section avatar>
               <q-icon name="school" />
@@ -650,7 +664,8 @@
           </q-item>
         </div>
 
-        <div v-if="user?.userType === 'Estudante'">
+          <!-- Menu do Estudante -->
+        <div v-if="userStores.isStudent">
           <q-item
             :to="`/student/${userStores?.user?.student?.id}/evolutions/normal`"
             active-class="q-item-no-link-highlighting"
@@ -675,7 +690,7 @@
             </q-item-section>
           </q-item>
           <q-item
-            :to="`/student/${userStores?.user?.student?.id}/payments/${'view'}`"
+            :to="`/student/${userStores?.user?.student?.id}/payments/`"
             active-class="q-item-no-link-highlighting"
           >
             <q-item-section avatar>
@@ -699,7 +714,7 @@
         </div>
 
         <!-- Menu do encarregado -->
-        <div v-if="user?.userType === 'Encarregado'">
+        <div v-if="userStores.isGuardian">
           <q-list>
             <q-expansion-item
               v-for="student in students"
@@ -732,7 +747,7 @@
                   </q-item-section>
                 </q-item>
                 <q-item
-                  :to="`/student/${student.id}/payments/${'view'}`"
+                  :to="`/student/${student.id}/payments/`"
                   active-class="q-item-no-link-highlighting"
                 >
                   <q-item-section avatar>

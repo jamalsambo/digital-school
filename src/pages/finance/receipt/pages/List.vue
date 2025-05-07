@@ -106,11 +106,104 @@
             flat
             bordered
             :pagination="{ rowsPerPage: 10 }"
+            :grid="$q.screen.lt.md"
           >
-            <!-- Configuração da expansão -->
+            <!-- 🎯 MODO CARD (mobile) -->
+            <template v-slot:item="props">
+              <q-card class="q-mb-sm col-xs-12">
+                <q-card-section>
+                  <!-- Dados principais -->
+                  <div
+                    v-for="col in props.cols"
+                    :key="col.name"
+                    class="q-mb-xs"
+                  >
+                    <div class="text-caption text-grey-8">{{ col.label }}</div>
+                    <div class="text-body2">{{ col.value }}</div>
+                  </div>
+
+                  <!-- Ações -->
+                  <div class="row q-gutter-sm q-mt-sm">
+                    <q-btn
+                      flat
+                      dense
+                      round
+                      color="red"
+                      icon="delete"
+                      @click.stop="deleteInvoice(props.row)"
+                    />
+                    <q-btn
+                      size="sm"
+                      color="primary"
+                      round
+                      @click.stop="props.expand = !props.expand"
+                      :icon="props.expand ? 'remove' : 'add'"
+                    />
+                  </div>
+                </q-card-section>
+
+                <!-- Expansão -->
+                <q-slide-transition>
+                  <div v-show="props.expand" class="q-pa-sm bg-grey-2">
+                    <!-- Items -->
+                    <div v-if="props.row.items?.length">
+                      <div class="text-subtitle2 q-mb-sm">Items da factura</div>
+                      <q-list dense bordered>
+                        <q-item
+                          v-for="(item, idx) in props.row.items"
+                          :key="idx"
+                        >
+                          <q-item-section>
+                            <q-item-label>{{ item.amount }}</q-item-label>
+                            <q-item-label caption>{{
+                              item.description
+                            }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </div>
+
+                    <!-- Multas -->
+                    <div class="q-mt-sm" v-if="props.row.penalts?.length">
+                      <div class="text-subtitle2 q-mb-sm">Multas Aplicadas</div>
+                      <q-list dense bordered>
+                        <q-item
+                          v-for="(fine, idx) in props.row.penalts"
+                          :key="idx"
+                        >
+                          <q-item-section>
+                            <q-item-label>{{ fine.amount }}</q-item-label>
+                            <q-item-label caption>{{
+                              fine.paymentNote
+                            }}</q-item-label>
+                            <q-item-label caption>{{
+                              formatDate(fine?.createdAt)
+                            }}</q-item-label>
+                            <q-item-label caption>{{
+                              fine?.status ? "Paga" : "Nao Paga"
+                            }}</q-item-label>
+                          </q-item-section>
+                          <q-item-section side>
+                            <q-btn
+                              flat
+                              dense
+                              round
+                              color="red"
+                              icon="delete"
+                              @click.stop="deletePenalty(props.row.id, fine.id)"
+                            />
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </div>
+                  </div>
+                </q-slide-transition>
+              </q-card>
+            </template>
+
+            <!-- 🖥️ MODO TABELA (desktop) -->
             <template v-slot:body="props">
               <q-tr :props="props">
-                <!-- Colunas principais -->
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
                   {{ col.value }}
                 </q-td>
@@ -122,30 +215,28 @@
                     round
                     color="red"
                     icon="delete"
-                    @click="deleteInvoice(props.row)"
+                    @click.stop="deleteInvoice(props.row)"
                   />
                 </q-td>
 
-                <!-- Botão para expandir -->
                 <q-td auto-width>
                   <q-btn
                     size="sm"
                     color="primary"
                     round
-                    @click="props.expand = !props.expand"
+                    @click.stop="props.expand = !props.expand"
                     :icon="props.expand ? 'remove' : 'add'"
                   />
                 </q-td>
               </q-tr>
 
-              <!-- Linha expandida com multas -->
+              <!-- Conteúdo expandido -->
               <q-tr v-show="props.expand" :props="props">
                 <q-td colspan="100%">
                   <div class="q-pa-md bg-grey-2">
-                    <div class="q-pa-md bg-grey-2" v-if="props.row.items">
+                    <div v-if="props.row.items?.length">
                       <div class="text-h6 q-mb-md">Items da factura</div>
-
-                      <q-list bordered v-if="props.row.items">
+                      <q-list bordered>
                         <q-item
                           v-for="(iten, index) in props.row.items"
                           :key="index"
@@ -158,14 +249,10 @@
                           </q-item-section>
                         </q-item>
                       </q-list>
-
-                      <div v-else class="text-caption text-grey">
-                        Nenhuma multa aplicada
-                      </div>
                     </div>
-                    <div class="text-h6 q-mb-md">Multas Aplicadas</div>
 
-                    <q-list bordered v-if="props.row.penalts">
+                    <div class="text-h6 q-mb-md">Multas Aplicadas</div>
+                    <q-list bordered v-if="props.row.penalts?.length">
                       <q-item
                         v-for="(fine, index) in props.row.penalts"
                         :key="index"
@@ -189,12 +276,11 @@
                             round
                             color="red"
                             icon="delete"
-                            @click="deletePenalty(props.row.id, fine.id)"
+                            @click.stop="deletePenalty(props.row.id, fine.id)"
                           />
                         </q-item-section>
                       </q-item>
                     </q-list>
-
                     <div v-else class="text-caption text-grey">
                       Nenhuma multa aplicada
                     </div>
@@ -202,19 +288,18 @@
                 </q-td>
               </q-tr>
             </template>
-            <!-- Configuração da expansão -->
+
+            <!-- Rodapé -->
             <template v-slot:bottom>
               <div class="q-pa-md bg-grey-2 text-right">
                 <div>
                   Total facturas pagos: <strong>{{ invoices.length }}</strong>
                 </div>
                 <div>
-                  Total de multas:
-                  <strong>{{ totalPenalty }}</strong>
+                  Total de multas: <strong>{{ totalPenalty }}</strong>
                 </div>
                 <div>
-                  Total de mensalidades:
-                  <strong>{{ totalMonthFees }}</strong>
+                  Total de mensalidades: <strong>{{ totalMonthFees }}</strong>
                 </div>
                 <div>
                   Total Geral: <strong>{{ totalPayments }}</strong>

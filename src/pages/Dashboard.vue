@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div v-if="user?.userType === 'Funcionario'">
+    <div v-if="userStores.isEmployee &&  !userStores.isTeacher">
       <div class="quick-links-container q-mt-md">
         <q-card flat class="quick-links">
           <q-card-section class="text-center">
@@ -33,19 +33,22 @@
               <q-icon name="assignment" size="md" />
               <span>Relatório de Alunos</span>
             </q-btn>
-            <q-btn unelevated class="quick-link" @click="goTo('invoices')">
+            <q-btn unelevated class="quick-link" @click="goTo('invoices')" v-if="userStores.hasViewReceipts">
               <q-icon name="receipt_long" size="md" />
               <span>Gerar Fatura</span>
             </q-btn>
-            <q-btn unelevated class="quick-link" @click="goTo('receipts')">
+            <q-btn unelevated class="quick-link" @click="goTo('receipts')" v-if="userStores.hasViewInvoices">
               <q-icon name="receipt" size="md" />
               <span>Emitir Recibo</span>
             </q-btn>
           </q-card-section>
         </q-card>
       </div>
+
       <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-4 col-sm-12 col-xs-12">
+        <div class="col-md-4 col-sm-12 col-xs-12"
+        v-if="userStores.hasViewEmployees"
+        >
           <Teachers
             :item="{
               title: 'Professores',
@@ -56,7 +59,9 @@
             }"
           />
         </div>
-        <div class="col-md-4 col-sm-12 col-xs-12">
+        <div class="col-md-4 col-sm-12 col-xs-12"
+          v-if="userStores.hasViewStudents"
+        >
           <Teachers
             :item="{
               title: 'Estudantes',
@@ -67,7 +72,9 @@
             }"
           />
         </div>
-        <div class="col-md-4 col-sm-12 col-xs-12">
+        <div class="col-md-4 col-sm-12 col-xs-12"
+         v-if="userStores.hasViewStudents"
+        >
           <Teachers
             :item="{
               title: 'Estudantes activos',
@@ -79,14 +86,16 @@
           />
         </div>
       </div>
-      <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-3 col-sm-12 col-xs-12">
+      <div class="row q-col-gutter-x-md q-mt-lg"
+      v-if="userStores.hasViewGlobalPayments &&  userStores.hasViewGlobalPayments && userStores.hasViewGlobalPayments"
+      >
+        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
           <Card :item="itemTotalPayment" />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12">
+        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
           <Card :item="itemTotalPaymentDone" />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12">
+        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
           <Card :item="itemTotalPaymentLate" />
         </div>
         <div class="col-md-3 col-sm-12 col-xs-12">
@@ -94,10 +103,10 @@
         </div>
       </div>
       <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-6 col-sm-12 col-xs-12">
+        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewPaymentsYear">
           <Card :item="itemPaymentToYear" />
         </div>
-        <div class="col-md-6 col-sm-12 col-xs-12">
+        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewExpensesYear">
           <Card
             :item="{
               title: 'Despesas realizadas este ano',
@@ -110,7 +119,7 @@
         </div>
       </div>
       <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-3 col-sm-12 col-xs-12">
+        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewPaymentsDay">
           <SubCard
             :item="{
               title: 'A receber hoje',
@@ -121,7 +130,7 @@
             }"
           />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12">
+        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewPaymentsMonth">
           <SubCard
             :item="{
               title: 'A receber este mes',
@@ -132,7 +141,7 @@
             }"
           />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12">
+        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewExpensesDay">
           <SubCard
             :item="{
               title: 'A pagar hoje',
@@ -143,7 +152,7 @@
             }"
           />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12">
+        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewExpensesMonth">
           <SubCard
             :item="{
               title: 'A pagar este mes',
@@ -156,7 +165,7 @@
         </div>
       </div>
       <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-6 col-sm-12 col-xs-12">
+        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewPaymentsLate">
           <InOutCard
             :item="{
               title: 'Pagamentos em atraso do mes',
@@ -166,7 +175,7 @@
             }"
           />
         </div>
-        <div class="col-md-6 col-sm-12 col-xs-12">
+        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewExpensesLate">
           <InOutCard
             :item="{
               title: 'Despensas em atraso do mes',
@@ -178,8 +187,8 @@
         </div>
       </div>
       <!-- Graficos de barras anuais e diarios -->
-      <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-6 col-sm-12 col-xs-12">
+      <div class="row q-col-gutter-x-md q-mt-lg"  v-if="userStores.hasViewGlobalPayments">
+        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
           <!-- Grafico de comparacao de ano actual e anterior -->
           <q-card>
             <q-card-section>
@@ -187,7 +196,7 @@
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-md-6 col-sm-12 col-xs-12">
+        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
           <q-card>
             <q-card-section>
               <canvas ref="chartReportDaily"></canvas>
@@ -196,7 +205,7 @@
         </div>
       </div>
 
-      <div class="row q-col-gutter-x-md q-mt-lg">
+      <!-- <div class="row q-col-gutter-x-md q-mt-lg">
         <div class="col-md-6 col-sm-12 col-xs-12">
           <q-card class="col-5 q-pa-md">
             <div class="row justify-between items-center">
@@ -240,7 +249,7 @@
             </q-chip>
           </q-card>
         </div>
-      </div>
+      </div> -->
 
       <div class="row q-col-gutter-x-md q-mt-lg">
         <div class="col-md-12 col-sm-12 col-xs-12">
@@ -265,11 +274,11 @@
       <TeachearDash />
     </div>
 
-    <div v-if="user?.userType === 'Estudante'">
+    <div v-if="userStores.isStudent">
       <StudantDash />
     </div>
 
-    <div v-if="user?.userType === 'Encarregado'">
+    <div v-if="userStores.isGuardian">
       <GuardianDash />
     </div>
   </q-page>

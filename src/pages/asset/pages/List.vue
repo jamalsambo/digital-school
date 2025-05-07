@@ -56,6 +56,13 @@
                 color="primary"
                 @click="editAsset(props.row)"
               />
+              <q-btn
+                flat
+                round
+                icon="compare_arrows"
+                color="primary"
+                @click="createMove(props.row)"
+              />
             </template>
           </q-table>
         </q-card>
@@ -83,6 +90,10 @@ const assets = ref([]);
 const newAsset = () => {
   router.push({ name: "asset-create" });
 };
+
+const createMove = (asset) => {
+  router.push({ name: "move create", params: { assetId: asset.id} });
+}
 
 /* setup methods */
 const fetchAssets = async () => {

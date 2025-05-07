@@ -8,7 +8,9 @@ export const useInstitutionStores = defineStore("institution", {
     institution: {},
   }),
   getters: {
-    // doubleCount: (state) => state.counter * 2,
+    istechnical: (state) =>  state.institution.educationLevel?.name === 'Ensino Técnico',
+    isInfantil: (state) =>  state.institution.educationLevel?.name === 'Ensino Infantil',
+    isHigh: (state) =>  state.institution.educationLevel?.name ===  'Ensino Médio',
   },
   actions: {
     async list(params) {

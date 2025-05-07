@@ -279,9 +279,10 @@ const fetchEmployee = async () => {
     personalInformation.value = employeeStores.employee?.basicInformation;
     contacts.value = employeeStores.employee?.contacts;
     classLeader.value = employeeStores.employee?.classLeader || [];
-    userPermissions.value = employeeStores.employee.user.permissionsItems;
-    permissions.value = employeeStores.employee.institution.plan.permissions;
+    userPermissions.value = employeeStores.employee.user?.permissionsItems;
+    permissions.value = employeeStores.employee.institution?.plan?.permissions;
   } catch (error) {
+    console.log(error)
     notifyError("Ocorreu um erro ao carregar os dados do funcionário.");
   } finally {
     isLoading.value = false;
@@ -385,7 +386,7 @@ const options = computed(() =>
 /* 🔹 Lifecycle Hook */
 onMounted(async () => {
   await fetchEmployee();
-  selected.value = userPermissions.value.map((up) => up.key);
+  selected.value = userPermissions?.value?.map((up) => up.key);
 });
 </script>
 

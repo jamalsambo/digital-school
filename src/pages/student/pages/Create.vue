@@ -276,7 +276,7 @@
                 ref="userChild"
                 :data="contacts"
                 :entity="'guardian'"
-                :userTypeId="'93526c17-594c-478e-94e8-ac4314044096'"
+                :userTypeId="'637c12c9-5e26-417d-8fa2-96c5486ce0e3'"
               >
                 <template #actions>
                   <div class="row justify-end q-gutter-sm">

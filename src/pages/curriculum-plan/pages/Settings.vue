@@ -43,13 +43,21 @@
           </Tables>
         </div>
       </q-card-section>
+      <div class="row q-mt-md justify-end">
+          <q-btn
+            label="voltar"
+            color="negative"
+            flat
+            type="reset"
+            @click="router.back()"
+          />
+        </div>
     </q-card>
   </q-page>
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCourseStores } from "src/pages/course/store";
 import { useCurriculumPlanStores } from "../store";
 import useNotify from "src/composables/UseNotify";
 import Tables from "src/components/Tables.vue";
@@ -61,7 +69,6 @@ const route = useRoute();
 
 /* setup store */
 const curriculumStores = useCurriculumPlanStores();
-const courseStores = useCourseStores();
 const { notifyError } = useNotify();
 const { getNameForDisciplineEducation } = scripts()
 

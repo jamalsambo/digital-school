@@ -1,105 +1,111 @@
 <template>
-  <q-page padding>
-    <div class="row q-col-gutter-sm">
-      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <q-card class="text-grey-8 no-shadow" bordered>
-          <q-card-section class="q-pa-none">
-            <q-page>
-              <q-table
-                :rows="teachings"
-                :columns="columns"
-                row-key="classEntity"
-                dense=""
-              >
-                <template v-slot:top-right="">
-                  <q-input
-                    borderless
-                    dense
-                    debounce="300"
-                    v-model="filter"
-                    placeholder="Pesquisar"
-                  >
-                    <template v-slot:append>
-                      <q-icon name="search" />
-                    </template>
-                  </q-input>
+  <q-page padding class="bg-grey-2">
+    <q-card flat bordered class="q-pa-md">
+      <q-card-section class="row items-center justify-between q-pb-none">
+        <div class="text-h6 text-primary">Ensino por Turma</div>
+        <q-input
+          dense
+          outlined
+          debounce="300"
+          v-model="filter"
+          placeholder="Pesquisar turma ou disciplina"
+          class="q-ml-sm"
+          style="max-width: 300px"
+        >
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </q-card-section>
 
-                </template>
-                <template v-slot:body="props">
-                  <q-tr :props="props">
-                    <q-td>
-                     <q-item-section>
-                      {{ props.row.classEntity.name }}
-                     </q-item-section>
-                      <q-item-section side>
-                            <q-btn
-                              dense
-                              flat
-                              icon="group_add"
-                              color="green"
-                              @click="
-                                group(props.row.classEntity)
-                              "
-                            />
-                          </q-item-section>
-                    </q-td>
-                    <q-td>
-                      <q-list bordered>
-                        <q-item
-                          v-for="discipline in props.row.disciplines"
-                          :key="discipline.id"
-                        >
-                          <q-item-section>
-                            {{ discipline.name }}
-                          </q-item-section>
+      <q-card-section class="q-pa-none">
+        <q-table
+          :rows="teachings"
+          :columns="columns"
+          row-key="classEntity"
+          dense
+          :filter="filter"
+          flat
+          bordered
+          class="q-mt-md"
+        >
+          <template v-slot:body="props">
+            <q-tr :props="props">
+              <q-td class="text-bold text-primary">
+                {{ props.row.classEntity.name }}
+                <q-btn
+                  dense
+                  round
+                  flat
+                  icon="group_add"
+                  color="green"
+                  size="sm"
+                  class="q-ml-sm"
+                  @click="group(props.row.classEntity)"
+                  :title="'Gerir grupos'"
+                />
+              </q-td>
 
-                          <q-item-section side>
-                            <q-btn
-                              dense
-                              flat
-                              icon="crisis_alert"
-                              color="green"
-                              @click="
-                                attendances(props.row.classEntity, discipline)
-                              "
-                            />
-                          </q-item-section>
+              <q-td>
+                <div v-for="group in props.row.disciplines" :key="group.cicle" class="q-mb-sm">
+                  <div class="text-subtitle2 text-grey-8 q-mb-xs">🌀 Ciclo {{ group.cicle }}</div>
+                  <q-list bordered separator dense>
+                    <q-item
+                      v-for="discipline in group.list"
+                      :key="discipline.id"
+                      clickable
+                      v-ripple
+                    >
+                      <q-item-section>
+                        {{ discipline.name }}
+                      </q-item-section>
 
-                          <q-item-section side>
-                            <q-btn
-                              dense
-                              flat
-                              icon="groups"
-                              color="negative"
-                              @click="
-                                evolution(props.row.classEntity, discipline)
-                              "
-                            />
-                          </q-item-section>
-                          <q-item-section side>
-                            <q-btn
-                              dense
-                              flat
-                              icon="add_task"
-                              color="secundary"
-                              @click="
-                                createTask(props.row.classEntity, discipline)
-                              "
-                            />
-                          </q-item-section>
-                        </q-item>
-                      </q-list>
-                    </q-td>
-                  </q-tr>
-                </template>
-              </q-table>
-            </q-page>
-          </q-card-section>
-        </q-card>
-      </div>
-    </div>
+                      <q-item-section side >
+                        <q-btn
+                          dense
+                          flat
+                          round
+                          icon="crisis_alert"
+                          color="green"
+                          @click="attendances(props.row.classEntity, discipline)"
+                          :title="'Ver presenças'"
+                        />
+                      </q-item-section>
+                      <q-item-section side >
+                        <q-btn
+                          dense
+                          flat
+                          round
+                          icon="groups"
+                          color="negative"
+                          @click="evolution(props.row.classEntity, discipline)"
+                          :title="'Ver evolução'"
+                        />
+                      </q-item-section>
+                        <q-item-section side >
+                        <q-btn
+                          dense
+                          flat
+                          round
+                          icon="add_task"
+                          color="primary"
+                          @click="createTask(props.row.classEntity, discipline)"
+                          :title="'Nova tarefa'"
+                        />
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </div>
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
+
   </q-page>
 </template>
+
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -166,21 +172,42 @@ const group = (classe) => {
     },
    })
 }
+
 const groupDataByClass = (data) => {
   const grouped = {};
+
   data.forEach((item) => {
-    if (!grouped[item.classEntity.name]) {
-      grouped[item.classEntity.name] = {
+    const className = item.classEntity.name;
+    const activity = item.developmentAreaActivy;
+
+    if (!grouped[className]) {
+      grouped[className] = {
         classEntity: item.classEntity,
-        disciplines: [],
+        disciplines: {},
       };
     }
-    grouped[item.classEntity.name].disciplines.push({
-      name: item.developmentAreaActivy.activity.name,
-      id: item.developmentAreaActivy.id,
+
+    // Agrupar por ciclo
+    const cicle = activity.cicle;
+    if (!grouped[className].disciplines[cicle]) {
+      grouped[className].disciplines[cicle] = [];
+    }
+
+    grouped[className].disciplines[cicle].push({
+      name: activity.activity.name,
+      id: activity.id,
+      cicle: activity.cicle,
     });
   });
-  return Object.values(grouped);
+
+  // Converter os ciclos para array, se preferir
+  return Object.values(grouped).map((group) => ({
+    ...group,
+    disciplines: Object.entries(group.disciplines).map(([cicle, list]) => ({
+      cicle,
+      list,
+    })),
+  }));
 };
 
 onMounted(() => {

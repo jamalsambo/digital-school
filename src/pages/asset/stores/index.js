@@ -9,7 +9,8 @@ export const useAssetStores = defineStore("asset", {
     categories: [],
     category: {},
     locations: [],
-    location: {}
+    location: {},
+    moves: []
   }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
@@ -19,21 +20,38 @@ export const useAssetStores = defineStore("asset", {
     async list() {
       const authStore = useAuthStore();
       const { institutionId } = authStore.user;
-      const { data, error } = await api.get("/asset",{params: {institutionId: institutionId}});
+      const { data, error } = await api.get("/asset", {
+        params: { institutionId: institutionId },
+      });
       if (error) throw error;
       this.assets = data;
     },
     async create(params) {
       const authStore = useAuthStore();
       const { institutionId } = authStore.user;
-      const { data, error } = await api.post("/asset", {...params, institutionId: institutionId});
+      const { data, error } = await api.post("/asset", {
+        ...params,
+        institutionId: institutionId,
+      });
+      if (error) throw error;
+      this.asset = data;
+    },
+    async update(id, params) {
+      const { data, error } = await api.put(`/asset/${id}`, params);
+      if (error) throw error;
+      this.asset = data;
+    },
+    async findOne(id) {
+      const { data, error } = await api.get(`/asset/${id}`);
       if (error) throw error;
       this.asset = data;
     },
     async categories() {
       const authStore = useAuthStore();
       const { institutionId } = authStore.user;
-      const { data, error } = await api.get("/category-patrimony",{params: {institutionId: institutionId}});
+      const { data, error } = await api.get("/category-patrimony", {
+        params: { institutionId: institutionId },
+      });
       if (error) throw error;
       this.categories = data;
     },
@@ -41,16 +59,21 @@ export const useAssetStores = defineStore("asset", {
     async createCategory(params) {
       const authStore = useAuthStore();
       const { institutionId } = authStore.user;
-      const { data, error } = await api.post("/category-patrimony", {...params, institutionId: institutionId});
+      const { data, error } = await api.post("/category-patrimony", {
+        ...params,
+        institutionId: institutionId,
+      });
       if (error) throw error;
       this.category = data;
     },
 
-     /* Location */
-     async locations() {
+    /* Location */
+    async findlocations() {
       const authStore = useAuthStore();
       const { institutionId } = authStore.user;
-      const { data, error } = await api.get("/location-patrimony",{params: {institutionId: institutionId}});
+      const { data, error } = await api.get("/location-patrimony", {
+        params: { institutionId: institutionId },
+      });
       if (error) throw error;
       this.locations = data;
     },
@@ -58,15 +81,32 @@ export const useAssetStores = defineStore("asset", {
     async createLocation(params) {
       const authStore = useAuthStore();
       const { institutionId } = authStore.user;
-      const { data, error } = await api.post("location-patrimony", {...params, institutionId: institutionId});
+      const { data, error } = await api.post("location-patrimony", {
+        ...params,
+        institutionId: institutionId,
+      });
       if (error) throw error;
       this.asset = data;
     },
-
-    async update(id, employee) {
-      const { data, error } = await api.put(`/employee/${id}`, employee);
+    /* Asset Move */
+    async findMoves() {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
+      const { data, error } = await api.get("/patrimony-moviment", {
+        params: { institutionId: institutionId },
+      });
       if (error) throw error;
-      this.employee = data;
+      this.moves = data;
+    },
+    async createMove(params) {
+      const authStore = useAuthStore();
+      const { institutionId  } = authStore.user
+      const { data, error } = await api.post("/patrimony-moviment", {
+        ...params,
+        institutionId: institutionId,
+      });
+      if (error) throw error;
+      this.asset = data;
     },
   },
 });

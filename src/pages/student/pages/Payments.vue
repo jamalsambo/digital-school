@@ -1,26 +1,65 @@
 <template>
   <q-page padding>
-    <Tables :rows="payments" :columns="PaymentsColumns"></Tables>
+    <q-card>
+      <q-card-section>
+        <div class="text-h5">Controle de pagamentos</div>
+        <div class="text-subtitle1">
+          Gerir e controlar os seus pagamentos
+        </div>
+        <q-separator spaced />
+      </q-card-section>
+      <q-card-section>
+        <div class="text-subtitle1">Informações de pesquisa</div>
+        <q-card flat bordered class="q-pa-md shadow-2">
+          <q-select
+              class="col-md-4 col-sm-12 col-xs-12"
+              label="Tipo de Pagamento"
+              option-label="name"
+              option-value="id"
+              v-model="paymentTypeSelected"
+              :options="paymentTypes"
+              map-options
+              outlined
+              dense
+              clearable=""
+              @update:model-value="handleFetchInvoices"
+            />
+          </q-card>
+      </q-card-section>
+      <q-card-section>
+        <q-card flat bordered class="q-pa-md shadow-2">
+          <InvoiceTable :invoices="invoices" :handle-row-click="handleRowClick"/>
+        </q-card>
+      </q-card-section>
+    </q-card>
   </q-page>
 </template>
-
 <script setup>
-import { onMounted, ref } from "vue";
-import { useAuthStore } from "src/pages/auth/store";
-import { useStudentStores } from "../store";
-import Tables from "src/components/Tables.vue";
-import scripts from "src/composables/Scripts";
-import PaymentsColumns from "src/pages/finance/payments/components/columns/Payments";
+import { computed, onMounted, ref } from 'vue';
+import { usePaymentStores } from 'src/pages/finance/payments/stores';
+import { useStudentStores } from '../store';
+import { useInvoiceStores } from 'src/pages/finance/invoice/stores';
+import InvoiceTable from 'src/pages/finance/invoice/components/InvoiceTable.vue';
+import { useRoute } from 'vue-router';
+import scripts from 'src/composables/Scripts';
 
-/* Stores */
-const authStore = useAuthStore();
-const studentStores = useStudentStores();
-const { filterEnrollmentsByYear } = scripts();
+/* setup route */
+const route = useRoute()
 
-/* Reactive variables */
-const payments = ref([]);
-const student = ref();
-const year = ref(new Date().getFullYear());
+/* setup stores */
+const paymentStores = usePaymentStores();
+const studentStores = useStudentStores()
+const invoiceStores = useInvoiceStores()
+const {filterEnrollmentsByYear  } = scripts()
+
+/* setup data */
+const { studentId } = route.params
+const paymentTypeSelected = ref(null)
+
+const paymentTypes = ref([])
+const invoices = ref([])
+const student = ref(null)
+const enrollments = ref([])
 const months = ref([
   { id: 0, month: "Janeiro" },
   { id: 1, month: "Fevereiro" },
@@ -36,36 +75,60 @@ const months = ref([
   { id: 11, month: "Dezembro" },
 ]);
 
-/* Funcao para buscar pagaments do estudante */
-const fetchPayments = async () => {
+/* setup computed */
+const actualEnrollment = computed(() =>
+  filterEnrollmentsByYear(enrollments.value, new Date().getFullYear())
+);
+
+/* fetch data */
+const handleFetchInvoices = async () => {
   try {
-    await studentStores.findOne(authStore.user.userDetails.id);
-    student.value = studentStores.student;
-    const enrollments = studentStores.student.enrollments;
-    const enrollmentsByYear = filterEnrollmentsByYear(enrollments, year.value);
-    const paymentStudent = studentStores.student.payments;
-
-    payments.value = months.value.map((month) => {
-      const payment = paymentStudent.find(
-        (p) =>
-          p.year === year.value.toString() &&
-          p.studentId === authStore.user.userDetails.id
-      );
-
-      return {
-        month: month,
-        payment: payment || {
-          amount: enrollmentsByYear.monthlyFee,
-          status: false,
-        },
-      };
+    await invoiceStores.find({
+      classId:  actualEnrollment.value?.classe?.id,
+      paymentTypeId: paymentTypeSelected.value.id,
+      studentId: studentId,
     });
+
+    if (paymentTypeSelected.value.name === "Matricula") {
+      invoices.value = invoiceStores.invoices;
+    } else {
+      invoices.value = months.value.map((month) => {
+        const invoice = invoiceStores.invoices.find(
+          (inv) => inv.month.toLowerCase() === month.month.toLowerCase()
+        );
+        return {
+          ...month,
+          ...invoice,
+          amount: invoice ? invoice.amount : actualEnrollment.value?.classe?.monthlyFee,
+        };
+      });
+    }
   } catch (error) {
-    console.error(error);
+    console.log(error);
+  }
+};
+/* 🔄 Fetch data */
+const fetchStudentData = async () => {
+  try {
+    await studentStores.findOne(studentId);
+    student.value = studentStores.student;
+    enrollments.value = student.value.enrollments;
+
+  } catch (error) {
+    notifyError('Erro ao carregar o estudante.');
+  }
+};
+const fetchPaymentTypes = async () => {
+  try {
+    await paymentStores.findPaymentTypes();
+    paymentTypes.value = paymentStores.paymentTypes;
+  } catch (error) {
+    notifyError("Ocorreu um erro ao carregar os tipos de pagamento");
   }
 };
 
-onMounted(async () => {
-  await fetchPayments();
-});
+onMounted( async () => {
+ await fetchPaymentTypes()
+ await fetchStudentData()
+})
 </script>

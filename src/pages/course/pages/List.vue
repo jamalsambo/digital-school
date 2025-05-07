@@ -62,7 +62,10 @@ import { onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
 import Tables from "src/components/Tables.vue";
 import { useCourseStores } from "src/pages/course/store";
 import useNotify from "src/composables/UseNotify";
-import columns from "../components/ProgramColumns";
+import getColumns from "../components/ProgramColumns";
+import { computed } from "vue";
+
+const columns = computed(() => getColumns())
 
 /* setup router */
 const router = useRouter();
@@ -70,7 +73,7 @@ const route = useRoute();
 
 /* Setup store */
 const courseStores = useCourseStores();
-const { notifyError, notifySuccess } = useNotify();
+const { notifyError } = useNotify();
 
 /* setup data */
 const { program, educationId } = route.params;

@@ -34,6 +34,7 @@
           Média final:
           <span class="text-weight-medium">{{ item.finalAverage }}</span>
         </q-item-label>
+        <q-btn color="primary" v-if="item.finalAverage.length < 2 && !hasHighExamScore(item.finalAverage)"  class="q-mt-xs"  dense flat icon="check" label="Lança nota de exame" @click="launchGradesExame(item.id)" />
       </q-item-section>
 
       <!-- Lista de avaliações do exame -->
@@ -49,6 +50,7 @@
                 {{ exam.evolutionType }}
               </div>
               <div class="text-caption text-grey-8">Nota: {{ exam.note }}</div>
+
             </div>
             <q-chip
               :color="exam.note >= 10 ? 'green' : 'red'"
@@ -66,6 +68,11 @@
 </template>
 <script setup>
 const props = defineProps({
-  finalAverages: { type: Array, required: true}
+  finalAverages: { type: Array, required: true},
+  launchGradesExame: { type: Function, required: false},
 })
+
+const hasHighExamScore = (examEvolutions) => {
+  return examEvolutions.some(evolution => evolution.note >= 10 && evolution.evolutionType==='Exame normal');
+}
 </script>

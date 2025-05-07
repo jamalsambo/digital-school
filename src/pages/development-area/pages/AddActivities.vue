@@ -59,7 +59,7 @@
                   map-options
                 />
                 <q-select
-                  v-if="education.name !== 'Ensino Infantil' || education.name!=='Ensino Médio'"
+                  v-if="education.name !== 'Ensino Infantil'"
                   class="col-md-2 col-sm-12 col-xs-12"
                   v-model="activity.critical"
                   :options="[

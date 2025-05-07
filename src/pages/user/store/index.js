@@ -9,6 +9,13 @@ export const useUserStores = defineStore("user", {
     users: [],
   }),
   getters: {
+    isEmployee: (state) =>  state.user.userType?.name === 'Funcionario',
+    isTeacher:  (state) =>  state.user.teacher === 'Sim',
+    isStudent: (state) =>  state.user.userType?.name ===  'Estudante',
+    isGuardian: (state) =>  state.user.userType?.name ===  'Encarregado',
+    isSuper: (state) =>  state.user.userType?.name ===  'Super',
+
+
     hasViewStudents: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_students"),
     hasCreateStudents: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_students"),
     hasCreateEnrrolment: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_enrollment"),
@@ -61,20 +68,19 @@ export const useUserStores = defineStore("user", {
 
     hasViewBulletins: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_bulletins"),
     hasIssueBulletins: (state) =>  state.user?.permissionsItems.some((p) => p.key === "issue_bulletins"),
-
+    /* Tipos de paqgementos */
     hasViewPaymentsTypes: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_payment_types"),
     hasCreatePaymentsTypes: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_payment_types"),
     hasEditPaymentsTypes: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_payment_types"),
-
+    /* Financas */
     hasViewExpensesCategories: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_expenses_categories"),
     hasCreateExpensesCategories: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_expenses_categories"),
     hasEditExpensesCategories: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_expenses_categories"),
-
     hasViewExpenses: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_expenses"),
     hasCreateExpenses: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_expenses"),
     hasEditExpenses: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_expenses"),
     hasDeleteExpenses: (state) =>  state.user?.permissionsItems.some((p) => p.key === "delete_expenses"),
-
+    /* Tela principal */
     hasViewGlobalPayments: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_global_payments"),
     hasViewPaymentsYear: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_payments_year"),
     hasViewExpensesYear: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_expenses_year"),
@@ -84,6 +90,42 @@ export const useUserStores = defineStore("user", {
     hasViewExpensesMonth: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_expenses_month"),
     hasViewPaymentsLate: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_payment_late"),
     hasViewExpensesLate: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_expenses_late"),
+    /* Lancamento de notas */
+    hasPostEvolutionGrade: (state) =>  state.user?.permissionsItems.some((p) => p.key === "post_evaluation_grade"),
+    hasEditEvolutionGrade: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_evaluation_grade"),
+    hasDeleteEvolutionGrade: (state) =>  state.user?.permissionsItems.some((p) => p.key === "delete_evaluation_grade"),
+    hasViewEvolutionGrade: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_evaluation_grade"),
+    /* Stokc */
+    hasMoveStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_moviments_stock"),
+    hasCreateInStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_in_stock"),
+    hasCreateOutStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_out_stock"),
+    hasViewProductStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_produts_stock"),
+    hasCreateProductStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_produts_stock"),
+    hasEditProductStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_produts_stock"),
+    hasDeleteProductStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "delete_produts_stock"),
+    hasViewCategoryStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_category_stock"),
+    hasCreateCategoryStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_category_stock"),
+    hasEditCategoryStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_category_stock"),
+    hasDeleteCategoryStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "delete_category_stock"),
+    hasViewSuplierStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_supliers_stock"),
+    hasCreateSuplierStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_supliers_stock"),
+    hasEditSuplierStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_supliers_stock"),
+    hasDeleteSuplierStock: (state) =>  state.user?.permissionsItems.some((p) => p.key === "delete_supliers_stock"),
+    /* Patrimonio */
+    hasMoveAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_moviments_assets"),
+    hasCreateMoveAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_move_assets"),
+    hasViewAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_assets"),
+    hasCreateAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_assets"),
+    hasEditAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_assets"),
+    hasDeleteAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "delete_assets"),
+    hasViewCategoryAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_category_assets"),
+    hasCreaCategoryeAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_category_assets"),
+    hasEditCategoryAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_category_assets"),
+    hasDeleCategoryAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "delete_category_assets"),
+    hasViewLocationAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "view_location_assets"),
+    hasCreaLocationeAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "create_location_assets"),
+    hasEditLocationAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "edit_location_assets"),
+    hasDeleLocationAsset: (state) =>  state.user?.permissionsItems.some((p) => p.key === "delete_location_assets"),
 
   },
   actions: {

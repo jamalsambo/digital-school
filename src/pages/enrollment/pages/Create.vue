@@ -77,7 +77,7 @@
               color="negative"
               flat
               icon="cancel"
-              @click="cancel"
+              @click="router.back()"
             />
             <q-btn
               type="submit"

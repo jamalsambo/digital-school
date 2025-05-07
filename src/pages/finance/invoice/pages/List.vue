@@ -99,91 +99,7 @@
     <q-card class="q-mt-lg">
       <q-card-section>
         <q-card flat bordered class="q-pa-md shadow-2">
-          <q-table
-            title="Facturas"
-            :rows="invoices"
-            :columns="columns"
-            row-key="id"
-            flat
-            bordered
-            :pagination="{ rowsPerPage: 10 }"
-            @row-click="handleRowClick"
-          >
-            <!-- Configuração da expansão -->
-            <template v-slot:body="props">
-              <q-tr :props="props">
-                <!-- Colunas principais -->
-                <q-td v-for="col in props.cols" :key="col.name" :props="props">
-                  {{ col.value }}
-                </q-td>
-
-                <!-- Botão para expandir -->
-                <q-td auto-width>
-                  <q-btn
-                    size="sm"
-                    color="primary"
-                    round
-                    @click="props.expand = !props.expand"
-                    :icon="props.expand ? 'remove' : 'add'"
-                  />
-                </q-td>
-              </q-tr>
-
-              <!-- Linha expandida com multas -->
-              <q-tr v-show="props.expand" :props="props">
-                <q-td colspan="100%">
-                  <div class="q-pa-md bg-grey-2" v-if="props.row.items">
-                    <div class="text-h6 q-mb-md">Items da factura</div>
-
-                    <q-list bordered v-if="props.row.items">
-                      <q-item
-                        v-for="(iten, index) in props.row.items"
-                        :key="index"
-                      >
-                        <q-item-section>
-                          <q-item-label>{{ iten.amount }}</q-item-label>
-                          <q-item-label caption>{{
-                            iten.description
-                          }}</q-item-label>
-                        </q-item-section>
-                      </q-item>
-                    </q-list>
-
-                    <div v-else class="text-caption text-grey">
-                      Nenhuma multa aplicada
-                    </div>
-                  </div>
-                  <div class="q-pa-md bg-grey-2" v-if="props.row.penalts">
-                    <div class="text-h6 q-mb-md">Multas Aplicadas</div>
-
-                    <q-list bordered v-if="props.row.penalts">
-                      <q-item
-                        v-for="(fine, index) in props.row.penalts"
-                        :key="index"
-                      >
-                        <q-item-section>
-                          <q-item-label>{{ fine.amount }}</q-item-label>
-                          <q-item-label caption>{{
-                            fine.paymentNote
-                          }}</q-item-label>
-                          <q-item-label caption>{{
-                            fine?.createdAt
-                          }}</q-item-label>
-                        </q-item-section>
-                      </q-item>
-                    </q-list>
-
-                    <div v-else class="text-caption text-grey">
-                      Nenhuma multa aplicada
-                    </div>
-                  </div>
-                  <div class="text-caption text-grey">
-                    <q-btn color="primary" icon="check" v-if="!props.row.number" label="Gerar factura" @click="handleRowClick(props.row.month, props.row.amount)" />
-                  </div>
-                </q-td>
-              </q-tr>
-            </template>
-          </q-table>
+          <InvoiceTable :invoices="invoices" :handle-row-click="handleRowClick"/>
         </q-card>
       </q-card-section>
     </q-card>
@@ -195,8 +111,8 @@ import { onMounted, ref } from "vue";
 import { useStudentStores } from "src/pages/student/store";
 import { usePaymentStores } from "../../payments/stores";
 import { useInvoiceStores } from "../stores";
-import columns from "../components/InvoiceColumns";
 import useNotify from "src/composables/UseNotify";
+import InvoiceTable from "../components/InvoiceTable.vue";
 
 /* setup stores */
 const studentStores = useStudentStores();

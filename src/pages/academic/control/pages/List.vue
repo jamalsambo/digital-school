@@ -75,36 +75,32 @@
                   </q-item>
                 </template>
               </q-select>
-              <div class="row q-mt-md justify-end">
-                <q-btn
-                  label="Pesquisar"
-                  color="primary"
-                  flat
-                  dense
-                  type="submit"
-                  @click="fetchInvoices"
-                />
-              </div>
             </div>
           </q-card>
         </q-card-section>
       </q-card>
       <q-card class="my-card" v-if="student">
         <q-card-section>
-          <div class="text-h6">Desevolvimento pedagogico do Aluno</div>
+          <div class="text-h6">Desenvolvimento pedagógico do aluno</div>
 
           <StudentDevelopmentCycle
             :disciplines="disciplines"
             :get-final-grade-status="getFinalGradeStatus"
             :launch-grades="launchGrades"
             :get-color="getColor"
+            :institution-type="institution.educationLevel?.name"
+            :regime="regime"
           />
         </q-card-section>
 
-        <q-card-section>
-          <StudentDisciplineFinalClassification :final-averages="finalAverages" />
+        <q-card-section   v-if="institution.educationLevel?.name === 'Ensino Médio'">
+
+          <StudentDisciplineFinalClassification
+            :final-averages="finalAverages"
+            :launch-grades-exame="launchGradesExame"
+          />
         </q-card-section>
-        <q-card-section>
+        <q-card-section  v-if="institution.educationLevel?.name === 'Ensino Médio'">
           <StudentFinalClassification :averages="finalAverages" />
         </q-card-section>
       </q-card>
@@ -112,9 +108,11 @@
   </q-page>
 </template>
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useStudentStores } from "src/pages/student/store";
 import { useEvolutionStores } from "src/pages/evolution/stores";
+import { useInstitutionStores } from "src/pages/institution/store";
+
 import { useRoute, useRouter } from "vue-router";
 import ControlAcademicScripts from "../scripts";
 import StudentDevelopmentCycle from "../components/StudentDevelopmentCycle.vue";
@@ -128,6 +126,9 @@ const router = useRouter();
 /* setup stores */
 const studentsStores = useStudentStores();
 const evolutionStores = useEvolutionStores();
+const institutionStores = useInstitutionStores();
+
+
 const {
   groupedDisciplineByYearAndCicle,
   finalAveragesDisciplines,
@@ -147,20 +148,31 @@ const evolutions = ref([]);
 const evolutionTypeExame = ref([]);
 const evolutionTypeNormal = ref();
 const finalAverages = ref([]);
+const institution = computed(() => institutionStores.institution);
 
 /* setup methods */
-const launchGrades = (disciplineId,year,cicle, participation) => {
+const launchGrades = (disciplineId) => {
   router.push({
     name: "evolution-create",
     params: {
-      classe: classe.value.classe.id, discipline: disciplineId,
-      cicle: cicle,
-      cicle: cicle,
-      year: year,
-      year: year,
-      student: 'student',
+      classe: classe.value.classe.id,
+      discipline: disciplineId,
+      student: "student",
       studentId: student.value.id,
-      participation: participation
+      exame: false,
+    },
+  });
+};
+
+const launchGradesExame = (disciplineId) => {
+  router.push({
+    name: "evolution-create",
+    params: {
+      classe: classe.value.classe.id,
+      discipline: disciplineId,
+      student: "student",
+      studentId: student.value.id,
+      exame: true,
     },
   });
 };

@@ -3,8 +3,8 @@ import View from "../pages/View.vue";
 
 const bulletinRoutes = [
   {
-    path: "bulletins",
-    name: "bulletins",
+    path: "academic-control",
+    name: "academic control",
     component: List,
   },
   {

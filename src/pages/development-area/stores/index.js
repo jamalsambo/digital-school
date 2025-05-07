@@ -6,6 +6,7 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
   state: () => ({
     developmentAreas: [],
     developmentArea: {},
+    developmentAreaActivity: {}
   }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
@@ -18,7 +19,6 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
       if (error) throw error;
       this.developmentAreas = data;
     },
-
     async create(params) {
       const authStore = useAuthStore();
       const { institutionId } = authStore?.user;
@@ -29,7 +29,6 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
       if (error) throw error;
       return data;
     },
-
     async findOne(id) {
       const { data, error } = await api.get(
         `development-area/${id}`
@@ -60,5 +59,12 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
       if (error) throw error;
       return data;
     },
+    async findOneDevepmentActivity(id) {
+      const { data, error } = await api.get(
+        `development-area/activity/findby/${id}`
+      );
+      if (error) throw error;
+      this.developmentAreaActivity = data;
+    }
   },
 });

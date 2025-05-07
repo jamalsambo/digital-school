@@ -177,7 +177,7 @@
             @update:model-value="uploadFile"
           />
         </div>
-      
+
         <div class="row justify-end q-gutter-sm">
           <q-btn
             label="Cancelar"
@@ -277,6 +277,9 @@ const saveInstitution = async () => {
       await institutionStore.create(form.value);
       notifySuccess("Instituição criada com sucesso!");
     }
+
+    
+
     router.back();
   } catch (error) {
     console.log(error);

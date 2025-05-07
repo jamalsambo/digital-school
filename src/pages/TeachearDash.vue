@@ -100,7 +100,7 @@ const today = 1; // Retorna 0-6new Date().getDay();
 const todayObj = days.find((day) => day.value === today);
 /* methods */
 const fetchTeachings = async () => {
-  await employeeStore.findTeachings(user.value.userDetails.id);
+  await employeeStore.findTeachings(user.value.userDetails?.id);
   teachings.value = employeeStore.teachings;
 };
 

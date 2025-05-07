@@ -13,13 +13,13 @@
                   no-caps
                   @click="createInstitution"
                   class="q-ml-sm"
-                  v-if="authStore.user.userType === 'Super'"
+                  v-if="userStores.user.userType?.name === 'Super'"
                 />
               </template>
 
               <template #actions="{ props }">
                 <q-btn
-                 v-if="authStore.user.userType === 'Super'"
+                 v-if="userStores.user.userType?.name === 'Super'"
                   flat
                   round
                   icon="settings"
@@ -41,7 +41,7 @@
                 </q-btn>
 
                 <q-btn
-                   v-if="authStore.user.userType === 'Super'"
+                   v-if="userStores.user.userType?.name === 'Super'"
                   flat
                   round
                   icon="delete"
@@ -52,7 +52,7 @@
                 </q-btn>
 
                 <q-btn
-                  v-if="!props.row.parentId && authStore.user.userType === 'Super'"
+                  v-if="!props.row.parentId && userStores.user.userType?.name === 'Super'"
                   flat
                   round
                   icon="escalator_warning"
@@ -63,7 +63,7 @@
                 </q-btn>
 
                 <q-btn
-                v-if="userStores.hasSettingsSiteInstitution"
+                v-if="userStores.hasSettingsSiteInstitution || userStores.user.userType?.name === 'Super'"
                   flat
                   round
                   icon="language"
@@ -73,7 +73,7 @@
                   <q-tooltip> Configurar o site </q-tooltip>
                 </q-btn>
                 <q-btn
-                 v-if="userStores.hasCreateEmployees"
+                 v-if="userStores.hasCreateEmployees  || userStores.user.userType?.name === 'Super'"
                   flat
                   round
                   icon="person"
@@ -175,7 +175,7 @@ const handleSettingsSite = (row) => {
 /* fetch data */
 const fetchInstitutions = async () => {
   try {
-    if (authStore.user.userDetails?.userType.name === "Super") {
+    if (userStores.isSuper) {
     await institutuinStores.list();
     institutions.value = institutuinStores.institutions;
     }else {
@@ -183,7 +183,6 @@ const fetchInstitutions = async () => {
       institutions.value = institutuinStores.institutions;
     }
   } catch (error) {
-    console.log(error);
     notifyError("Erro ao carregar Instituições");
   }
 };

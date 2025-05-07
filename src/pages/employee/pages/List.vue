@@ -1,62 +1,3 @@
-<script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useEmployeeStores } from "../stores";
-import { useAuthStore } from "src/pages/auth/store";
-import columns from "src/pages/employee/components/ColumnsEmployeesList";
-import useNotify from "src/composables/UseNotify";
-
-// Referências e variáveis reativas
-const filter = ref("");
-const pagination = ref({
-  rowsPerPage: 10,
-});
-const employees = ref([]);
-
-// Acessos aos stores e router
-const router = useRouter();
-const employeeStores = useEmployeeStores();
-const authStores = useAuthStore();
-const { notifyInfo, notifyError } = useNotify();
-
-// Funções
-const addEmployee = async () => {
-  const institutionId = authStores.user.userDetails.institutionId
-  await employeeStores.create({institutionId: institutionId});
-  router.push({
-    name: "create-employee",
-    params: { id: employeeStores.employee.id, created: "create" },
-  });
-};
-
-const editEmployee = async (employee) => {
-  router.push({
-    name: "create-employee",
-    params: { id: employee.id, created: "edit" },
-  });
-};
-
-const addTeachings = async (employee) => {
-  router.push({
-    name: "employee-teachings",
-    params: { id: employee.id },
-  });
-};
-// Função para buscar os planos curriculares
-const fetchEmployees = async () => {
-  try {
-    await employeeStores.list();
-    employees.value = employeeStores.employees;
-  } catch (error) {
-    notifyError("Falha ao carregar os funcionarios.");
-  }
-};
-
-onMounted(() => {
-  fetchEmployees();
-});
-</script>
-
 <template>
   <q-page padding>
     <div class="row q-col-gutter-sm">
@@ -111,8 +52,6 @@ onMounted(() => {
                   color="primary"
                 />
               </template>
-
-
             </q-table>
           </q-card-section>
         </q-card>
@@ -120,3 +59,62 @@ onMounted(() => {
     </div>
   </q-page>
 </template>
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useEmployeeStores } from "../stores";
+import { useAuthStore } from "src/pages/auth/store";
+import columns from "src/pages/employee/components/ColumnsEmployeesList";
+import useNotify from "src/composables/UseNotify";
+
+// Referências e variáveis reativas
+const filter = ref("");
+const pagination = ref({
+  rowsPerPage: 10,
+});
+const employees = ref([]);
+
+// Acessos aos stores e router
+const router = useRouter();
+const employeeStores = useEmployeeStores();
+const authStores = useAuthStore();
+const { notifyError } = useNotify();
+
+// Funções
+const addEmployee = async () => {
+  const {institutionId} = authStores.user
+  await employeeStores.create({institutionId: institutionId});
+  router.push({
+    name: "create-employee",
+    params: { id: employeeStores.employee.id, created: "create" },
+  });
+};
+
+const editEmployee = async (employee) => {
+  router.push({
+    name: "create-employee",
+    params: { id: employee.id, created: "edit" },
+  });
+};
+
+const addTeachings = async (employee) => {
+  router.push({
+    name: "employee-teachings",
+    params: { id: employee.id },
+  });
+};
+// Função para buscar os planos curriculares
+const fetchEmployees = async () => {
+  try {
+
+    await employeeStores.list();
+    employees.value = employeeStores.employees;
+  } catch (error) {
+    notifyError("Falha ao carregar os funcionarios.");
+  }
+};
+
+onMounted(() => {
+  fetchEmployees();
+});
+</script>
