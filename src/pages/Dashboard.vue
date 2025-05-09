@@ -4,7 +4,7 @@
       class="bg-white text-dark shadow-sm q-pa-md row justify-between items-center"
     >
       <div class="text-bold text-primary">
-        Bem vindo a Escola Sedundaria geral
+        {{institutionStores.institution?.name}}
       </div>
 
       <div class="text-bold text-primary row items-center">

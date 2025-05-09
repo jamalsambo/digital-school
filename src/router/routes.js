@@ -20,7 +20,8 @@ import {
   bulletinRoutes,
   evolutionsRoutes,
   assetsRoutes,
-  academicCalendarRoutes
+  academicCalendarRoutes,
+  attendanceRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -134,23 +135,7 @@ const routes = [
         component: () => import("pages/group/pages/New.vue"),
       },
 
-      /* Rotas de Presenca */
-      {
-        path: "/class/:classe/discipline/:discipline/attendances",
-        name: "class-attendances",
-        component: () =>
-          import("src/pages/attendance/pages/ClassAttendance.vue"),
-      },
-      {
-        path: "/class/:classe/discipline/:discipline/attendance/:attendance",
-        name: "create-attendance",
-        component: () => import("src/pages/attendance/pages/Attendance.vue"),
-      },
-      {
-        path: "/student/:id/attendances/",
-        name: "student-attendances",
-        component: () => import("src/pages/attendance/pages/Student.vue"),
-      },
+
 
       /* Rotas de Notificações */
       {
@@ -194,7 +179,8 @@ const routes = [
       ...bulletinRoutes,
       ...evolutionsRoutes,
       ...assetsRoutes,
-      ...academicCalendarRoutes
+      ...academicCalendarRoutes,
+      ...attendanceRoutes
     ],
   },
 

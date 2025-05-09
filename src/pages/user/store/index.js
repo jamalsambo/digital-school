@@ -10,7 +10,7 @@ export const useUserStores = defineStore("user", {
   }),
   getters: {
     isEmployee: (state) =>  state.user.userType?.name === 'Funcionario',
-    isTeacher:  (state) =>  state.user.teacher === 'Sim',
+    isTeacher:  (state) =>  state.user.employee?.teacher === 'Sim',
     isStudent: (state) =>  state.user.userType?.name ===  'Estudante',
     isGuardian: (state) =>  state.user.userType?.name ===  'Encarregado',
     isSuper: (state) =>  state.user.userType?.name ===  'Super',

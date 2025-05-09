@@ -5,20 +5,45 @@
       <q-card-section>
         <q-item-section>
           <q-list bordered>
-            <q-item v-for="student in students" :key="student.id" clickable>
-              <q-item-section>
-                <span>{{ student.fullName }}</span>
-              </q-item-section>
+            <q-list bordered class="rounded-borders q-mb-md">
+              <q-item
+                v-for="student in students"
+                :key="student.id"
+                class="q-py-sm"
+              >
+                <!-- Nome do Estudante -->
+                <q-item-section>
+                  <div class="text-subtitle2 text-weight-medium">
+                    {{ student.fullName }}
+                  </div>
+                </q-item-section>
 
-              <q-item-section side>
-                <q-option-group
-                  v-model="student.status"
-                  :options="statusOptions"
-                  type="radio"
-                  @update:model-value="(value) => toggleItem(value, student)"
-                />
-              </q-item-section>
-            </q-item>
+                <!-- Grupo de opções (Presente, Ausente, Justificado...) -->
+                <q-item-section>
+                  <q-option-group
+                    v-model="student.status"
+                    :options="statusOptions"
+                    type="radio"
+                    @update:model-value="(value) => toggleItem(value, student)"
+                    dense
+                    inline
+                  />
+                </q-item-section>
+
+                <!-- Botão para ver mais detalhes (justificativa da ausência) -->
+                <q-item-section side>
+                  <q-btn
+                    icon="description"
+                    color="primary"
+                    flat
+                    dense
+                    round
+                    @click="handleSeeJustification(student)"
+                    :aria-label="`Ver justificativa de ${student.fullName}`"
+                  />
+                </q-item-section>
+              </q-item>
+            </q-list>
           </q-list>
         </q-item-section>
       </q-card-section>
@@ -28,12 +53,14 @@
 <script setup>
 import { useStudentStores } from "src/pages/student/store";
 import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useAttendanceStores } from "../store";
 import useNotify from "src/composables/UseNotify";
 
+
 /* use store */
 const route = useRoute();
+const router = useRouter()
 const studentStores = useStudentStores();
 const attendanceStores = useAttendanceStores();
 const { notifyError } = useNotify();
@@ -55,11 +82,14 @@ const fetchStudent = async () => {
   try {
     await studentStores.list({ classId: classe });
     students.value = studentStores.students.map((student) => {
-      const isActive =  attendences.value.find((att) => att.studentId === student.id);
+      const isActive = attendences.value.find(
+        (att) => att.studentId === student.id
+      );
       return {
         id: student.id,
         fullName: student.basicInformation?.fullName,
-        status: isActive? isActive.status : "",
+        status: isActive ? isActive.status : "",
+        attendance: isActive
       };
     });
   } catch (error) {
@@ -99,9 +129,15 @@ const fetchClassAttendance = async () => {
   }
 };
 
+const handleSeeJustification = (student) => {
+  router.push({
+    name: "justication-attendance",
+    params: { id: student.id, attendanceId: student.attendance.id },
+  });
+}
+
 onMounted(async () => {
   await fetchClassAttendance();
   await fetchStudent();
-
 });
 </script>
