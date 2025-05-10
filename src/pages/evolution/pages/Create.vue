@@ -193,7 +193,6 @@ const perception = ref(null);
 const participationModel = ref();
 const istechnical = computed(() => institutionStore.istechnical);
 const isInfantil = computed(() => institutionStore.isInfantil);
-const isHigh = computed(() => institutionStore.isHigh);
 
 const columns = ref([
   { name: "number", label: "Estudante", align: "left", field: "number" },

@@ -21,7 +21,8 @@ import {
   evolutionsRoutes,
   assetsRoutes,
   academicCalendarRoutes,
-  attendanceRoutes
+  attendanceRoutes,
+  groupRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -118,25 +119,6 @@ const routes = [
         component: () => import("src/pages/task/pages/AddToGroup.vue"),
       },
 
-      /* Rotas de Grupos */
-      {
-        path: "classe/:classe/groups",
-        name: "groups",
-        component: () => import("pages/group/pages/List.vue"),
-      },
-      {
-        path: "classe/:classe/group/create",
-        name: "group-create",
-        component: () => import("pages/group/pages/New.vue"),
-      },
-      {
-        path: "/group/edit/:id",
-        name: "group-edit",
-        component: () => import("pages/group/pages/New.vue"),
-      },
-
-
-
       /* Rotas de Notificações */
       {
         path: "/notifications",
@@ -180,7 +162,8 @@ const routes = [
       ...evolutionsRoutes,
       ...assetsRoutes,
       ...academicCalendarRoutes,
-      ...attendanceRoutes
+      ...attendanceRoutes,
+      ...groupRoutes
     ],
   },
 

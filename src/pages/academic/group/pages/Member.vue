@@ -50,20 +50,19 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { useAuthStore } from "src/pages/auth/store";
+import { useUserStores } from "src/pages/user/store";
 import { useGroupStores } from "../store";
 import useNotify from "src/composables/UseNotify";
 
 /* use store*/
 const router = useRouter();
 const route = useRoute();
-const authStore = useAuthStore();
+const userStores = useUserStores();
 const groupStores = useGroupStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* Data */
-const { classe } = route.params;
-const user = computed(() => authStore.user);
+const { classe, disciplineId } = route.params;
 const form = ref({ name: "", description: "" });
 
 /* Methods */
@@ -72,7 +71,8 @@ const onSubmit = async () => {
     name: form.value.name,
     description: form.value.description,
     classId: classe,
-    teacherId: user.value.userDetails.id,
+    activityId: disciplineId,
+    teacherId: userStores.user.employee?.id
   }
     try {
       await groupStores.create(payload);
@@ -84,6 +84,6 @@ const onSubmit = async () => {
 };
 
 const cancel = () => {
-  router.push({ name: 'groups' });
+  router.back()
 };
 </script>

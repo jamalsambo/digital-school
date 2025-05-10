@@ -31,7 +31,7 @@
 import { ref, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useTaskStores } from "../store";
-import { useGroupStores } from "src/pages/group/store";
+import { useGroupStores } from "src/pages/academic/group/store";
 import { useStudentStores } from "src/pages/student/store";
 import useNotify from "src/composables/UseNotify";
 

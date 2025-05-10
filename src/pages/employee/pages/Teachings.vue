@@ -33,22 +33,17 @@
             <q-tr :props="props">
               <q-td class="text-bold text-primary">
                 {{ props.row.classEntity.name }}
-                <q-btn
-                  dense
-                  round
-                  flat
-                  icon="group_add"
-                  color="green"
-                  size="sm"
-                  class="q-ml-sm"
-                  @click="group(props.row.classEntity)"
-                  :title="'Gerir grupos'"
-                />
               </q-td>
 
               <q-td>
-                <div v-for="group in props.row.disciplines" :key="group.cicle" class="q-mb-sm">
-                  <div class="text-subtitle2 text-grey-8 q-mb-xs">🌀 Ciclo {{ group.cicle }}</div>
+                <div
+                  v-for="group in props.row.disciplines"
+                  :key="group.cicle"
+                  class="q-mb-sm"
+                >
+                  <div class="text-subtitle2 text-grey-8 q-mb-xs">
+                    🌀 Ciclo {{ group.cicle }}
+                  </div>
                   <q-list bordered separator dense>
                     <q-item
                       v-for="discipline in group.list"
@@ -60,18 +55,20 @@
                         {{ discipline.name }}
                       </q-item-section>
 
-                      <q-item-section side >
+                      <q-item-section side>
                         <q-btn
                           dense
                           flat
                           round
                           icon="crisis_alert"
                           color="green"
-                          @click="attendances(props.row.classEntity, discipline)"
+                          @click="
+                            attendances(props.row.classEntity, discipline)
+                          "
                           :title="'Ver presenças'"
                         />
                       </q-item-section>
-                      <q-item-section side >
+                      <q-item-section side>
                         <q-btn
                           dense
                           flat
@@ -82,7 +79,20 @@
                           :title="'Ver evolução'"
                         />
                       </q-item-section>
-                        <q-item-section side >
+                      <q-item-section side>
+                        <q-btn
+                          dense
+                          round
+                          flat
+                          icon="group_add"
+                          color="green"
+                          size="sm"
+                          class="q-ml-sm"
+                          @click="handleShowGroups(props.row.classEntity, discipline)"
+                          :title="'Gerir grupos'"
+                        />
+                      </q-item-section>
+                      <q-item-section side>
                         <q-btn
                           dense
                           flat
@@ -102,7 +112,6 @@
         </q-table>
       </q-card-section>
     </q-card>
-
   </q-page>
 </template>
 
@@ -129,49 +138,50 @@ const fetchEmployeeTeachings = async () => {
     await employeeStores.findTeachings(id);
     teachings.value = groupDataByClass(employeeStores.teachings);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     notifyError("Falha ao carregar os disciplinas.");
   }
 };
 
-const attendances =  (classe, discipline) => {
-   router.push({
-    name: 'class-attendances',
+const attendances = (classe, discipline) => {
+  router.push({
+    name: "class-attendances",
     params: {
       classe: classe.id,
       discipline: discipline.id,
     },
-   })
+  });
 };
 
 const evolution = (classe, discipline) => {
-   router.push({
-    name: 'evolution-create',
+  router.push({
+    name: "evolution-create",
     params: {
       classe: classe.id,
       discipline: discipline.id,
     },
-   })
+  });
 };
 
 const createTask = (classe, discipline) => {
-   router.push({
-    name: 'task-create',
+  router.push({
+    name: "task-create",
     params: {
       classe: classe.id,
       discipline: discipline.id,
     },
-   })
+  });
 };
 
-const group = (classe) => {
-   router.push({
-    name: 'groups',
+const handleShowGroups = (classe, discipline) => {
+  router.push({
+    name: "groups",
     params: {
       classe: classe.id,
+      disciplineId: discipline.id,
     },
-   })
-}
+  });
+};
 
 const groupDataByClass = (data) => {
   const grouped = {};
