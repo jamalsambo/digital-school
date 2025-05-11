@@ -12,7 +12,7 @@
               class="col-md-12 col grow col-sm-12 col-xs-12"
               v-model="form.title"
               label="A tarefa"
-              placeholder="Digite o nome do Curso"
+              placeholder="Digite o nome da tarefa"
               outlined
               :rules="[(val) => !!val || 'O nome é obrigatório.']"
               dense
@@ -30,29 +30,45 @@
               placeholder="Digite aqui..."
               min-height="150px"
             />
+            <div class="row  q-col-gutter-sm col-md-12 col-sm-12 col-xs-12">
+              <q-input
+                class="col-md-grow col-sm-6 col-xs-12"
+                v-model="form.dueDate"
+                type="date"
+                label="Data de entrega"
+                outlined
+                :rules="[(val) => !!val || 'A data de entreg é obrigatória.']"
+                dense
+              />
 
-            <q-input
-              class="col-md-12 col-sm-6 col-xs-12"
-              v-model="form.dueDate"
-              type="date"
-              label="Data de entrega"
-              outlined
-              :rules="[(val) => !!val || 'A data de entreg é obrigatória.']"
+              <q-select
+                v-if="id"
+                class="col-md-grow col-sm-12 col-xs-12"
+                outlined
+                v-model="form.status"
+                label="Estado"
+                option-value="id"
+                option-label="name"
+                :options="['Activo', 'Cancelado']"
+                emit-value
+                map-options=""
+                dense=""
+              />
+            </div>
+
+            <q-file
+              class="col-grow"
+              v-model="file"
+              label="Anexar documento (opcional)"
+              filled
               dense
-            />
-
-            <q-select
-              class="col-md-12 col-sm-12 col-xs-12"
-              outlined
-              v-model="form.status"
-              label="Aplicação da mensalidade"
-              option-value="id"
-              option-label="name"
-              :options="['Cancelado']"
-              emit-value
-              map-options=""
-              dense=""
-            />
+              accept=".pdf"
+              counter
+            >
+              <template v-slot:append>
+                <q-icon name="attach_file" />
+              </template>
+            </q-file>
           </div>
 
           <div class="row justify-end q-gutter-sm">
@@ -83,25 +99,30 @@
 import { computed, onMounted, ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useTaskStores } from "../store";
-import { useAuthStore } from "src/pages/auth/store";
+import { useUserStores } from "src/pages/user/store";
+import { useComposablesStores } from "src/composables";
 import useNotify from "src/composables/UseNotify";
 
 /* use store */
 const route = useRoute();
 const router = useRouter();
-const authStore = useAuthStore();
+const userStores = useUserStores();
 const taskStores = useTaskStores();
+const composableStores = useComposablesStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* data*/
-const user = computed(() => authStore.user);
+const user = computed(() => userStores.user);
 const task = ref(null);
-const { classe, discipline, id } = route.params;
+const { classeId, disciplineId, id } = route.params;
+const file = ref(null);
 const form = ref({
-  name: "",
+  title: "",
   description: "",
   dueDate: "",
-  status: null,
+  status: "Activo",
+  fileName: "",
+  attachments: "",
 });
 
 watchEffect(() => {
@@ -118,14 +139,26 @@ watchEffect(() => {
 /* methods */
 const onSubmit = async () => {
   try {
-    await taskStores.create({
+    if (file.value) {
+      form.value.fileName = file.value.name;
+      const publicUrl = await composableStores.uploadFromSupabase(
+        file.value,
+        "student"
+      );
+      form.value.attachments = publicUrl;
+    }
+    const payload = {
       ...form.value,
-      classId: classe,
-      disciplineId: discipline,
-      teacherId: user.value.userDetails.id,
-    });
+      classId: classeId,
+      activityId: disciplineId,
+      teacherId: user.value.employee.id,
+    };
+    console.log(payload);
+    await taskStores.create(payload);
     notifySuccess("Tarefa guardada com sucesso");
+    router.back()
   } catch (error) {
+    console.log(error)
     notifyError("Error ao guardar tarefa");
   }
 };

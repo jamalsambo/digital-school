@@ -651,7 +651,7 @@
           </q-expansion-item>
 
           <q-item
-            :to="`/employee/${userStores?.user?.employee?.id}/teachings`"
+            :to="`/employee/${userStores?.user?.employee?.id}/classes`"
             active-class="q-item-no-link-highlighting"
             v-if="userStores.isTeacher"
           >

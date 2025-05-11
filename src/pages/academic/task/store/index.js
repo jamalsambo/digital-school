@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
 import { useAuthStore } from "src/pages/auth/store";
 
-const authStore = useAuthStore();
 
 
 export const useTaskStores = defineStore("task", {
@@ -15,6 +14,7 @@ export const useTaskStores = defineStore("task", {
   },
   actions: {
     async list(params) {
+      const authStore = useAuthStore();
       const { institutionId } = authStore.user;
       const { data, error } = await api.get("/task", {
         params: params,
@@ -25,6 +25,8 @@ export const useTaskStores = defineStore("task", {
     },
 
     async create(params) {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/task", {
         ...params,
         institutionId: institutionId,

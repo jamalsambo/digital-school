@@ -22,7 +22,8 @@ import {
   assetsRoutes,
   academicCalendarRoutes,
   attendanceRoutes,
-  groupRoutes
+  groupRoutes,
+  taskRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -91,34 +92,6 @@ const routes = [
         name: "expenses",
         component: () => import("src/pages/finance/expense/pages/Expenses.vue"),
       },
-
-      /* Rotas de Tarefas*/
-      {
-        path: "/tasks",
-        name: "tasks",
-        component: () => import("pages/task/pages/List.vue"),
-      },
-      {
-        path: "class/:classe/discipline/:discipline/task/create",
-        name: "task-create",
-        component: () => import("src/pages/task/pages/New.vue"),
-      },
-      {
-        path: "/task/edit/:id",
-        name: "task-edit",
-        component: () => import("src/pages/task/pages/New.vue"),
-      },
-      {
-        path: "/task/:id/:entity/add",
-        name: "task-add-groups",
-        component: () => import("src/pages/task/pages/AddToGroup.vue"),
-      },
-      {
-        path: "/task/:id/:entity/add",
-        name: "task-add-students",
-        component: () => import("src/pages/task/pages/AddToGroup.vue"),
-      },
-
       /* Rotas de Notificações */
       {
         path: "/notifications",
@@ -163,7 +136,8 @@ const routes = [
       ...assetsRoutes,
       ...academicCalendarRoutes,
       ...attendanceRoutes,
-      ...groupRoutes
+      ...groupRoutes,
+      ...taskRoutes
     ],
   },
 

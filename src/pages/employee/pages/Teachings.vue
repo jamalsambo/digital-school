@@ -99,7 +99,7 @@
                           round
                           icon="add_task"
                           color="primary"
-                          @click="createTask(props.row.classEntity, discipline)"
+                          @click="handleShowTasks(props.row.classEntity, discipline)"
                           :title="'Nova tarefa'"
                         />
                       </q-item-section>
@@ -163,12 +163,12 @@ const evolution = (classe, discipline) => {
   });
 };
 
-const createTask = (classe, discipline) => {
+const handleShowTasks = (classe, discipline) => {
   router.push({
-    name: "task-create",
+    name: "tasks",
     params: {
-      classe: classe.id,
-      discipline: discipline.id,
+      classeId: classe.id,
+      disciplineId: discipline.id,
     },
   });
 };

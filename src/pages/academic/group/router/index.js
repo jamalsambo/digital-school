@@ -6,10 +6,10 @@ const groupRoutes = [
     component: () => import("src/pages/academic/group/pages/List.vue"),
     meta: {title: 'Work groups'}
   },
-  { path: "group/:groupId/members",
-    name: "group-member",
-    component: () => import("src/pages/academic/group/pages/Member.vue"),
-    meta: {title: 'Group members'}
+  { path: "classe/:classeId/group/:groupId/team-leader",
+    name: "group-team-leader",
+    component: () => import("src/pages/academic/group/pages/Edit.vue"),
+    meta: {title: 'Group Team Leader'}
   },
   {
     path: "/groups/members/distribution",

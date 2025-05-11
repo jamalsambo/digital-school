@@ -1,6 +1,6 @@
-import Attendance from "src/pages/attendance/pages/Attendance.vue";
-import ClassAttendance from "src/pages/attendance/pages/ClassAttendance.vue";
-import Student from "src/pages/attendance/pages/Student.vue";
+import Attendance from "../pages/Attendance.vue";
+import ClassAttendance from "../pages/ClassAttendance.vue";
+import Student from "../pages/Student.vue";
 import Justification from "../pages/Justification.vue";
 
 const attendanceRoutes = [

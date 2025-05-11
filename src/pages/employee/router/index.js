@@ -8,8 +8,8 @@ const employeeRoutes = [
    { path: 'employees', name: 'list-employees', component: List },
    { path: 'employee/:created/:id', name: 'create-employee', component: Create },
    { path: 'employee/:id/teachings', name: 'employee-teachings', component: Teachings },
+   { path: 'employee/:id/classes', name: 'employee-classes', component: Teachings, meta: {title: 'Employee classes'} },
    { path: 'class/:id/teachings/add', name: 'employee-teachings-add', component: AddTeachings },
-
 ];
 
 export default employeeRoutes;

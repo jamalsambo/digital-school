@@ -29,7 +29,7 @@
           color="primary"
           class="q-mr-sm"
           flat
-          @click="handleAddMembers(props)"
+          @click="handleAddTeamLider(props)"
         >
           <q-tooltip> Editar grupo </q-tooltip>
         </q-btn>
@@ -75,10 +75,10 @@ const createGroup = async () => {
     notifyError("Ocorreu um erro ao tentar criar o grupo!");
   }
 };
-const handleAddMembers = (props) => {
+const handleAddTeamLider = (props) => {
   router.push({
-    name: "group-member",
-    params: { groupId: props.key },
+    name: "group-team-leader",
+    params: { classeId: classe, groupId: props.key },
   });
 };
 const handleGroupDistribution = () => {

@@ -31,6 +31,11 @@ export const useGroupStores = defineStore("work-group", {
       if (error) throw error;
       this.group = data;
     },
+    async update(id, params) {
+      const { data, error } = await api.put(`/work-group/${id}`, params);
+      if (error) throw error;
+      this.group = data;
+    },
     async findOne(id) {
       const { data, error } = await api.get(`/work-group/${id}`);
       if (error) throw error;
