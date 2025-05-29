@@ -5,13 +5,6 @@
         <div class="text-h5">Categorias</div>
         <q-separator spaced />
       </q-card-section>
-
-      <q-card-section>
-        <div class="text-subtitle1">Informações de pesquisa</div>
-        <q-card flat bordered class="q-pa-md shadow-2">
-          <div class="row q-col-gutter-sm"></div>
-        </q-card>
-      </q-card-section>
     </q-card>
 
     <q-card class="q-mt-lg">
@@ -89,7 +82,7 @@ const newCategory = () => {
 /* setup methods */
 const fetchCategories = async () => {
   try {
-    await assetStores.categories();
+    await assetStores.findCategories();
     categories.value = assetStores.categories;
   } catch (error) {
     console.log(error);

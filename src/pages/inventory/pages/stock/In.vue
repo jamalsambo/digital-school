@@ -93,11 +93,12 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useInventoryStores } from "../../stores";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import useNotify from "src/composables/UseNotify";
 
 /* setup route */
 const route = useRoute();
+const router = useRouter()
 
 /* Setup stores */
 const inventoryStores = useInventoryStores();
@@ -140,8 +141,8 @@ const handleSubmit = async () => {
   try {
     await inventoryStores.create({ ...form.value });
     notifySuccess("Lançamento criado com sucesso!");
-    console.log("Lançamento criado com sucesso!");
     resetForm();
+    router.back()
   } catch (error) {
     notifyError("Ocorreu um erro ao tentar salvar o lançamento!");
     console.log(error);

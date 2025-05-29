@@ -50,11 +50,11 @@
         <!-- Botões -->
         <div class="row justify-end q-mt-md q-gutter-sm">
           <q-btn
-            label="Cancelar"
+            label="Voltar"
             flat
             color="negative"
             icon="close"
-            @click="resetForm"
+            @click="router.back()"
           />
           <q-btn
             label="Salvar"

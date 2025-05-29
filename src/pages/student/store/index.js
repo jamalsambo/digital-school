@@ -1,6 +1,9 @@
 import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
 import { useAuthStore } from "src/pages/auth/store";
+import scripts from "src/composables/Scripts";
+
+const { filterEnrollmentsByYear} = scripts()
 
 export const useStudentStores = defineStore("student", {
   state: () => ({
@@ -9,7 +12,7 @@ export const useStudentStores = defineStore("student", {
     studentPaternity: {},
   }),
   getters: {
-    // doubleCount: (state) => state.counter * 2,
+    enrollmentActive: (state) =>  filterEnrollmentsByYear(state.student?.enrollments, new Date().getFullYear())
   },
   actions: {
     async list(params) {

@@ -60,7 +60,7 @@ const fetchStudent = async () => {
     await studentStores.findOne(studentId.value);
     student.value = studentStores.student;
     enrollments.value = student.value.enrollments;
-    enrollmentActive.value =  !!filterEnrollmentsByYear(enrollments.value, new Date().getFullYear())
+    enrollmentActive.value =  filterEnrollmentsByYear(enrollments.value, new Date().getFullYear())
   } catch (error) {
     notifyError("Erro ao carregar estudante");
   }

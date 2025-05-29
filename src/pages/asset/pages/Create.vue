@@ -56,7 +56,7 @@
           :options="conditions"
           option-label="name"
           option-value="id"
-          label="Local"
+          label="Estado"
           emit-value
           map-options
           required
@@ -120,10 +120,10 @@ const handleSubmit = async () => {
 
 const fetchData = async () => {
   try {
-      await assetStores.categories()
+      await assetStores.findCategories()
       categories.value = assetStores.categories
-      
-      await assetStores.locations()
+
+      await assetStores.findlocations()
       locations.value = assetStores.locations
   } catch (error) {
       console.log(error)

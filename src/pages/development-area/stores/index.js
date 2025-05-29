@@ -6,7 +6,7 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
   state: () => ({
     developmentAreas: [],
     developmentArea: {},
-    developmentAreaActivity: {}
+    developmentAreaActivity: {},
   }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
@@ -30,21 +30,16 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
       return data;
     },
     async findOne(id) {
-      const { data, error } = await api.get(
-        `development-area/${id}`
-      );
+      const { data, error } = await api.get(`development-area/${id}`);
       if (error) throw error;
       this.developmentArea = data;
     },
     async update(id, params) {
-      const { data, error } = await api.put(
-        `development-area/${id}`,
-        params
-      );
+      const { data, error } = await api.put(`development-area/${id}`, params);
       if (error) throw error;
       this.developmentArea = data;
     },
-    async addDevelopmentActivity(dAreaId,params) {
+    async addDevelopmentActivity(dAreaId, params) {
       const { data, error } = await api.post(
         `development-area/${dAreaId}/activities`,
         params
@@ -65,6 +60,13 @@ export const useDevelopmentAreaStores = defineStore("development-area", {
       );
       if (error) throw error;
       this.developmentAreaActivity = data;
-    }
+    },
+    async addActivityPrecedence(activityId, activityIdPrecedence) {
+      const { data, error } = await api.post(
+        `development-area/activity/${activityId}/precedence/${activityIdPrecedence}`
+      );
+      if (error) throw error;
+      return data;
+    },
   },
 });

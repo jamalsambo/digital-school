@@ -23,7 +23,9 @@ import {
   academicCalendarRoutes,
   attendanceRoutes,
   groupRoutes,
-  taskRoutes
+  taskRoutes,
+  siteRoutes,
+  expenseRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -82,16 +84,7 @@ const routes = [
         name: "extras-fees",
         component: () => import("src/pages/finance/extra-fees/pages/List.vue"),
       },
-      {
-        path: "/financial-control/expenses-categories",
-        name: "expenses-categories",
-        component: () => import("src/pages/finance/expense/pages/Categories.vue"),
-      },
-      {
-        path: "/financial-control/expenses",
-        name: "expenses",
-        component: () => import("src/pages/finance/expense/pages/Expenses.vue"),
-      },
+
       /* Rotas de Notificações */
       {
         path: "/notifications",
@@ -137,7 +130,8 @@ const routes = [
       ...academicCalendarRoutes,
       ...attendanceRoutes,
       ...groupRoutes,
-      ...taskRoutes
+      ...taskRoutes,
+      ...expenseRoutes
     ],
   },
 
@@ -162,11 +156,7 @@ const routes = [
     name: "main-site",
     component: () => import("pages/site/main.vue"),
   },
-  {
-    path: "/sige/:schoolSlug",
-    name: "school-site",
-    component: () => import("pages/site/institution/main.vue"),
-  },
+  ...siteRoutes
 ];
 
 export default routes;

@@ -46,7 +46,7 @@ export const useAssetStores = defineStore("asset", {
       if (error) throw error;
       this.asset = data;
     },
-    async categories() {
+    async findCategories() {
       const authStore = useAuthStore();
       const { institutionId } = authStore.user;
       const { data, error } = await api.get("/category-patrimony", {

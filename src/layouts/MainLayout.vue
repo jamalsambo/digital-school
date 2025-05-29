@@ -464,7 +464,7 @@
                 </q-item-section>
               </q-item>
               <q-item
-                to="/financial-control/expenses"
+                to="/finance/expenses"
                 active-class="q-item-no-link-highlighting"
                 v-if="userStores.hasViewExpenses"
               >
@@ -709,6 +709,18 @@
             </q-item-section>
             <q-item-section>
               <q-item-label>Presenças</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <q-item
+            :to="`/student/${userStores?.user?.student?.id}/my-tasks`"
+            active-class="q-item-no-link-highlighting"
+          >
+            <q-item-section avatar>
+              <q-icon name="work" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Tarefas</q-item-label>
             </q-item-section>
           </q-item>
         </div>

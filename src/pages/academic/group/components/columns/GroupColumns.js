@@ -7,12 +7,13 @@ const columns = [
     sortable: true,
   },
   {
-    name: "description",
-    align: "left",
-    label: "Descrição",
-    field: "description",
-    sortable: true,
-  },
+    name: "leader",
+    label: "Líder do Grupo",
+    field: row => row.StudentTeamLeader?.basicInformation?.fullName || '—',
+    sortable: false,
+    align: "left"
+  }
+  ,
   {
     name: "actions",
     align: "left",

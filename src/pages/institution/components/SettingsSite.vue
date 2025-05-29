@@ -52,7 +52,7 @@
                   <q-item-section>
                     <div>
                       <q-card class="my-card" style="width: 200px">
-                        <q-img :src="`${apiUrl}/upload/${item?.imagen}`">
+                        <q-img :src="`${item?.imagen}`">
                           <div
                             class="absolute-bottom text-subtitle2 text-center"
                           >
@@ -83,7 +83,6 @@
                     outlined=""
                     counter
                     dense
-                    accept="imagen"
                   />
                   <q-input
                     class="col-md-7 col-sm-12 col-xs-12"
@@ -141,6 +140,78 @@
               </q-form>
             </div>
           </div>
+          <!-- Missão -->
+          <div class="border q-pa-md shadow-2">
+            <span class="text-weight-bold"> Missão</span>
+            <div class="q-mb-md q-mt-lg">
+              <q-form @submit="onSendMission" class="q-gutter-md">
+                <q-editor
+                  v-model="mission"
+                  min-height="50px"
+                  :toolbar="toolbar"
+                  placeholder="Escreva sua mensagem aqui..."
+                />
+
+                <div class="row justify-end q-gutter-sm">
+                  <q-btn
+                    label="Guardar"
+                    color="positive"
+                    icon="save"
+                    type="submit"
+                    flat
+                  />
+                </div>
+              </q-form>
+            </div>
+          </div>
+          <!-- Vissão -->
+          <div class="border q-pa-md shadow-2">
+            <span class="text-weight-bold"> Visão</span>
+            <div class="q-mb-md q-mt-lg">
+              <q-form @submit="onSendVision" class="q-gutter-md">
+                <q-editor
+                  v-model="vision"
+                  min-height="50px"
+                  :toolbar="toolbar"
+                  placeholder="Escreva sua mensagem aqui..."
+                />
+
+                <div class="row justify-end q-gutter-sm">
+                  <q-btn
+                    label="Guardar"
+                    color="positive"
+                    icon="save"
+                    type="submit"
+                    flat
+                  />
+                </div>
+              </q-form>
+            </div>
+          </div>
+          <!-- Valores -->
+          <div class="border q-pa-md shadow-2">
+            <span class="text-weight-bold"> Valores</span>
+            <div class="q-mb-md q-mt-lg">
+              <q-form @submit="onSendWorth" class="q-gutter-md">
+                <q-editor
+                  v-model="worth"
+                  min-height="50px"
+                  :toolbar="toolbar"
+                  placeholder="Escreva sua mensagem aqui..."
+                />
+
+                <div class="row justify-end q-gutter-sm">
+                  <q-btn
+                    label="Guardar"
+                    color="positive"
+                    icon="save"
+                    type="submit"
+                    flat
+                  />
+                </div>
+              </q-form>
+            </div>
+          </div>
         </q-card-section>
         <!-- card de carrosel sobre nos -->
         <q-card-section class="q-pt-none">
@@ -168,7 +239,7 @@
                   <q-item-section>
                     <div>
                       <q-card class="my-card" style="width: 200px">
-                        <q-img :src="`${apiUrl}/upload/${item?.imagen}`">
+                        <q-img :src="`${item?.imagen}`">
                           <div
                             class="absolute-bottom text-subtitle2 text-center"
                           >
@@ -233,6 +304,33 @@
             </div>
           </div>
         </q-card-section>
+        <q-card-section class="q-pt-none">
+          <SectionSettingsActivity
+            :activity-carrosel-imagens="activityCarroselImagens"
+            ref="uploadFormRef"
+          >
+            <template #actions>
+              <div class="row justify-end q-gutter-sm">
+                <q-btn
+                  label="Cancelar"
+                  color="negative"
+                  icon="close"
+                  outline
+                  @click="isAddImgACtivity = false"
+                  class="q-mr-sm"
+                  flat
+                />
+                <q-btn
+                  label="Adicionar"
+                  color="positive"
+                  icon="save"
+                  @click="handleUploaFileActivityCarrocel"
+                  flat
+                />
+              </div>
+            </template>
+          </SectionSettingsActivity>
+        </q-card-section>
       </q-card>
     </q-card>
   </q-page>
@@ -244,8 +342,7 @@ import { useRoute } from "vue-router";
 import { useInstitutionStores } from "../store";
 import { useComposablesStores } from "src/composables";
 import useNotify from "src/composables/UseNotify";
-import axios from "axios";
-const apiUrl = import.meta.env.VITE_API_URL;
+import SectionSettingsActivity from "./SectionSettingsActivity.vue";
 
 /* setup store */
 const route = useRoute();
@@ -258,12 +355,17 @@ const { id } = route.params;
 const institution = ref();
 const mainCarroselImagens = ref([]);
 const aboutUsCarroselImagens = ref([]);
+const activityCarroselImagens = ref([]);
 
 const domain = ref("");
 const file = ref(null);
 const fileAbout = ref(null);
 const description = ref();
 const aboutUs = ref("");
+const mission = ref("");
+const vision = ref("");
+const worth = ref("");
+const uploadFormRef = ref(null);
 
 const isEditing = ref(false);
 const isAddImgAbountUs = ref(false);
@@ -279,46 +381,33 @@ const onSubmit = async () => {
 
 const handleUploaFileMainCarrocel = async () => {
   try {
-    // await composableStores.login('jhsambo99@gmail.com', 'salvecharles')
-   const publicUrl = await composableStores.getURlPublic('7367615a-71ee-4abb-8d98-90285d85b673')
-   console.log(publicUrl)
-    // const formData = new FormData();
-    // formData.append("file", file.value);
-    // const response = await axios.post(
-    //   "https://educar-api-zymx.onrender.com/upload/single",
-    //   formData,
-    //   {
-    //     headers: { "Content-Type": "multipart/form-data" },
-    //   }
-    // );
-    // if (response.data.file.filename) {
-    //   await institutionStores.createMainCarroselImagen({
-    //     imagen: response.data.file.filename,
-    //     description: description.value,
-    //   });
-    //   await fetchinstitution();
-    //   notifySuccess("Imagem do carrocel principal adicionada com sucesso!");
-    // }
+    const publicUrl = await composableStores.uploadFromSupabase(
+      file.value,
+      "student"
+    );
+    if (publicUrl) {
+      await institutionStores.createMainCarroselImagen({
+        imagen: publicUrl,
+        description: description.value,
+      });
+      await fetchinstitution();
+      notifySuccess("Imagem do carrocel principal adicionada com sucesso!");
+    }
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notifyError("Erro ao carregar a imagem");
   }
 };
 
 const handleUploaFileAboutUsCarrocel = async () => {
   try {
-    const formData = new FormData();
-    formData.append("file", fileAbout.value);
-    const response = await axios.post(
-      "../../",
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+    const publicUrl = await composableStores.uploadFromSupabase(
+      fileAbout.value,
+      "student"
     );
-    if (response.data.file.filename) {
+    if (publicUrl) {
       await institutionStores.createAboutUsCarroselImagen({
-        imagen: response.data.file.filename,
+        imagen: publicUrl,
         description: description.value,
       });
       await fetchinstitution();
@@ -329,7 +418,28 @@ const handleUploaFileAboutUsCarrocel = async () => {
     notifyError("Erro ao carregar a imagem");
   }
 };
+const handleUploaFileActivityCarrocel = async () => {
+  try {
+    const formData = await uploadFormRef.value.validateAndGetData();
+    const publicUrl = await composableStores.uploadFromSupabase(
+      formData.file,
+      "student"
+    );
+    if (publicUrl) {
+      await institutionStores.createActivityCarroselImagen({
+        imagen: publicUrl,
+        description: formData.description,
+      });
+      await fetchinstitution();
+      isAddImgAbountUs.value = false;
+      notifySuccess("Imagem do carrosel sobre nos adicionada com sucesso!");
+    }
 
+    // aqui pode fazer o envio via axios ou outro método
+  } catch (err) {
+    console.warn("Erro ao validar o formulário:", err.message);
+  }
+};
 const onSendAboutUs = async () => {
   try {
     await institutionStores.update(id, { aboutUs: aboutUs.value });
@@ -338,17 +448,44 @@ const onSendAboutUs = async () => {
     notifyError("Error ao adicionar sobre a instituição");
   }
 };
-
+const onSendMission = async () => {
+  try {
+    await institutionStores.update(id, { mission: mission.value });
+    notifySuccess("Sobre a instituição atualizada com sucesso!");
+  } catch (error) {
+    notifyError("Error ao adicionar sobre a instituição");
+  }
+};
+const onSendVision = async () => {
+  try {
+    await institutionStores.update(id, { vision: vision.value });
+    notifySuccess("Sobre a instituição atualizada com sucesso!");
+  } catch (error) {
+    notifyError("Error ao adicionar sobre a instituição");
+  }
+};
+const onSendWorth = async () => {
+  try {
+    await institutionStores.update(id, { worth: worth.value });
+    notifySuccess("Sobre a instituição atualizada com sucesso!");
+  } catch (error) {
+    notifyError("Error ao adicionar sobre a instituição");
+  }
+};
 const fetchinstitution = async () => {
   try {
     await institutionStores.findOne(id);
     institution.value = institutionStores.institution;
     mainCarroselImagens.value =
       institutionStores.institution.mainCarroselImagens;
-      aboutUsCarroselImagens.value =
+    aboutUsCarroselImagens.value =
       institutionStores.institution.aboutUsCarroselImagens;
+      activityCarroselImagens.value = institutionStores.institution?.activityCarroselImagens
     domain.value = institution.value.domain;
     aboutUs.value = institution.value.aboutUs;
+    worth.value = institution.value?.worth;
+    mission.value = institution.value?.mission;
+    vision.value = institution.value?.vision;
   } catch (error) {
     notifyError("Oops! Something went wrong");
   }

@@ -25,20 +25,20 @@
               <q-btn
                 color="secondary"
                 icon="school"
-                label="Configuraçao"
                 no-caps
                 @click="settingsCurriculum(props)"
                 flat
                 dense
+                title="Configurar curriculum"
               />
               <q-btn
                 color="primary"
                 icon="edit"
-                label="Editar"
                 no-caps
                 @click="editClasse(props)"
                 flat
                 dense
+                title="Editar"
               />
             </template>
           </Tables>
@@ -64,29 +64,29 @@
               <q-btn
                 color="secondary"
                 icon="calendar_month"
-                label="Horario"
                 no-caps
                 @click="showScheduleClass(props)"
                 flat
                 dense
+                title="Horario da turma"
               />
               <q-btn
                 color="primary"
                 icon="edit"
-                label="Editar"
                 no-caps
                 @click="editClasse(props)"
                 flat
                 dense
+                title="Editar turma"
               />
               <q-btn
                 color="primary"
                 icon="person"
-                label="Professores"
                 no-caps
                 @click="te(props)"
                 flat
                 dense
+                title="Alocação de Pofessores e Horario"
               />
             </template>
           </Tables>
@@ -97,7 +97,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCourseStores } from "../store";
 import Tables from "src/components/Tables.vue";
@@ -159,7 +159,7 @@ const editClasse = (row) => {
 };
 
 const showScheduleClass = (row) => {
-  router.push({ name: "schedule", params: { classId: row.key } });
+  router.push({ name: "class-schedule", params: { classId: row.key } });
 };
 
 const te = (row) => {

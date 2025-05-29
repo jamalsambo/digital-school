@@ -55,7 +55,7 @@ export const useInstitutionStores = defineStore("institution", {
     /* site */
     async createMainCarroselImagen(params) {
       const authStore = useAuthStore();
-      const institutionId = authStore?.user?.userDetails?.institutionId ?? null;
+      const {institutionId} = authStore?.user ?? null;
       const { data, error } = await api.post("/site/main-carrosel", {
         ...params,
         institutionId: institutionId,
@@ -65,8 +65,18 @@ export const useInstitutionStores = defineStore("institution", {
     },
     async createAboutUsCarroselImagen(params) {
       const authStore = useAuthStore();
-      const institutionId = authStore?.user?.userDetails?.institutionId ?? null;
+      const {institutionId} = authStore?.user ?? null;
       const { data, error } = await api.post("/site/about-us-carrosel", {
+        ...params,
+        institutionId: institutionId,
+      });
+      if (error) throw error;
+      return data;
+    },
+     async createActivityCarroselImagen(params) {
+      const authStore = useAuthStore();
+      const {institutionId} = authStore?.user ?? null;
+      const { data, error } = await api.post("/site/activity-carrosel", {
         ...params,
         institutionId: institutionId,
       });

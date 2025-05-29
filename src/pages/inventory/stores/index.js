@@ -55,23 +55,36 @@ export const useInventoryStores = defineStore("inventory", {
       if (error) throw error;
       this.categories = data;
     },
-
-    async update(id, params) {
-      const { data, error } = await api.put(`/invoice/${id}`, params);
+     async createProduct(params) {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
+      const { data, error } = await api.post("/product", {
+        institutionId: institutionId,
+       ...params,
+      });
       if (error) throw error;
-      this.invoice = data;
+      return data;
     },
-
-    async createItems(params) {
-      const { data, error } = await api.post("/invoice/item-create", params);
+    async createProductCategory(params) {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
+      const { data, error } = await api.post("/category-product", {
+        institutionId: institutionId,
+       ...params,
+      });
+      if (error) throw error;
+      return data;
+    },
+    async createProductSupplier(params) {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
+      const { data, error } = await api.post("/supplier", {
+        institutionId: institutionId,
+       ...params,
+      });
       if (error) throw error;
       return data;
     },
 
-    async findOne(id) {
-      const { data, error } = await api.get(`/invoice/${id}`);
-      if (error) throw error;
-      this.invoiceItens = data;
-    },
   },
 });

@@ -39,6 +39,8 @@ export const useExpenseStores = defineStore("expense", {
       this.expenseCategories = data;
     },
     async createCategory(params) {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
       const { data, error } = await api.post("/expense/category", {
         ...params,
         institutionId: institutionId,

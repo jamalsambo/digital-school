@@ -218,7 +218,8 @@ const assignStudent = async (studentId) => {
   }
 };
 
-const removeStudent = (studentId) => {
+const removeStudent = async (studentId) => {
+   await taskStores.removeStudentTask({ taskId: id, studentId: studentId });
   assignedStudents.value = assignedStudents.value.filter(
     (s) => s.id !== studentId
   );

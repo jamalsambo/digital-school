@@ -27,7 +27,39 @@
             flat
             bordered
             :pagination="{ rowsPerPage: 10 }"
-          ></q-table>
+          >
+        <template v-slot:top-right="">
+              <q-input
+                borderless
+                dense
+                debounce="300"
+                v-model="filter"
+                placeholder="Pesquisar"
+              >
+                <template v-slot:append>
+                  <q-icon name="search" />
+                </template>
+              </q-input>
+
+              <q-btn
+                color="primary"
+                icon="add"
+                label="Adicionar"
+                no-caps
+                class="q-ml-sm"
+                @click="newCategory"
+              />
+            </template>
+            <template v-slot:body-cell-actions="props">
+              <q-btn
+                flat
+                round
+                icon="edit"
+                color="primary"
+                @click="editCategory(props.row)"
+              />
+            </template>
+        </q-table>
         </q-card>
       </q-card-section>
     </q-card>
@@ -37,12 +69,21 @@
 import { onMounted, ref } from 'vue';
 import { useInventoryStores } from '../../stores';
 import columns from './components/TableCategorieeColumns';
+import { useRouter } from 'vue-router';
+
+/* setup router */
+const router = useRouter()
 
 /* setup stores */
 const inventoryStores = useInventoryStores()
 
 /* setup data */
 const categories = ref([])
+
+/* methods */
+const newCategory = () => {
+  router.push({name: "stock-categories-create"})
+}
 
 /* fetcth data */
 const fetchCategories = async () => {
