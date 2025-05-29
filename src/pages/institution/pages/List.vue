@@ -4,6 +4,7 @@
       <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <q-card class="text-grey-8 no-shadow" bordered>
           <q-card-section class="q-pa-none">
+            {{userStores.isSuper}}
             <Tables :columns="columns" :rows="institutions">
               <template #new>
                 <q-btn
@@ -113,7 +114,7 @@ const userStores = useUserStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* setup data */
-const { institutionId} = authStore.user
+const { institutionId } = authStore.user
 const institutions = ref([]);
 
 /* methods */
