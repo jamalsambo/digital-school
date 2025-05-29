@@ -4,7 +4,7 @@
       <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <q-card class="text-grey-8 no-shadow" bordered>
           <q-card-section class="q-pa-none">
-            {{userStores.user}}
+            {{userStores.isSuper}}
             <Tables :columns="columns" :rows="institutions">
               <template #new>
                 <q-btn
@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useInstitutionStores } from "../store";
 import { useAuthStore } from "src/pages/auth/store";
@@ -116,6 +116,8 @@ const { notifyError, notifySuccess } = useNotify();
 /* setup data */
 const { institutionId } = authStore.user
 const institutions = ref([]);
+
+const user = computed(() => userStores)
 
 /* methods */
 const createInstitution = () => {
@@ -176,7 +178,7 @@ const handleSettingsSite = (row) => {
 /* fetch data */
 const fetchInstitutions = async () => {
   try {
-    if (userStores.isSuper) {
+    if (user.value.isSuper) {
     await institutuinStores.list();
     institutions.value = institutuinStores.institutions;
     }else {
