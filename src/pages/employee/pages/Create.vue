@@ -306,10 +306,10 @@ const toggleSelection = async (option) => {
       : [...new Set([...selected.value, ...groupItems])];
   } else {
     if (selected.value.includes(option.value)) {
-      await userStores.removePermissions(employee.value.userId, option.id);
+      await userStores.removePermissions(route.params.id, option.id);
       selected.value = selected.value.filter((item) => item !== option.value);
     } else {
-      await userStores.addPermissions(employee.value.userId, {
+      await userStores.addPermissions(route.params.id, {
         permissionItemId: option.id,
       });
       selected.value.push(option.value);
