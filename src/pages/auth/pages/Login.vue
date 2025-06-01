@@ -51,11 +51,13 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuthStore } from '/src/pages/auth/store'
+import { useUserStores } from "src/pages/user/store"
 import useNotify from 'src/composables/UseNotify'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const auth = useAuthStore()
+const useStores = useUserStores()
 const { notifyError, notifySuccess } = useNotify()
 
 const form = ref({
@@ -66,6 +68,8 @@ const form = ref({
 const handleLogin = async () => {
   try {
     await auth.Actionlogin(form.value)
+    await useStores.findPermissions(auth.user.sub)
+
     notifySuccess('Login efectuado com sucesso')
     router.push({ name: 'home' })
   } catch (error) {

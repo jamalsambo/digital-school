@@ -899,14 +899,6 @@ const toggleLeftDrawer = () => {
 };
 
 /* fetch data */
-const fetchInstitution = async () => {
-  try {
-    await institutionStores.findOne(user.value.institutionId);
-    educationLevel.value = institutionStores.institution.educationLevel;
-  } catch (error) {
-    notifyError("Erro ao carregar instituicao");
-  }
-};
 const fetchUser = async () => {
   try {
     await userStores.findOne(user.value.sub);
@@ -919,7 +911,6 @@ const fetchUser = async () => {
 
 onMounted(async () => {
   await fetchUser();
-  await fetchInstitution();
   if (user.value && user.value.userType === "Encarregado") {
     try {
       studentStores.list({
