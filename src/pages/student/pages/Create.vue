@@ -255,7 +255,7 @@
                 ref="userChild"
                 :data="student"
                 :entity="entity"
-                :userTypeId="'5adc9f0f-2175-4f29-8a77-43eb1c2d5fae'"
+                :userTypeId="studentTypeID"
               >
                 <template #actions>
                   <div class="row justify-end q-gutter-sm">
@@ -276,7 +276,7 @@
                 ref="userChild"
                 :data="contacts"
                 :entity="'guardian'"
-                :userTypeId="'637c12c9-5e26-417d-8fa2-96c5486ce0e3'"
+                :userTypeId="guardianTypeID"
               >
                 <template #actions>
                   <div class="row justify-end q-gutter-sm">
@@ -316,6 +316,9 @@ import Tables from "src/components/Tables.vue";
 import ColumnsStudentPaymentType from "../components/ColumnsStudentsPaymentTypes.js";
 import ColumnsEnrollments from "../components/ColumnsEnrolments";
 import scripts from "src/composables/Scripts";
+const studentTypeID = import.meta.env.VITE_STUDENT_ID;
+const guardianTypeID = import.meta.env.VITE_GUARDIAN_ID;
+
 
 // use store
 const route = useRoute();

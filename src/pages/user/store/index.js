@@ -144,7 +144,7 @@ export const useUserStores = defineStore("user", {
         ...params,
       });
       if (error) throw error;
-      this.user = data;
+      return data;
     },
     async update(id, params) {
       const { data, error } = await api.put(`/user/${id}`, params);

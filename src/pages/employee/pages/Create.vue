@@ -164,7 +164,7 @@
                   ref="userChild"
                   :data="employee"
                   :entity="entity"
-                  :userTypeId="'5bc90aeb-0034-4b84-80ce-fa1b60225ce3'"
+                  :userTypeId="employeeTypeID"
                 >
                   <template #actions>
                     <div class="row justify-end q-gutter-sm">
@@ -241,7 +241,7 @@ import { useAuthStore } from "src/pages/auth/store";
 import { useUserStores } from "src/pages/user/store";
 import ContactComponent from "src/components/register/contact/View.vue";
 import UserComponent from "src/components/register/user/View.vue";
-
+const employeeTypeID = import.meta.env.VITE_EMPLOYEE_ID;
 /* 🔹 Setup stores */
 const route = useRoute();
 const employeeStores = useEmployeeStores();
