@@ -10,6 +10,7 @@ export const useStudentStores = defineStore("student", {
     students: [],
     student: {},
     studentPaternity: {},
+    studentCount: 0
   }),
   getters: {
     enrollmentActive: (state) =>  filterEnrollmentsByYear(state.student?.enrollments, new Date().getFullYear())
@@ -64,5 +65,13 @@ export const useStudentStores = defineStore("student", {
       if (error) throw error;
       return data;
     },
+
+    async count () {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
+       const { data, error } = await api.get(`/student/count/${institutionId}`);
+      if (error) throw error;
+      this.studentCount = data;
+    }
   },
 });

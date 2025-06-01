@@ -155,14 +155,14 @@
         </div>
 
         <!-- Menu do funcionario -->
-        <div v-if="userstoresComputed.isEmployee">
+        <div v-if="userStores.isEmployee">
           <q-expansion-item
             icon="menu_open"
             label="Instituição"
             v-if="
-              userstoresComputed.hasViewInstitution ||
-              userstoresComputed.hasViewRooms ||
-              userstoresComputed.hasViewHoraryInstitution
+              userStores.hasViewInstitution ||
+              userStores.hasViewRooms ||
+              userStores.hasViewHoraryInstitution
             "
           >
             <q-item
@@ -820,8 +820,6 @@ const $q = useQuasar();
 const user = computed(() => authStore.user);
 const students = computed(() => studentStores.students);
 const educationLevel = ref();
-
-const userstoresComputed = computed(() => userStores)
 
 const hasViewStudents = ref();
 const hasViewEmployees = ref();

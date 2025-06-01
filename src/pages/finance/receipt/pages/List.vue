@@ -433,7 +433,7 @@ const handlePaid = async () => {
       classe.value.classe?.startDate
     ).toLocaleString("pt-BR", { month: "long" });
 
-    if ((method.value = "Mpesa")) {
+    if (method.value === "Mpesa") {
       const responseMpesa = await paymentStores.payMpsa({
         amount: parseInt(classe.value.classe.monthlyFee),
         msisdn: 258845751142,
@@ -444,6 +444,9 @@ const handlePaid = async () => {
         await receiptStores.create(payloadReceipt);
         receiptId.value = receiptStores.receipt.id;
       }
+    }else{
+       await receiptStores.create(payloadReceipt);
+        receiptId.value = receiptStores.receipt.id;
     }
     if (receiptId.value) {
       const requests = invoices.value.map(async (invoice) => {
@@ -560,7 +563,7 @@ const updateStudentSelect = (student) => {
 };
 const updatePaymentTypeSelect = () => {
   paymentTypeFind.value = paymentTypes.value.find(
-    (p) => p.name === "Matricula"
+    (p) => p.name === "Mensalidade"
   );
 };
 
@@ -605,7 +608,7 @@ const totalMonthFees = computed(() =>
   invoices.value
     .filter((value) => value.status === "Pendente")
     .reduce((acc, value) => {
-      return acc + parseFloat(value.amount);
+      return acc + parseFloat(value.total);
     }, 0)
 );
 const totalPenalty = computed(() =>

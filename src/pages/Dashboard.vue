@@ -4,7 +4,7 @@
       class="bg-white text-dark shadow-sm q-pa-md row justify-between items-center"
     >
       <div class="text-bold text-primary">
-        {{institutionStores.institution?.name}}
+        {{userStores.user.employee?.institution?.name}}
       </div>
 
       <div class="text-bold text-primary row items-center">
@@ -52,7 +52,7 @@
           <Teachers
             :item="{
               title: 'Professores',
-              value: employees?.length,
+              value: employeeCount,
               color1: '#17a2b8',
               color2: '#17a2c1',
               img: teacherImg,
@@ -65,7 +65,7 @@
           <Teachers
             :item="{
               title: 'Estudantes',
-              value: students?.length,
+              value: studentCount,
               color1: '#17a2b8',
               color2: '#17a2c1',
               img: studentImg,
@@ -78,7 +78,7 @@
           <Teachers
             :item="{
               title: 'Estudantes activos',
-              value: students?.length,
+              value: studentCount,
               color1: '#17a2b8',
               color2: '#17a2c1',
               img: studentImg,
@@ -251,7 +251,7 @@
         </div>
       </div> -->
 
-      <div class="row q-col-gutter-x-md q-mt-lg">
+      <!-- <div class="row q-col-gutter-x-md q-mt-lg">
         <div class="col-md-12 col-sm-12 col-xs-12">
           <q-card class="q-pa-md">
             <q-card-section>
@@ -262,7 +262,7 @@
             </q-card-section>
           </q-card>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <div
@@ -289,7 +289,8 @@ import { computed, onMounted, ref } from "vue";
 import { useInvoiceStores } from "./finance/invoice/stores";
 import { useUserStores } from "./user/store";
 import { useExpenseStores } from "./finance/expense/store";
-import { useInstitutionStores } from "./institution/store";
+import { useStudentStores } from "src/pages/student/store"
+import { useEmployeeStores } from "src/pages/employee/stores"
 import Card from "src/components/dashboard/Card.vue";
 import SubCard from "src/components/dashboard/Sub-Card.vue";
 import InOutCard from "src/components/dashboard/InOut-Card.vue";
@@ -312,7 +313,8 @@ const authStore = useAuthStore();
 const invoiceStores = useInvoiceStores();
 const expensesStores = useExpenseStores();
 const userStores = useUserStores();
-const institutionStores = useInstitutionStores();
+const studentStores = useStudentStores()
+const employeeStores = useEmployeeStores()
 const { formatToMZN } = scripts();
 const { notifyError } = useNotify();
 
@@ -324,8 +326,6 @@ const user = computed(() => authStore.user);
 const invoices = ref([]);
 const expenses = ref([]);
 const users = ref();
-const employees = computed(() => institutionStores.institution.employees);
-const students = computed(() => institutionStores.institution.students);
 const currentDate = new Date();
 const month = currentDate.toLocaleString("pt-BR", { month: "long" });
 const valuesPerMonthCurrentYear = ref(new Array(12).fill(0)); // [0, 0, ..., 0]
@@ -334,6 +334,8 @@ const valuesPerMonthLastYear = ref(new Array(12).fill(0)); // [0, 0, ..., 0]
 const currentYear = currentDate.getFullYear();
 const lastYear = currentYear - 1;
 const valuesPerDayCurrentYear = ref({});
+const studentCount = ref(0)
+const employeeCount = ref(0)
 
 const events = ref([
   "Elimination Game",
@@ -521,20 +523,6 @@ const totalExpensesMonthLate = computed(() =>
   )
 );
 
-const distributedStudents = computed(() => {
-
-  const distributedStudents = {};
-  const totalStudents = students.value?.length;
-
-  students.value?.forEach((student) => {
-    student.enrollments.forEach((enrollment) => {
-      const studentClass = enrollment.classe;
-    distributedStudents[studentClass.course.name] = (distributedStudents[studentClass] || 0) + 1;
-    })
-  });
-
-  return { ...distributedStudents };
-})
 const goTo = (route) => {
   router.push({
     name: route,
@@ -593,32 +581,14 @@ const fetchUsers = async () => {
 
 onMounted(async () => {
   await fetchInvoices();
-  fetchUsers();
-  fetchExpenses();
+  await fetchUsers();
+  await fetchExpenses();
 
-  new Chart(chartCanvas.value, {
-    type: "bar",
-    data: {
-      // labels: ["INFO", "ELET", "MECA", "SEGU", "MEAM", "SEIN"],
-      datasets: [
-        {
-          label: "Total de alunos",
-          data: distributedStudents.value,
-          backgroundColor: "#2E3192", // Azul escuro
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: true,
-          position: "top",
-        },
-      },
-    },
-  });
+ await studentStores.count()
+ studentCount.value = studentStores.studentCount.count
+
+ await employeeStores.count()
+ employeeCount.value = employeeStores.employeeCount
 
   const comparativeChart = chartReportTwoYear.value.getContext("2d");
   new Chart(comparativeChart, {
@@ -682,6 +652,7 @@ onMounted(async () => {
       },
     },
   });
+
 });
 
 const itemTotalPayment = ref({

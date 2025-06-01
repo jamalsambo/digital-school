@@ -95,7 +95,6 @@ const {id} = route.params;
 const form = ref({ name: "", type: "", location: "", availability: "" });
 
 const handleSubmit = () => {
-  console.log(id)
   try {
     if (id) {
       roomStores.update(id.id, {...form.value });
@@ -104,6 +103,7 @@ const handleSubmit = () => {
       roomStores.create({ ...form.value });
       notifySuccess("Sala criada com sucesso!");
     }
+    router.back()
   } catch (error) {
     notifyError("Erro ao criar sala");
   }

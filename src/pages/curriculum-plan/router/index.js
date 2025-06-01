@@ -6,7 +6,7 @@ const curriculumRoutes = [
   { path: 'education/:educationId/curriculums', name: 'curriculums', component: List },
   { path: 'education/:educationId/course/:courseId/curriculum/create', name: 'create-curriculum', component: Create },
   { path: 'education/:educationId/curriculum/:curriculumId/edit', name: 'edit-curriculum', component: Create },
-  { path: 'curriculum/:curriculumId/settings', name: 'settings-curriculum', meta: {title: 'Settings Curriculum'}, component: Settings }
+  { path: 'education/:educationId/curriculum/:curriculumId/settings', name: 'settings-curriculum', meta: {title: 'Settings Curriculum'}, component: Settings }
 ];
 
 export default curriculumRoutes;

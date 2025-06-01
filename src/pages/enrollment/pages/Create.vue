@@ -144,19 +144,18 @@ const onSubmit = async () => {
         issueDate: new Date(),
         dueDate: new Date(),
         month: month,
-        amount: parseInt(classe.value.enrollmentFeeValue),
+        amount: classe.value.monthlyFeeIncluse? parseInt(classe.value.enrollmentFeeValue)-parseInt(classe.value.monthlyFee): parseInt(classe.value.enrollmentFeeValue),
         total: parseInt(classe.value.enrollmentFeeValue),
         status: "Pendente",
         year: new Date().getFullYear(),
         note: `Factura referente a matricula do ano lectivo ${new Date().getFullYear()}`,
       };
-
       await invoiceStores.create(payloadInvoice);
 
       if (classe.value.monthlyFeeIncluse) {
         const payloadPayment = {
           invoiceId: invoiceStores.invoice.id,
-          description: `Mensalidade referente a turma ${classe.value.name}, mes de ${monthFristPay}`,
+          description: `Mensalidade referente ao mes de ${monthFristPay}`,
           amount: parseInt(classe.value.monthlyFee),
         };
 

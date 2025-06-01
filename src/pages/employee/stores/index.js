@@ -8,6 +8,7 @@ export const useEmployeeStores = defineStore("employee", {
     employee: {},
     teachings: [],
     teaching: {},
+    employeeCount: 0,
   }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
@@ -57,6 +58,14 @@ export const useEmployeeStores = defineStore("employee", {
       const { data, error} = await api.delete(`/employee/${employeeId}/discipline/${developmentAreaActivityId}`)
       if (error) throw error;
       return data
+    },
+
+    async count () {
+      const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
+       const { data, error } = await api.get(`/employee/count/${institutionId}`);
+      if (error) throw error;
+      this.employeeCount = data.count;
     }
   },
 });

@@ -4,7 +4,7 @@
       :precedence-dialog="precedenceDialog"
       :current-discipline="currentDiscipline"
       :allocated-disciplines="allocatedDisciplines"
-      :-handled-add-precedence="HandledAddPrecedence"
+      :handled-add-precedence="HandledAddPrecedence"
     >
       <template #actions>
         <q-btn flat label="Fechar" @click="precedenceDialog = false" />
@@ -12,7 +12,17 @@
     </PrecedenceDialogModal>
     <q-card class="q-pa-md q-mx-auto">
       <q-card-section>
-        <h4>Alocação de Disciplinas por Área</h4>
+        <div class="row items-center justify-between">
+            <span class="text-weight-bold">Alocação de Disciplinas por Área</span>
+            <q-btn
+              color="primary"
+              icon="add"
+              label="Adicionar"
+              class="q-mr-sm"
+              @click="addDevelopmentArea"
+              flat
+            />
+          </div>
         <q-list bordered separator>
           <q-item
             v-for="area in developmentAreas"
@@ -118,6 +128,7 @@
                     { label: 'Nao', value: false },
                   ]"
                   label="Exame"
+                  option-value="value"
                   outlined=""
                   dense
                   map-options
@@ -131,6 +142,7 @@
                     { label: 'Nao', value: false },
                   ]"
                   label="Importante na transição"
+                    option-value="value"
                   outlined=""
                   dense
                   map-options
@@ -142,6 +154,7 @@
                     { label: 'Sim', value: true },
                     { label: 'Nao', value: false },
                   ]"
+                    option-value="value"
                   label="Participativa somente"
                   outlined=""
                   dense
@@ -185,10 +198,11 @@ import { useInstitutionStores } from "src/pages/institution/store";
 import { useDevelopmentAreaStores } from "src/pages/development-area/stores";
 import { useDisciplineStores } from "src/pages/discipline/store";
 import PrecedenceDialogModal from "../components/PrecedenceDialogModal.vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 /* setup router */
 const route = useRoute();
+const router = useRouter()
 
 /* setup stores */
 const institutionStores = useInstitutionStores();
@@ -196,7 +210,7 @@ const developmentAreaStores = useDevelopmentAreaStores();
 const disciplineStores = useDisciplineStores();
 
 /* setup data */
-const { curriculumId } = route.params;
+const { curriculumId, educationId} = route.params;
 const institution = computed(() => institutionStores.institution);
 const developmentAreas = ref([]);
 const disciplineOptions = ref([]);
@@ -270,9 +284,9 @@ function allocateDiscipline(areaValue) {
 
   formState[areaValue].cicle.forEach(async (cicle) => {
     await developmentAreaStores.addDevelopmentActivity(areaValue, {
-      exame: formState[areaValue].exame.value,
-      critical: formState[areaValue].critical.value,
-      participation: formState[areaValue].participation.value,
+      exame: formState[areaValue].exame.value || false,
+      critical: formState[areaValue].critical.value || false,
+      participation: formState[areaValue].participation.value || false,
       year: parseInt(formState[areaValue].year),
       cicle: cicle.value,
       hours: parseInt(formState[areaValue].hours),
@@ -316,6 +330,10 @@ const HandledAddPrecedence = async (value) => {
     console.log(error);
   }
 };
+
+const addDevelopmentArea = () => {
+  router.push({name: 'create-development-area', params: {curriculumId:curriculumId,educationId:educationId}})
+}
 /* fetch data */
 const fetchDevelopmentAreas = async () => {
   try {
@@ -334,7 +352,7 @@ const fetchDevelopmentAreas = async () => {
   }
 };
 
-const fetchDisciplines = async (educationId) => {
+const fetchDisciplines = async () => {
   try {
     await disciplineStores.list(educationId);
     disciplineOptions.value = disciplineStores.disciplines;
@@ -343,14 +361,10 @@ const fetchDisciplines = async (educationId) => {
   }
 };
 
-watch(institution, (newValue) => {
-  if (newValue?.educationId) {
-    fetchDisciplines(newValue.educationId);
-  }
-});
 
-onMounted(() => {
-  fetchDevelopmentAreas();
+onMounted(async () => {
+  await fetchDisciplines()
+  await fetchDevelopmentAreas();
 });
 </script>
 

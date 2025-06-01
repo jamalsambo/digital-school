@@ -8,7 +8,6 @@
         </div>
         <q-separator spaced />
       </q-card-section>
-
       <q-card-section>
         <div class="text-subtitle1">Informações de pesquisa</div>
         <q-card flat bordered class="q-pa-md shadow-2">
@@ -188,7 +187,7 @@ const fetchInvoices = async () => {
     });
 
     if (paymentTypeSelected.value.name === "Matricula") {
-      invoices.value = invoiceStores.invoices;
+        invoices.value = invoiceStores.invoices;
     } else {
       invoices.value = months.value.map((month) => {
         const invoice = invoiceStores.invoices.find(

@@ -70,8 +70,8 @@ const submitForm = async () => {
     } else {
       await developmentAreaStore.update(developmentAreaId, form.value);
       notifySuccess("Area de desenvolvimento editado com sucesso");
-      router.back();
     }
+     router.back();
   } catch (error) {
     console.error(error);
     notifyError("Erro ao salvar o Area de desenvolvimento");
