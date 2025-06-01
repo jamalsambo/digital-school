@@ -133,8 +133,8 @@ watchEffect(() => {
     form.value.displayName = props.data?.basicInformation?.fullName;
     form.value.username = props.data?.number;
   } else if (props.entity === "guardian"){
-     form.value.displayName = props.data.find((val) => val.type === 'Principal' && val.owner === 'Encarregado').owner;
-     form.value.username = props.data.find((val) => val.type === 'Principal' && val.owner === 'Encarregado').number
+    form.value.displayName = props.data.find((val) => val.type === 'Principal' && val.owner === 'Encarregado').owner;
+    form.value.username = props.data.find((val) => val.type === 'Principal' && val.owner === 'Encarregado').number
   }
 });
 </script>

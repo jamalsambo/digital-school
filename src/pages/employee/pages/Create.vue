@@ -2,6 +2,7 @@
   <q-page padding>
     <q-card-section>
       <div class="text-h6 text-center">Registro do Funcionario</div>
+      {{ employeeTypeID }}
     </q-card-section>
     <!-- Sessão de Dados Pessoais -->
     <q-card flat bordered class="q-mb-md">
