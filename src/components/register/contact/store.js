@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "src/boot/axios";
+import { useAuthStore } from "src/pages/auth/store";
 
 export const useContactStores = defineStore("contact", {
   state: () => ({
@@ -17,7 +18,12 @@ export const useContactStores = defineStore("contact", {
     },
 
     async create(params) {
-      const { data, error } = await api.post("/contact", params);
+       const authStore = useAuthStore();
+      const { institutionId } = authStore.user;
+      const { data, error } = await api.post("/contact", {
+        ...params,
+        institutionId: institutionId,
+      });
       if (error) throw error;
       this.contact = data;
     },
