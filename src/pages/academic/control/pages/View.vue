@@ -3,7 +3,7 @@
     <q-card class="certificate-card shadow-2">
       <q-card-section class="text-center q-pb-none">
         <div class="row items-center justify-center q-gutter-md">
-          <q-img src="~assets/mozambique_coat_of_arms.png" alt="Emblema de Moçambique" class="coat-of-arms" width="80px" height="80px" />
+          <q-img src="assets/teacher.png" alt="Emblema de Moçambique" class="coat-of-arms" width="80px" height="80px" />
           <div>
             <div class="text-h6 text-uppercase text-weight-bold">República de Moçambique</div>
             <div class="text-subtitle1 text-weight-medium">Ministério da Educação e Desenvolvimento Humano</div>
@@ -59,7 +59,7 @@
               </q-icon>
             </q-item-section>
           </q-item>
-           
+
         </q-list>
 
         <q-separator class="q-my-md" />
