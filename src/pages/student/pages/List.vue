@@ -33,7 +33,7 @@
                   no-caps
                   class="q-ml-sm"
                   @click="addStudents"
-                v-if="hasCreateStudents"
+                v-if="authStore.hasCreateStudents"
                 />
               </template>
 
@@ -44,6 +44,16 @@
                   icon="info"
                   @click="editStudent(props.row)"
                   color="primary"
+                  dense
+                />
+                <q-btn
+                  flat
+                  round
+                  icon="manage_accounts"
+                  @click="addUser(props.row)"
+                  color="primary"
+                  title="Configurar Acesso"
+                  dense
                 />
               </template>
             </q-table>
@@ -57,6 +67,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useStudentStores } from "src/pages/student/store";
+import { useAuthStore } from "src/pages/auth/store";
 import { useUserStores } from "src/pages/user/store";
 import columns from "src/pages/student/components/ColumnsStudentsList";
 import useNotify from "src/composables/UseNotify";
@@ -71,10 +82,11 @@ const students = ref([]);
 
 // Acessos aos stores e router
 const router = useRouter();
+const authStore = useAuthStore()
 const studentStores = useStudentStores();
-const userStores = useUserStores();
+const userStores = useUserStores()
 const { notifyInfo, notifyError } = useNotify();
-const hasCreateStudents = computed(() => userStores.hasCreateStudents)
+const studentTypeID = import.meta.env.VITE_STUDENT_ID;
 
 // Funções
 const addStudents = async () => {
@@ -90,6 +102,28 @@ const editStudent = async (student) => {
     name: "student-space",
     params: { id: student.id, created: "edit" },
   });
+};
+
+const addUser = async (student) => {
+  if (student.userId) {
+     router.push({
+      name: "manage-account",
+      params: { userId: student.userId },
+    });
+  } else {
+   await userStores.create({
+        displayName: student.basicInformation?.fullName,
+        username: student.number,
+        password: '1234',
+        userTypeId: studentTypeID,
+        institutionId: student?.institutionId
+   })
+   await studentStores.update(student.id, {userId: userStores.user.id})
+    router.push({
+      name: "manage-account",
+      params: { userId: userStores.user.id },
+    });
+  }
 };
 // Função para buscar os planos curriculares
 const fetchStudents = async () => {

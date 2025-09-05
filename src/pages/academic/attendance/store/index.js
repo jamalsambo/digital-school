@@ -50,8 +50,8 @@ export const useAttendanceStores = defineStore("attendance", {
       this.classAttendance = data;
     },
 
-    async fetchClassAttendances() {
-      const { data, error } = await api.get(`/attendance/class`);
+    async fetchClassAttendances(params) {
+      const { data, error } = await api.get(`/attendance/class`, {params: params});
       if (error) throw error;
       this.classAttendances = data;
     },

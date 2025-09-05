@@ -31,7 +31,7 @@
                 </q-item-section>
 
                 <!-- Botão para ver mais detalhes (justificativa da ausência) -->
-                <q-item-section side>
+                <q-item-section side v-if="student.status !=='Presente'">
                   <q-btn
                     icon="description"
                     color="primary"
@@ -132,7 +132,7 @@ const fetchClassAttendance = async () => {
 const handleSeeJustification = (student) => {
   router.push({
     name: "justication-attendance",
-    params: { id: student.id, attendanceId: student.attendance.id },
+    params: { id: student.id, attendanceId: student.attendance?.id },
   });
 }
 

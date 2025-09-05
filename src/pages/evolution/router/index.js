@@ -4,7 +4,7 @@ import Types from '../pages/Types.vue';
 const evolutionsRoutes = [
    /* Rotas de Evolução */
    {
-    path: "/evolution/class/:classe/discipline/:discipline/:student?/:studentId?/:exame?",
+    path: "/evolution/class/:classe/discipline/:discipline/:student?/:studentId?/",
     name: "evolution-create",
     component: Create,
   },

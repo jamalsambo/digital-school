@@ -30,7 +30,10 @@
                   {{ item.owner }}
                 </div>
               </q-item-section>
-              <q-item-section side v-if="item.type === 'Principal' && item.owner === 'Encarregado'">
+              <q-item-section
+                side
+                v-if="item.type === 'Principal' && item.owner === 'Encarregado'"
+              >
                 <q-btn
                   flat
                   dense
@@ -111,10 +114,19 @@
 // imports
 import { ref } from "vue";
 import { useContactStores } from "./store";
+import { useAuthStore } from "src/pages/auth/store";
+import { useUserStores } from "src/pages/user/store";
 import useNotify from "src/composables/UseNotify";
+import { useRouter } from "vue-router";
+const guardianTypeID = import.meta.env.VITE_GUARDIAN_ID;
+
+/* router */
+const router = useRouter()
 
 // use store
+const authStore = useAuthStore();
 const contactStore = useContactStores();
+const userStores = useUserStores();
 const { notifyError, notifySuccess } = useNotify();
 
 // Props
@@ -125,6 +137,7 @@ const props = defineProps({
 // Data
 const isEditing = ref(false);
 const form = ref({ type: "", owner: "", number: "" });
+const user = ref();
 
 // Methods
 const addContact = async (owner) => {
@@ -144,7 +157,7 @@ const addContact = async (owner) => {
         })
       );
       notifySuccess("Contato adicionado com sucesso!");
-      props.contacts.push(form.value)
+      props.contacts.push(form.value);
     } else {
       notifyError("Falha ao adicionar contato! ID não gerado.");
     }
@@ -176,8 +189,24 @@ const removeContact = async (contactToRemove) => {
 };
 
 const createUser = async (item) => {
- console.log(item)
-}
+  await userStores.findUsername(item.number);
+  user.value = userStores.user;
+
+  if (!user.value?.id) {
+     await userStores.create({
+      displayName: item.number,
+      username: item.number,
+      password: item.number,
+      userTypeId: guardianTypeID,
+      institutionId: authStore.user?.institutionId,
+    });
+    user.value = userStores.user;
+  }
+  router.push({
+      name: "manage-account",
+      params: { userId: user.value?.id },
+    });
+};
 
 const toggleEdit = () => {
   isEditing.value = !isEditing.value;

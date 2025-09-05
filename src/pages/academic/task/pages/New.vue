@@ -97,6 +97,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watchEffect } from "vue";
+import { useAuthStore } from "src/pages/auth/store";
 import { useRoute, useRouter } from "vue-router";
 import { useTaskStores } from "../store";
 import { useUserStores } from "src/pages/user/store";
@@ -106,13 +107,12 @@ import useNotify from "src/composables/UseNotify";
 /* use store */
 const route = useRoute();
 const router = useRouter();
-const userStores = useUserStores();
+const authSore = useAuthStore();
 const taskStores = useTaskStores();
 const composableStores = useComposablesStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* data*/
-const user = computed(() => userStores.user);
 const task = ref(null);
 const { classeId, disciplineId, id } = route.params;
 const file = ref(null);
@@ -151,7 +151,7 @@ const onSubmit = async () => {
       ...form.value,
       classId: classeId,
       activityId: disciplineId,
-      teacherId: user.value.employee.id,
+      teacherId: authSore.user.employeeId,
     };
     console.log(payload);
     await taskStores.create(payload);

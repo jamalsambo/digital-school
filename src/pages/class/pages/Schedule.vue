@@ -52,8 +52,7 @@ onMounted(async () => {
         const colIndex = scheduleRef.value.days.indexOf(dayWeek);
         if (colIndex !== -1 && period < scheduleRef.value.schedule.length) {
 scheduleRef.value.schedule[period].slots[colIndex] = {
-  disciplineName: discipline.name,
-  employeeName: employee.basicInformation?.fullName
+  disciplineName: discipline.name
 };
 
         }

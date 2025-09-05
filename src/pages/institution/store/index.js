@@ -6,11 +6,16 @@ export const useInstitutionStores = defineStore("institution", {
   state: () => ({
     institutions: [],
     institution: {},
+    permissions: [],
+    cycles: [],
+    cycle: {},
+    currentCycle: {}
   }),
   getters: {
     istechnical: (state) =>  state.institution.educationLevel?.name === 'Ensino Técnico',
     isInfantil: (state) =>  state.institution.educationLevel?.name === 'Ensino Infantil',
     isHigh: (state) =>  state.institution.educationLevel?.name ===  'Ensino Médio',
+    isFree:  (state) =>  state.institution.educationLevel?.name ===  'Ensino Livre',
   },
   actions: {
     async list(params) {
@@ -41,6 +46,11 @@ export const useInstitutionStores = defineStore("institution", {
       const { data, error } = await api.get(`/institution/domain/${domain}`);
       if (error) throw error;
       this.institution = data;
+    },
+     async findPermissions(institutionId) {
+      const { data, error } = await api.get(`/institution/${institutionId}/permissions`);
+      if (error) throw error;
+      this.permissions = data;
     },
 
     async deleteInstitutionEducation(params) {
@@ -83,5 +93,23 @@ export const useInstitutionStores = defineStore("institution", {
       if (error) throw error;
       return data;
     },
+
+    /* cycles */
+    async listCycles(institutionId) {
+      const { data, error } = await api.get(`/institution/${institutionId}/cycles`);
+      if (error) throw error;
+      this.cycles =  data;
+    },
+    async createCycles(params) {
+      const { data, error } = await api.post("/institution/cycles/create", params);
+      if (error) throw error;
+      return data;
+    },
+    async findCurrentCycle(institutionId) {
+      const { data, error } = await api.get(`/institution/${institutionId}/cycles/current`);
+      if (error) throw error;
+      this.currentCycle = data;
+    },
+
   },
 });

@@ -16,17 +16,17 @@ const columns = [
     align: "left",
   },
   {
-    name: "amount",
+    name: "originalTotal",
     label: "Valor Original",
-    field: "amount",
+    field: "originalTotal",
     sortable: true,
     align: "left",
     summary: "sum"
   },
   {
-    name: "amount",
+    name: "totalToPay",
     label: "Valor Total",
-    field: "total",
+    field: "totalToPay",
     sortable: true,
     align: "left",
     summary: "sum"

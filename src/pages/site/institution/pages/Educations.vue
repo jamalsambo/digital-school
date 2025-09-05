@@ -50,8 +50,9 @@
 
 <script setup>
 import { useRoute } from 'vue-router';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useSiteStores } from '../../store';
+import { ref } from 'vue';
 
 /* setup router */
 const route = useRoute()
@@ -60,7 +61,18 @@ const route = useRoute()
 const siteStores = useSiteStores();
 
 /* setup stores */
-const educations = computed(() => siteStores.institution.courses);
+const educations =ref([])
+
+const fetchData = async () => {
+  try {
+      await siteStores.findCorses(  "8d0c4213-9c7a-4ec8-b790-ba916275e9ee")
+      educations.value = siteStores.courses
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 const schoolSlug = route.params.schoolSlug;
 
+onMounted(fetchData)
 </script>

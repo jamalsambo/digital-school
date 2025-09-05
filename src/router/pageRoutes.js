@@ -24,3 +24,6 @@ export { default as groupRoutes } from "../pages/academic/group/router"
 export { default as taskRoutes}  from "../pages/academic/task/router"
 export { default as siteRoutes} from "../pages/site/router"
 export { default as expenseRoutes} from "../pages/finance/expense/router"
+export { default as userRoutes } from "../pages/user/router"
+export { default as emissionRoutes } from "../pages/academic/emission/router"
+export { default as financeReportRoutes } from '../pages/finance/report/router'

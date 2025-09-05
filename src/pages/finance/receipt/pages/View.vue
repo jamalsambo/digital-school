@@ -1,6 +1,6 @@
 <template>
-  <q-page padding="">
-    <div class="invoice-container" ref="invoiceContent" padding="">
+  <q-page padding>
+    <div class="invoice-container" ref="invoiceContent" padding=""> 
       <q-card flat bordered class="q-pa-md shadow-2">
         <div class="row justify-between items-center">
           <div>
@@ -10,12 +10,12 @@
             />
             <div class="text-h6">{{ institution?.name }}</div>
             <div class="text-caption">
-              Cidade da {{ institution?.district?.name }} -
+              Cidade da {{ institution?.city }} -
               {{ institution?.neighborhood }} - {{ institution?.address }}
               <div class="text-caption">
                 {{ institution?.mainContact }}
                 {{ `- ` + institution?.alternativeContact }}
-                {{ `- ` + institution?.fixed }}
+                {{ `- ` + institution?.fixeContact }}
               </div>
             </div>
             <div class="text-caption">{{ institution?.email }}</div>
@@ -34,20 +34,20 @@
             <div class="row justify-between">
               <div>Nome</div>
               <div style="margin-right: 5px">
-                {{ student?.basicInformation?.fullName }}
+                {{ student?.name }}
               </div>
             </div>
 
             <div class="row justify-between">
               <div>Classe</div>
               <div style="margin-right: 5px">
-                {{ classe?.course?.name }}
+                {{ student?.course }}
               </div>
             </div>
 
             <div class="row justify-between">
               <div>Turma</div>
-              <div style="margin-right: 5px">{{ classe?.name }}</div>
+              <div style="margin-right: 5px">{{ student?.classe }}</div>
             </div>
           </div>
 
@@ -65,7 +65,7 @@
             <div class="row justify-between">
               <div>Data de emissão</div>
               <div style="margin-right: 5px">
-                {{ formatDate(receipt?.createdAt) }}
+                {{ formatDate(receipt?.issueDate) }}
               </div>
             </div>
 
@@ -92,8 +92,8 @@
           <tbody>
             <!-- Primeira Linha (Exemplo) -->
             <tr>
-              <td>{{ receipt?.paymentMethod }}</td>
-              <td>{{ receipt?.transactionCode }}</td>
+              <td>{{ receipt?.method }}</td>
+              <td>{{ receipt?.transactionNumber }}</td>
             </tr>
             <!-- Adicione mais linhas conforme necessário -->
           </tbody>
@@ -110,26 +110,23 @@
           <template v-slot:body="props">
             <!-- Linha principal da fatura -->
             <q-tr :props="props">
-              <q-td key="number">{{ props.row.invoice.number }}</q-td>
-              <q-td key="note">{{ props.row.invoice.note }}</q-td>
+              <q-td key="number">{{ props.row?.number }}</q-td>
+              <q-td key="note">{{ props.row?.description }}</q-td>
               <q-td key="issueDate">{{
-                formatDate(props.row.invoice.issueDate)
+                formatDate(props.row.issueDate)
               }}</q-td>
-              <q-td key="total">{{ props.row.invoice.total }}</q-td>
-              <q-td key="amount">{{ props.row.amount }}</q-td>
-              <q-td key="remaining">{{
-                parseFloat(props.row.invoice.total) -
-                parseFloat(props.row.invoice.paidAmount)
-              }}</q-td>
+              <q-td key="total">{{ props.row.totalToPay }}</q-td>
+              <q-td key="amount">{{ props.row.amountPaid }}</q-td>
+              <q-td key="remaining">{{ props.row.remaining }}</q-td>
             </q-tr>
 
             <!-- Exibir itens apenas se houver itens na fatura -->
             <template
-              v-if="props.row.invoice.items && props.row.invoice.items.length"
+              v-if="props.row.items && props.row.items.length"
             >
               <q-tr
-                v-for="item in props.row.invoice.items"
-                :key="item.id"
+                v-for="item in props.row.items"
+                :key="item"
                 class="q-tr--no-hover"
               >
                 <q-td colspan="5" class="text-left q-pl-xl">
@@ -145,15 +142,15 @@
         </q-table>
         <div class="row justify-end q-mt-md">
           <div class="col-auto text-right">
-            <div class="text-h7">Total da factura: {{ total }}</div>
-            <div class="text-h7">Total alocado: {{ totalPaid }}</div>
+            <div class="text-h7">Total da factura: {{ summary?.totalToPay }}</div>
+            <div class="text-h7">Total alocado: {{ summary?.subtotal }}</div>
             <div class="text-h7">
-              Total: {{ totalPaid }} <q-separator spaced />
+              Total: {{ summary?.totalPaid }} <q-separator spaced />
             </div>
 
             <div class="text-h7">
               <strong>São:</strong>
-              {{ numberForExtension(totalPaid) }} Meticais
+              {{ numberForExtension(summary?.totalPaid) }} Meticais
             </div>
           </div>
         </div>
@@ -165,12 +162,7 @@
           </div>
           <span>Pagina 1/1</span>
           <div>
-            <span
-              >Impresso por:
-              {{
-                authStore?.user?.displayName
-              }} </span
-            ><br />
+            <span>Impresso por: {{ authStore?.user?.displayName }} </span><br />
             <span>Data: {{ formatDate(new Date()) }}</span>
           </div>
         </div>
@@ -203,7 +195,6 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useAuthStore } from "src/pages/auth/store";
 import { useReceiptStores } from "../stores";
-import { useInstitutionStores } from "src/pages/institution/store";
 import scripts from "src/composables/Scripts";
 import { useRoute, useRouter } from "vue-router";
 
@@ -214,43 +205,30 @@ const router = useRouter();
 /* use stores */
 const authStore = useAuthStore();
 const receiptStores = useReceiptStores();
-const institutionStores = useInstitutionStores();
-const { getActiveClass, formatDate, numberForExtension } =
-  scripts();
+const { formatDate, numberForExtension } = scripts();
 
 /* Data */
 const { receiptId } = route.params;
 
-const institution = computed(() => institutionStores.institution);
 const student = ref();
+const institution = ref()
 const receipt = ref();
-const classe = ref();
 const invoices = ref([]);
+const summary = ref()
 
 /* Fetch data */
 const fetchReceipt = async () => {
   try {
     await receiptStores.findOne(receiptId);
-    receipt.value = receiptStores.receipt;
-    student.value = receipt.value.student;
-    classe.value = await getActiveClass(student.value.enrollments);
-    invoices.value = receipt.value.payments;
+    receipt.value = receiptStores.receipt.receipt;
+    student.value = receiptStores.receipt.student;
+    institution.value = receiptStores.receipt.institution;
+    invoices.value = receiptStores.receipt.invoices
+    summary.value = receiptStores.receipt.summary
   } catch (error) {
     console.error("Erro ao carregar o recibo:", error);
   }
 };
-
-const totalPaid = computed(() =>
-  invoices.value.reduce((acc, value) => {
-    return acc + parseFloat(value.invoice.paidAmount);
-  }, 0)
-);
-
-const total = computed(() =>
-  invoices.value.reduce((acc, value) => {
-    return acc + parseFloat(value.invoice.total);
-  }, 0)
-);
 
 const exportToPDF = async () => {
   const invoiceContent = document.querySelector(".invoice-container");
@@ -283,43 +261,42 @@ const mensalidadeColumns = [
     name: "number",
     align: "left",
     label: "Documento",
-    field: (row) => row.invoice.number,
+    field: (row) => row.number,
     headerStyle: "font-weight: bold",
   },
   {
-    name: "note",
+    name: "description",
     align: "left",
     label: "Descrição",
-    field: (row) => row.invoice.note,
+    field: (row) => row.description,
     headerStyle: "font-weight: bold",
   },
   {
     name: "issueDate",
     align: "left",
     label: "Data de emissão",
-    field: (row) => formatDate(row.invoice.issueDate),
+    field: (row) => formatDate(row.issueDate),
     headerStyle: "font-weight: bold",
   },
   {
     name: "amount",
     align: "left",
     label: "Valor total ",
-    field: (row) => row.invoice.total,
+    field: (row) => row.totalToPay,
     headerStyle: "font-weight: bold",
   },
   {
     name: "total",
     align: "left",
     label: "Valor pago",
-    field: (row) => row.amount,
+    field: (row) => row.amountPaid,
     headerStyle: "font-weight: bold",
   },
   {
     name: "total",
     align: "left",
     label: "Valor pendente",
-    field: (row) =>
-      parseFloat(row.invoice.total) - parseFloat(row.invoice.paidAmount),
+    field: (row) => row.remaining,
     headerStyle: "font-weight: bold",
   },
 ];

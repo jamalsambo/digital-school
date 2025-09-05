@@ -3,7 +3,7 @@
     <q-card flat bordered class="shadow-2">
       <q-card-section>
         <div class="text-h6">
-          Horário Semanal {{ `${"do professor" - employee?.name || ""}` }} -
+          Horário Semanal {{ `${"do professor" - employee?.name - "" || ""}  ` }}
           {{ classe?.name }}
         </div>
       </q-card-section>
@@ -59,7 +59,7 @@
                       justifyContent: 'center',
                     }"
                   >
-                    {{ getDisciplineLabel(slot) }}
+                    {{ getDisciplineLabel(slot, props.isTeacher) }}
                   </div>
                 </td>
               </tr>
@@ -77,6 +77,7 @@ const props = defineProps({
   employee: { type: Object, required: true },
   classe: { type: Object, required: false },
   availableTeachings: { type: Array, required: true },
+  isTeacher: { type: Boolean, required: false, default: false}
 });
 
 const schedule = ref([]);
@@ -93,11 +94,16 @@ const formatMinutesToTime = (totalMinutes) => {
   return `${hours}:${minutes}`;
 };
 
-const getDisciplineLabel = (slot) => {
-  return slot?.disciplineName
-    ? `${slot.disciplineName} - ${slot.employeeName || ""}`
-    : "";
+const getDisciplineLabel = (slot, isTeacher) => {
+  if (!slot?.disciplineName) return "";
+
+  if (isTeacher) {
+    return `${slot.disciplineName} - ${slot.employeeName || ""}`;
+  } else {
+     return `${slot.disciplineName} - ${slot.className || ""}`;
+  }
 };
+
 
 function stringToColor(str) {
   let hash = 0;

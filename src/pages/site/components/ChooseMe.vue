@@ -1,7 +1,7 @@
 <template>
   <q-card class="full-height">
     <q-card-section class="bg-secondary text-white">
-      <div class="text-h5">Por que escolher a {{ institution?.name }}?</div>
+      <div class="text-h5">Por que escolher a {{ institution }}?</div>
     </q-card-section>
     <q-card-section>
       <div class="q-py-sm">
@@ -50,4 +50,8 @@
     </q-card-section>
   </q-card>
 </template>
-<script setup></script>
+<script setup>
+const props = defineProps({
+  institution: {type: String, required: true}
+})
+</script>

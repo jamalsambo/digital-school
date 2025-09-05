@@ -23,7 +23,7 @@
                 <q-btn
                   color="secondary"
                   icon="settings"
-                  label="Configuração"
+                  title="Configuração"
                   no-caps
                   @click="settingsProgram(props)"
                   flat
@@ -32,7 +32,7 @@
                 <q-btn
                   color="primary"
                   icon="edit"
-                  label="Editar"
+                  title="Editar"
                   no-caps
                   @click="editCourse(props)"
                   flat
@@ -41,7 +41,7 @@
                 <q-btn
                   color="negative"
                   icon="delete"
-                  label="Excluir"
+                  title="Excluir"
                   no-caps
                   @click="deleteInternship(props)"
                   flat

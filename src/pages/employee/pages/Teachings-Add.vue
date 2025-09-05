@@ -99,18 +99,22 @@
 /* ============================== IMPORTS ============================== */
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "src/pages/auth/store";
 import { useEmployeeStores } from "../stores";
 import { useClassStores } from "src/pages/class/store";
 import { useScheduleStores } from "src/pages/schedule/stores";
+import { useInstitutionStores } from "src/pages/institution/store";
 import useNotify from "src/composables/UseNotify";
 import ScheduleComponent from "src/pages/schedule/pages/Create.vue";
 
 /* ============================== STORES & ROUTE ============================== */
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore()
 const employeeStores = useEmployeeStores();
 const classStores = useClassStores();
 const scheculeStores = useScheduleStores();
+const institutionStores = useInstitutionStores()
 const { notifyError, notifySuccess, notifyInfo } = useNotify();
 
 /* ============================== REFS ============================== */
@@ -121,6 +125,7 @@ const disciplines = ref([]);
 const selected = ref([]);
 const classe = ref();
 const scheduleRef = ref([]);
+const currentCycle = ref(null)
 
 /* ============================== COMPUTEDS ============================== */
 const isSelected = (opt) => selected.value.includes(opt.value);
@@ -187,8 +192,15 @@ const availableTeachings = computed(() => {
   return selectedTeachings.value
     .filter((t) => {
       const usage =
-        teachingUsageCount.value[t.developmentAreaActivity.activity.id] || 0;
-      return t.developmentAreaActivity.hours - usage > 0;
+        teachingUsageCount.value[t.developmentAreaActivity.activity.id] -1 || 0;
+
+        const maxHours = parseInt(t.developmentAreaActivity.hours);
+
+      const isUsageValid = maxHours - usage > 0;
+
+      // const isInCurrentCycle = t.developmentAreaActivity.cicle === parseInt(currentCycle.value?.name);
+
+      return isUsageValid ;
     })
     .map((t) => {
       const usage =
@@ -199,6 +211,7 @@ const availableTeachings = computed(() => {
       };
     });
 });
+
 
 /* ============================== EVENTOS ============================== */
 const handleEmployeeChange = async (employee) => {
@@ -258,7 +271,7 @@ const onSelectDiscipline = async ({ value, rowIndex, colIndex }) => {
     (t) => t.developmentAreaActivity.activity.id === value
   );
 
-  if (!teaching || usage >= teaching.developmentAreaActivity.hours) {
+  if (!teaching || usage > teaching.developmentAreaActivity.hours) {
     notifyError("A carga horária da disciplina foi esgotada.");
     scheduleRef.value.schedule[rowIndex].slots[colIndex] = null;
     return;
@@ -321,7 +334,7 @@ const onClearDisciplineHorary = async ({ value, rowIndex, colIndex }) => {
 /* ============================== FETCHERS ============================== */
 const fetchEmployees = async () => {
   try {
-    await employeeStores.list();
+    await employeeStores.list(authStore.user.institutionId);
     employees.value = employeeStores.employees
       .filter((e) => e.teacher === "Sim")
       .map((e) => ({
@@ -368,11 +381,21 @@ const fetchClasse = async () => {
   }
 };
 
+const fetchCurrentCycle = async () => {
+  try {
+    await institutionStores.findCurrentCycle(authStore.user.institutionId)
+    currentCycle.value = institutionStores.currentCycle
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 /* ============================== LIFECYCLE ============================== */
 onMounted(async () => {
   await fetchClasse();
   await fetchEmployees();
   await fetchClassDisciplines();
+  await fetchCurrentCycle()
   if (scheduleRef.value?.generatePeriods) {
     scheduleRef.value.generatePeriods();
   }

@@ -4,7 +4,7 @@
       class="bg-white text-dark shadow-sm q-pa-md row justify-between items-center"
     >
       <div class="text-bold text-primary">
-        {{userStores.user.employee?.institution?.name}}
+        {{ institutionStores?.institution?.name }}
       </div>
 
       <div class="text-bold text-primary row items-center">
@@ -12,8 +12,7 @@
         <q-icon name="school" size="20px" class="q-ml-sm text-primary" />
       </div>
     </div>
-
-    <div v-if="userStores.isEmployee &&  !userStores.isTeacher">
+    <div v-if="authStore.isEmployee && !authStore.isTeacher">
       <div class="quick-links-container q-mt-md">
         <q-card flat class="quick-links">
           <q-card-section class="text-center">
@@ -33,11 +32,21 @@
               <q-icon name="assignment" size="md" />
               <span>Relatório de Alunos</span>
             </q-btn>
-            <q-btn unelevated class="quick-link" @click="goTo('invoices')" v-if="userStores.hasViewReceipts">
+            <q-btn
+              unelevated
+              class="quick-link"
+              @click="goTo('invoices')"
+              v-if="authStore.hasViewReceipts"
+            >
               <q-icon name="receipt_long" size="md" />
               <span>Gerar Fatura</span>
             </q-btn>
-            <q-btn unelevated class="quick-link" @click="goTo('receipts')" v-if="userStores.hasViewInvoices">
+            <q-btn
+              unelevated
+              class="quick-link"
+              @click="goTo('receipts')"
+              v-if="authStore.hasViewInvoices"
+            >
               <q-icon name="receipt" size="md" />
               <span>Emitir Recibo</span>
             </q-btn>
@@ -46,8 +55,9 @@
       </div>
 
       <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-4 col-sm-12 col-xs-12"
-        v-if="userStores.hasViewEmployees"
+        <div
+          class="col-md-4 col-sm-12 col-xs-12"
+          v-if="authStore.hasViewEmployees"
         >
           <Teachers
             :item="{
@@ -59,26 +69,28 @@
             }"
           />
         </div>
-        <div class="col-md-4 col-sm-12 col-xs-12"
-          v-if="userStores.hasViewStudents"
+        <div
+          class="col-md-4 col-sm-12 col-xs-12"
+          v-if="authStore.hasViewStudents"
         >
           <Teachers
             :item="{
               title: 'Estudantes',
-              value: studentCount,
+              value: studentSummary?.totalStudents,
               color1: '#17a2b8',
               color2: '#17a2c1',
               img: studentImg,
             }"
           />
         </div>
-        <div class="col-md-4 col-sm-12 col-xs-12"
-         v-if="userStores.hasViewStudents"
+        <div
+          class="col-md-4 col-sm-12 col-xs-12"
+          v-if="authStore.hasViewStudents"
         >
           <Teachers
             :item="{
               title: 'Estudantes activos',
-              value: studentCount,
+              value: studentActive?.total,
               color1: '#17a2b8',
               color2: '#17a2c1',
               img: studentImg,
@@ -86,27 +98,95 @@
           />
         </div>
       </div>
-      <div class="row q-col-gutter-x-md q-mt-lg"
-      v-if="userStores.hasViewGlobalPayments &&  userStores.hasViewGlobalPayments && userStores.hasViewGlobalPayments"
+      <div
+        class="row q-col-gutter-x-md q-mt-lg"
+        v-if="
+          authStore.hasViewGlobalPayments &&
+          authStore.hasViewGlobalPayments &&
+          authStore.hasViewGlobalPayments
+        "
       >
-        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
-          <Card :item="itemTotalPayment" />
+        <div
+          class="col-md-3 col-sm-12 col-xs-12"
+          v-if="authStore.hasViewGlobalPayments"
+        >
+          <Card
+            :item="{
+              title: 'Total de pagamentos',
+              icon: 'payments',
+              value: formatToMZN(financialSummary?.totalPaidAmount || 0),
+              color1: '#20c999',
+              color2: '#20c991',
+            }"
+          />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
-          <Card :item="itemTotalPaymentDone" />
+        <div
+          class="col-md-3 col-sm-12 col-xs-12"
+          v-if="authStore.hasViewGlobalPayments"
+        >
+          <Card
+            :item="{
+              title: 'Pagamentos realizados',
+              icon: 'attach_money',
+              value: formatToMZN(
+                financialSummary?.successfulPayments?.amount || 0
+              ),
+              color1: '#28a745',
+              color2: '#28a745',
+            }"
+          />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
-          <Card :item="itemTotalPaymentLate" />
+        <div
+          class="col-md-3 col-sm-12 col-xs-12"
+          v-if="authStore.hasViewGlobalPayments"
+        >
+          <Card
+            :item="{
+              title: 'Pagamentos atrasados',
+              icon: 'credit_card_off',
+              value: formatToMZN(
+                financialSummary?.overduePayments?.amount || 0
+              ),
+              color1: '#dc3545',
+              color2: '#dc3545',
+            }"
+          />
         </div>
         <div class="col-md-3 col-sm-12 col-xs-12">
-          <Card :item="itemUsers" />
+          <Card
+            :item="{
+              title: 'Pagamentos parcias',
+              icon: 'credit_card_off',
+              value: formatToMZN(
+                financialSummary?.parcialPayments?.amount || 0
+              ),
+              color1: '#DAA520',
+              color2: '#DAA520',
+            }"
+          />
         </div>
       </div>
       <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewPaymentsYear">
-          <Card :item="itemPaymentToYear" />
+        <div
+          class="col-md-6 col-sm-12 col-xs-12"
+          v-if="authStore?.hasViewPaymentsYear"
+        >
+          <Card
+            :item="{
+              title: 'Entradas realizadas este ano',
+              icon: 'payments',
+              value: formatToMZN(
+                financialSummary?.paymentsPaidYear?.amount || 0
+              ),
+              color1: '#17a2b8',
+              color2: '#17a2b8',
+            }"
+          />
         </div>
-        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewExpensesYear">
+        <div
+          class="col-md-6 col-sm-12 col-xs-12"
+          v-if="authStore?.hasViewExpensesYear"
+        >
           <Card
             :item="{
               title: 'Despesas realizadas este ano',
@@ -119,29 +199,42 @@
         </div>
       </div>
       <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewPaymentsDay">
+        <div
+          class="col-md-3 col-sm-12 col-xs-12"
+          v-if="authStore?.hasViewPaymentsDay"
+        >
           <SubCard
             :item="{
               title: 'A receber hoje',
-              value: totalPaymentsToday,
+              value: formatToMZN(
+                financialSummary?.paymentsPaidToday?.amount || 0
+              ),
               color1: '#007bff',
               color2: '#1e90ff',
               icon: 'south_west',
             }"
           />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewPaymentsMonth">
+        <div
+          class="col-md-3 col-sm-12 col-xs-12"
+          v-if="authStore.hasViewPaymentsMonth"
+        >
           <SubCard
             :item="{
               title: 'A receber este mes',
-              value: totalPaymentsMonth,
+              value: formatToMZN(
+                financialSummary?.paymentsPaidThisMonth?.amount || 0
+              ),
               color1: '#007bff',
               color2: '#1e90ff',
               icon: 'south_west',
             }"
           />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewExpensesDay">
+        <div
+          class="col-md-3 col-sm-12 col-xs-12"
+          v-if="authStore?.hasViewExpensesDay"
+        >
           <SubCard
             :item="{
               title: 'A pagar hoje',
@@ -152,7 +245,10 @@
             }"
           />
         </div>
-        <div class="col-md-3 col-sm-12 col-xs-12" v-if="userStores.hasViewExpensesMonth">
+        <div
+          class="col-md-3 col-sm-12 col-xs-12"
+          v-if="authStore?.hasViewExpensesMonth"
+        >
           <SubCard
             :item="{
               title: 'A pagar este mes',
@@ -165,17 +261,25 @@
         </div>
       </div>
       <div class="row q-col-gutter-x-md q-mt-lg">
-        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewPaymentsLate">
+        <div
+          class="col-md-6 col-sm-12 col-xs-12"
+          v-if="authStore?.hasViewPaymentsLate"
+        >
           <InOutCard
             :item="{
               title: 'Pagamentos em atraso do mes',
-              value: totalPaymentsLateMonth,
+              value: formatToMZN(
+                financialSummary?.paymentsDueThisMonth?.amount || 0
+              ),
               color1: '#008080',
               color2: '#28a745',
             }"
           />
         </div>
-        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewExpensesLate">
+        <div
+          class="col-md-6 col-sm-12 col-xs-12"
+          v-if="authStore?.hasViewExpensesLate"
+        >
           <InOutCard
             :item="{
               title: 'Despensas em atraso do mes',
@@ -187,22 +291,41 @@
         </div>
       </div>
       <!-- Graficos de barras anuais e diarios -->
-      <div class="row q-col-gutter-x-md q-mt-lg"  v-if="userStores.hasViewGlobalPayments">
-        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
+      <div
+        class="row q-col-gutter-x-md q-mt-lg"
+        v-if="authStore?.hasViewGlobalPayments"
+      >
+        <div
+          class="col-md-6 col-sm-12 col-xs-12"
+          v-if="authStore?.hasViewGlobalPayments"
+        >
           <!-- Grafico de comparacao de ano actual e anterior -->
           <q-card>
             <q-card-section>
-              <canvas ref="chartReportTwoYear"></canvas>
+              <ComparativeYearPaymentsChart
+                :yearly-comparison="yearlyComparison"
+              />
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-md-6 col-sm-12 col-xs-12" v-if="userStores.hasViewGlobalPayments">
+        <div
+          class="col-md-6 col-sm-12 col-xs-12"
+          v-if="authStore?.hasViewGlobalPayments"
+        >
           <q-card>
             <q-card-section>
-              <canvas ref="chartReportDaily"></canvas>
+              <DailyPaymentsChart :daily-payments="dailyPayments" />
             </q-card-section>
           </q-card>
         </div>
+      </div>
+      <div
+        class="row q-col-gutter-x-md q-mt-lg"
+        v-if="authStore?.hasViewGlobalPayments"
+      >
+        <InteractiveLinePieChart
+          :monthly-payments="yearlyComparison?.currentYear.monthlyPayments"
+        />
       </div>
 
       <!-- <div class="row q-col-gutter-x-md q-mt-lg">
@@ -274,11 +397,11 @@
       <TeachearDash />
     </div>
 
-    <div v-if="userStores.isStudent">
+    <div v-if="authStore?.isStudent">
       <StudantDash />
     </div>
 
-    <div v-if="userStores.isGuardian">
+    <div v-if="authStore?.isGuardian">
       <GuardianDash />
     </div>
   </q-page>
@@ -286,11 +409,12 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { useInvoiceStores } from "./finance/invoice/stores";
-import { useUserStores } from "./user/store";
 import { useExpenseStores } from "./finance/expense/store";
-import { useStudentStores } from "src/pages/student/store"
-import { useEmployeeStores } from "src/pages/employee/stores"
+import { useEmployeeStores } from "src/pages/employee/stores";
+import { useInstitutionStores } from "src/pages/institution/store";
+
+import { useDashboardStores } from "./dashboard/store";
+
 import Card from "src/components/dashboard/Card.vue";
 import SubCard from "src/components/dashboard/Sub-Card.vue";
 import InOutCard from "src/components/dashboard/InOut-Card.vue";
@@ -303,176 +427,34 @@ import StudantDash from "./StudentDash.vue";
 import GuardianDash from "./GuardianDash.vue";
 import teacherImg from "src/assets/teacher.png";
 import studentImg from "src/assets/student.png";
-import Chart from "chart.js/auto";
 import { useRouter } from "vue-router";
+
+import DailyPaymentsChart from "./dashboard/components/DailyPaymentsChart.vue";
+import ComparativeYearPaymentsChart from "./dashboard/components/ComparativeYearPaymentsChart.vue";
+import InteractiveLinePieChart from "./dashboard/components/InteractiveLinePieChart.vue";
 
 const router = useRouter();
 
 /* use store */
 const authStore = useAuthStore();
-const invoiceStores = useInvoiceStores();
+const institutionStores = useInstitutionStores();
 const expensesStores = useExpenseStores();
-const userStores = useUserStores();
-const studentStores = useStudentStores()
-const employeeStores = useEmployeeStores()
+const employeeStores = useEmployeeStores();
+
+const dashboardStores = useDashboardStores();
+
 const { formatToMZN } = scripts();
 const { notifyError } = useNotify();
 
 /* use data */
-const chartCanvas = ref(null);
-const chartReportTwoYear = ref(null);
-const chartReportDaily = ref(null);
 const user = computed(() => authStore.user);
-const invoices = ref([]);
 const expenses = ref([]);
-const users = ref();
 const currentDate = new Date();
-const month = currentDate.toLocaleString("pt-BR", { month: "long" });
-const valuesPerMonthCurrentYear = ref(new Array(12).fill(0)); // [0, 0, ..., 0]
-const valuesPerMonthLastYear = ref(new Array(12).fill(0)); // [0, 0, ..., 0]
-// const dailyLabels = Array.from({ length: 31 }, (_, i) => i + 1);
-const currentYear = currentDate.getFullYear();
-const lastYear = currentYear - 1;
-const valuesPerDayCurrentYear = ref({});
-const studentCount = ref(0)
-const employeeCount = ref(0)
-
-const events = ref([
-  "Elimination Game",
-  "Freshman Orientation",
-  "Spring Sports Rally",
-]);
-
-const ranking = ref([
-  {
-    name: "Rovan Hossam",
-    score: 99.88,
-    rank: "1st",
-    bgColor: "#28a745",
-    badgeColor: "green",
-  },
-  {
-    name: "Rony Beyablo",
-    score: 98.17,
-    rank: "2nd",
-    bgColor: "#6f42c1",
-    badgeColor: "purple",
-  },
-  {
-    name: "Adam Hisham",
-    score: 97.32,
-    rank: "3rd",
-    bgColor: "#ffc107",
-    badgeColor: "orange",
-  },
-]);
-
-const monthlyLabels = [
-  "Jan",
-  "Fev",
-  "Mar",
-  "Abr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Ago",
-  "Set",
-  "Out",
-  "Nov",
-  "Dez",
-];
+const employeeCount = ref(0);
+const dailyPayments = ref([]);
+const yearlyComparison = ref(null);
 
 /* computed */
-const totalPayments = computed(() =>
-  formatToMZN(
-    invoices.value.reduce((acc, value) => {
-      return acc + parseInt(value.total);
-    }, 0)
-  )
-);
-
-const totalPaymentsToday = computed(() =>
-  formatToMZN(
-    invoices.value
-      .filter(
-        (payment) =>
-          new Date(payment.updatedAt).getFullYear() ===
-            currentDate.getFullYear() &&
-          new Date(payment.updatedAt).getMonth() === currentDate.getMonth() &&
-          new Date(payment.updatedAt).getDate() === currentDate.getDate() &&
-          payment.status === "Pago"
-      )
-      .reduce((acc, value) => {
-        return acc + parseInt(value.paidAmount);
-      }, 0)
-  )
-);
-
-const totalPaymentsMonth = computed(() =>
-  formatToMZN(
-    invoices.value
-      .filter(
-        (payment) =>
-          payment.month.toLowerCase() === month.toLowerCase() &&
-          payment.status === "Pago"
-      )
-      .reduce((acc, value) => {
-        return acc + parseFloat(value.paidAmount);
-      }, 0)
-  )
-);
-
-const totalPaymentsDone = computed(() =>
-  formatToMZN(
-    invoices.value
-      .filter((payment) => payment.status === "Pago") // Filtra apenas os atrasados
-      .reduce((acc, value) => {
-        return acc + parseInt(value.paidAmount);
-      }, 0)
-  )
-);
-
-const totalPaymentsLate = computed(() =>
-  formatToMZN(
-    invoices.value
-      .filter(
-        (invoice) =>
-          invoice.status === "Pendente" || invoice.status === "Parcial"
-      )
-      .reduce((acc, invoice) => {
-        const restante =
-          parseFloat(invoice.total) - parseFloat(invoice.paidAmount || 0);
-        return acc + (restante > 0 ? restante : 0); // Evita valores negativos
-      }, 0)
-  )
-);
-
-const totalPaymentsLateMonth = computed(() =>
-  formatToMZN(
-    invoices.value
-      .filter(
-        (invoice) =>
-          (invoice.status === "Pendente" || invoice.status === "Parcial") &&
-          invoice.month.toLowerCase() === month.toLowerCase()
-      )
-      .reduce((acc, invoice) => {
-        const restante =
-          parseFloat(invoice.total) - parseFloat(invoice.paidAmount || 0);
-        return acc + (restante > 0 ? restante : 0); // Evita valores negativos
-      }, 0)
-  )
-);
-
-const totalPaymentToYear = computed(() =>
-  formatToMZN(
-    invoices.value
-      .filter(
-        (payment) =>
-          payment.year === new Date().getFullYear() && payment.status === "Pago"
-      ) // Filtro
-      .reduce((acc, value) => acc + parseInt(value.paidAmount), 0)
-  )
-);
 
 const totalExpenses = computed(() =>
   formatToMZN(
@@ -530,37 +512,6 @@ const goTo = (route) => {
   });
 };
 /* fetch data */
-const fetchInvoices = async () => {
-  try {
-    await invoiceStores.find();
-    invoices.value = invoiceStores.invoices;
-
-    invoices.value.forEach((invoice) => {
-      const data = new Date(invoice.issueDate); // ou fatura.dueDate
-      const mesIndex = data.getMonth(); // 0 = Janeiro, 1 = Fevereiro, ...
-      const invoiceYear = data.getFullYear();
-      const invoiceDay = data.toISOString().split("T")[0];
-      const paidAmount = parseInt(invoice.paidAmount || 0);
-
-      if (invoiceYear === currentYear) {
-        valuesPerMonthCurrentYear.value[mesIndex] += parseInt(
-          invoice.paidAmount || 0
-        );
-        if (!valuesPerDayCurrentYear.value[invoiceDay]) {
-          valuesPerDayCurrentYear.value[invoiceDay] = 0;
-        }
-        valuesPerDayCurrentYear.value[invoiceDay] += paidAmount;
-      } else if (invoiceYear === lastYear) {
-        valuesPerMonthLastYear.value[mesIndex] += parseInt(
-          invoice.paidAmount || 0
-        );
-      }
-    });
-  } catch (error) {
-    notifyError("Erro ao buscar pagamentos");
-  }
-};
-
 const fetchExpenses = async () => {
   try {
     await expensesStores.findAll();
@@ -570,129 +521,36 @@ const fetchExpenses = async () => {
   }
 };
 
-const fetchUsers = async () => {
+const studentSummary = ref();
+const financialSummary = ref();
+const studentActive = ref(0);
+
+const fetchData = async () => {
   try {
-    await userStores.findAll();
-    users.value = userStores.users.length;
+    if (authStore.isEmployee && !authStore.isTeacher) {
+      await dashboardStores.getStudentStatusSummary();
+      studentSummary.value = dashboardStores.studentStatusSummary;
+      studentActive.value = studentSummary.value.byStatus.find(
+        (f) => f.status === "Activo"
+      );
+
+      await dashboardStores.getFinancialSummary();
+      financialSummary.value = dashboardStores.financialSummary;
+    }
   } catch (error) {
-    notifyError("Erro ao buscar utilizadores");
+    console.log(error);
   }
 };
 
 onMounted(async () => {
-  await fetchInvoices();
-  await fetchUsers();
+  await fetchData();
   await fetchExpenses();
 
- await studentStores.count()
- studentCount.value = studentStores.studentCount.count
+  await employeeStores.count();
+  employeeCount.value = employeeStores.employeeCount;
 
- await employeeStores.count()
- employeeCount.value = employeeStores.employeeCount
-
-  const comparativeChart = chartReportTwoYear.value.getContext("2d");
-  new Chart(comparativeChart, {
-    type: "line", // Tipo de gráfico
-    data: {
-      labels: monthlyLabels, // Meses
-      datasets: [
-        {
-          label: new Date().getFullYear() - 1, // Ano anterior
-          data: valuesPerMonthLastYear.value, // Exemplos de valores de pagamento para o ano de 2024
-          borderColor: "rgba(75, 192, 192, 1)",
-          fill: false,
-        },
-        {
-          label: new Date().getFullYear(), // Ano atual
-          data: valuesPerMonthCurrentYear.value, // Exemplos de valores de pagamento para o ano de 2025
-          borderColor: "rgba(153, 102, 255, 1)",
-          fill: false,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "top",
-        },
-        title: {
-          display: true,
-          text: `Comparação de Pagamentos: ${
-            new Date().getFullYear() - 1
-          } vs  ${new Date().getFullYear()} `,
-        },
-      },
-    },
-  });
-
-  const dailyChart = chartReportDaily.value.getContext("2d");
-  new Chart(dailyChart, {
-    type: "line", // Tipo de gráfico
-    data: {
-      datasets: [
-        {
-          label: new Date().getFullYear(), // Ano anterior
-          data: valuesPerDayCurrentYear.value, // Exemplos de valores de pagamento para o ano de 2024
-          borderColor: "rgba(75, 192, 192, 1)",
-          fill: false,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "top",
-        },
-        title: {
-          display: true,
-          text: `Pagamentos diarios`,
-        },
-      },
-    },
-  });
-
-});
-
-const itemTotalPayment = ref({
-  title: "Total de pagamentos",
-  icon: "payments",
-  value: totalPayments,
-  color1: "#20c999",
-  color2: "#20c991",
-});
-
-const itemTotalPaymentDone = ref({
-  title: "Pagamentos realizados",
-  icon: "attach_money",
-  value: totalPaymentsDone,
-  color1: "#28a745",
-  color2: "#28a745",
-});
-
-const itemTotalPaymentLate = ref({
-  title: "Pagamentos atrasados",
-  icon: "credit_card_off",
-  value: totalPaymentsLate,
-  color1: "#dc3545",
-  color2: "#dc3545",
-});
-
-const itemUsers = ref({
-  title: "Utilizadores",
-  icon: "person",
-  value: users,
-  color1: "#6c757d",
-  color2: "#6c757d",
-});
-
-const itemPaymentToYear = ref({
-  title: "Entradas realizadas este ano",
-  icon: "payments",
-  value: totalPaymentToYear,
-  color1: "#17a2b8",
-  color2: "#17a2b8",
+  yearlyComparison.value = financialSummary.value?.yearlyComparison;
+  dailyPayments.value = financialSummary.value.dailyPayments;
 });
 </script>
 <style scoped>

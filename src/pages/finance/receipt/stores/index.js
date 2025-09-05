@@ -22,11 +22,8 @@ export const useReceiptStores = defineStore("receipt", {
     },
 
     async create(params) {
-      const authStore = useAuthStore();
-      const { institutionId } = authStore.user;
       const { data, error } = await api.post("receipt", {
-        ...params,
-        institutionId: institutionId,
+        ...params
       });
       if (error) throw error;
       this.receipt = data;

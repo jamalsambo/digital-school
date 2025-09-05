@@ -25,7 +25,10 @@ import {
   groupRoutes,
   taskRoutes,
   siteRoutes,
-  expenseRoutes
+  expenseRoutes,
+  userRoutes,
+  emissionRoutes,
+  financeReportRoutes
 } from "./pageRoutes";
 
 const routes = [
@@ -131,7 +134,10 @@ const routes = [
       ...attendanceRoutes,
       ...groupRoutes,
       ...taskRoutes,
-      ...expenseRoutes
+      ...expenseRoutes,
+      ...userRoutes,
+      ...emissionRoutes,
+      ...financeReportRoutes
     ],
   },
 

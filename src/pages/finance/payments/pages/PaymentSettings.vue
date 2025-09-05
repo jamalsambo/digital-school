@@ -49,8 +49,8 @@
           </div>
           <q-separator spaced />
           <FormPaymentTypesComponent
-            :education-level-id="educationLevelId"
-            :institution-id="institution"
+            :education-level-id="institution.educationLevel.id"
+            :institution-id="institution.id"
             :fetch-payment-types="fetchPaymentTypes"
             :toggle-edit="toggleEdit"
           >
@@ -84,24 +84,22 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import Tables from "src/components/Tables.vue";
+import { useInstitutionStores } from "src/pages/institution/store";
 import FormPaymentTypesComponent from "../components/forms/PaymentTypes.vue";
 import columnsPaymentTypes from "../components/columns/PaymentTypes";
 import PenaltyRulesComponent from "../components/modal/PenaltyRules.vue";
 import { usePaymentStores } from "../stores";
-import { useUserStores } from "src/pages/user/store";
 import useNotify from "src/composables/UseNotify";
 
 /* use store */
 const route = useRoute();
-const { institutionId } = route.params;
 const paymentStores = usePaymentStores();
-const userStores = useUserStores();
+const institutionStores = useInstitutionStores()
 const { notifyError, notifySuccess } = useNotify();
 
 /* data */
 const isEditing = ref(false);
-const institution = ref(institutionId);
-const educationLevelId = computed(() => userStores.user?.employee?.institution?.educationLevel?.id);
+const institution = computed(() => institutionStores.institution)
 const paymentTypes = ref([]);
 const penaltyRulesChild = ref()
 const paymentTypeSelected = ref()

@@ -13,6 +13,18 @@ const institutionRoutes = [
     name: "create-branch",
     component: () => import("pages/institution/pages/Create.vue"),
   },
+  {
+    path: "/cycles",
+    name: "cycles",
+    component: () => import("src/pages/institution/pages/cycle/List.vue"),
+    meta: { title: 'Cycles'}
+  },
+   {
+    path: "/cycle/create",
+    name: "cycle-create",
+    component: () => import("src/pages/institution/pages/cycle/Create.vue"),
+    meta: { title: 'Cycles Create'}
+  },
 ];
 
 export default institutionRoutes;

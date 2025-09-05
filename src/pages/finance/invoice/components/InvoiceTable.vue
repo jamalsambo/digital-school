@@ -47,13 +47,14 @@
             </div>
 
             <!-- Multas aplicadas -->
-            <div v-if="props.row.penalts?.length" class="q-mt-sm">
+            <div v-if="props.row.penalties?.length" class="q-mt-sm">
               <div class="text-subtitle2 q-mb-sm">Multas Aplicadas</div>
               <q-list dense bordered>
-                <q-item v-for="(fine, idx) in props.row.penalts" :key="idx">
+                <q-item v-for="(fine, idx) in props.row.penalties" :key="idx">
                   <q-item-section>
+                    {{ fine }}
                     <q-item-label>{{ fine.amount }}</q-item-label>
-                    <q-item-label caption>{{ fine.paymentNote }}</q-item-label>
+                    <q-item-label caption>{{ fine.description }}</q-item-label>
                     <q-item-label caption>{{ fine.createdAt }}</q-item-label>
                   </q-item-section>
                 </q-item>
@@ -108,14 +109,14 @@
               </q-list>
             </div>
 
-            <div v-if="props.row.penalts?.length" class="q-mt-sm">
+            <div v-if="props.row.penalties?.length" class="q-mt-sm">
               <div class="text-subtitle2 q-mb-sm">Multas Aplicadas</div>
               <q-list bordered>
-                <q-item v-for="(fine, idx) in props.row.penalts" :key="idx">
+                <q-item v-for="(fine, idx) in props.row.penalties" :key="idx">
                   <q-item-section>
                     <q-item-label>{{ fine.amount }}</q-item-label>
-                    <q-item-label caption>{{ fine.paymentNote }}</q-item-label>
-                    <q-item-label caption>{{ fine.createdAt }}</q-item-label>
+                    <q-item-label caption>{{ fine.description }}</q-item-label>
+                    <q-item-label caption>{{ fine.status? 'Pago' : 'Nao Pago' }}</q-item-label>
                   </q-item-section>
                 </q-item>
               </q-list>

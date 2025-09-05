@@ -89,20 +89,7 @@ const handleFetchInvoices = async () => {
       studentId: studentId,
     });
 
-    if (paymentTypeSelected.value.name === "Matricula") {
-      invoices.value = invoiceStores.invoices;
-    } else {
-      invoices.value = months.value.map((month) => {
-        const invoice = invoiceStores.invoices.find(
-          (inv) => inv.month.toLowerCase() === month.month.toLowerCase()
-        );
-        return {
-          ...month,
-          ...invoice,
-          amount: invoice ? invoice.amount : actualEnrollment.value?.classe?.monthlyFee,
-        };
-      });
-    }
+     invoices.value = invoiceStores.invoices.invoices;
   } catch (error) {
     console.log(error);
   }

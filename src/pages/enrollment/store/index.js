@@ -38,7 +38,7 @@ export const useEnrollmentStores = defineStore("enrollment", {
     async findByStudent(id) {
       const { data, error } = await api.get(`/enrollment/student/${id}`);
       if (error) throw error;
-      this.enrollments = data;
+      this.enrollment = data;
     },
     async findByClass(id) {
       const { data, error } = await api.get(`/enrollment/class/${id}`);

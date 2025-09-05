@@ -3,78 +3,7 @@
     <!-- Card de Progresso Acadêmico -->
     <q-card class="my-4">
       <q-card-section>
-        <div class="text-h6">Progresso Acadêmico</div>
-      </q-card-section>
-      <q-card-section>
-        <q-linear-progress
-          :value="progressoNota"
-          color="positive"
-          track-color="grey-3"
-        />
-        <div class="q-mt-md">Média: {{ progressoNota * 100 }}%</div>
-      </q-card-section>
-    </q-card>
-
-    <!-- Card de Tarefas Pendentes -->
-    <q-card class="my-4">
-      <q-card-section>
-        <div class="text-h6">Tarefas Pendentes</div>
-      </q-card-section>
-      <q-card-section>
-        <q-list>
-          <q-item v-for="(task, index) in tasks" :key="index">
-            <q-item-section>
-              <div>
-                <strong
-                  >{{ task.tasks.title }} -
-                  {{ task.tasks.discipline.name }}</strong
-                >
-              </div>
-              <div>Data de entrega: {{ task.tasks.dueDate }}</div>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
-    </q-card>
-
-    <!-- Card de Agenda de Aulas -->
-    <q-card class="my-4">
-      <q-card-section>
-        <div class="text-h6">Agenda de aulas para hoje</div>
-      </q-card-section>
-      <q-card-section>
-        <q-list>
-          <q-item v-for="(sched, index) in scheduleOfDay" :key="index">
-            <q-item-section>
-              <div>
-                <strong>{{ sched?.discipline?.name }}</strong>
-              </div>
-              <div>{{ sched.startTime }} - {{ sched?.endTime }}</div>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
-    </q-card>
-
-    <!-- Card de Notificações -->
-    <q-card class="my-4">
-      <q-card-section>
-        <div class="text-h6">Notificações</div>
-      </q-card-section>
-      <q-card-section>
-        <q-list>
-          <q-item v-for="(notification, index) in notifications" :key="index">
-            <q-item-section>
-              <div>
-                <strong
-                  >{{ notification.title }} -
-                  {{ notification.meetingDate }}</strong
-                >
-              </div>
-              <div>{{ notification.message }}</div>
-            </q-item-section>
-          </q-item>
-        </q-list>
+        <ScheduleComponent ref="scheduleRef" :classe="enrollment?.classe" />
       </q-card-section>
     </q-card>
   </q-page>
@@ -86,33 +15,24 @@ import { useStudentStores } from "./student/store";
 import { useAuthStore } from "src/pages/auth/store";
 import { useScheduleStores } from "./schedule/stores";
 import { useNotificationStores } from "./notification/store";
-import scripts from "src/composables/Scripts";
+import { useEnrollmentStores } from "./enrollment/store";
+import ScheduleComponent from "src/pages/schedule/pages/Create.vue";
 
 /* setup store */
 const studentStores = useStudentStores();
 const authStore = useAuthStore();
 const scheduleStores = useScheduleStores();
 const notificacaoStores = useNotificationStores();
-const { filterEnrollmentsByYear } = scripts();
+const enrollmentStores = useEnrollmentStores();
 
 /* setup data */
 const user = computed(() => authStore.user);
 const student = ref();
 const enrollment = ref();
-const scheduleOfDay = ref([]);
+const schedule = ref([]);
 const contact = ref();
 const notifications = ref([]);
-const tasks = ref([]);
-const progressoNota = 0.85; // 85%
-const days = [
-  { value: 1, name: "Segunda" },
-  { value: 2, name: "Terça" },
-  { value: 3, name: "Quarta" },
-  { value: 4, name: "Quinta" },
-  { value: 5, name: "Sexta" },
-];
-const today = 1; // Retorna 0-6new Date().getDay();
-const todayObj = days.find((day) => day.value === today);
+const scheduleRef = ref();
 
 /* methods */
 
@@ -122,24 +42,18 @@ const fetchStudent = async () => {
     await studentStores.findOne(user.value.userDetails.id);
     student.value = studentStores.student;
     tasks.value = student.value.tasksStudent;
-    enrollment.value = filterEnrollmentsByYear(
-      student.value.enrollments,
-      new Date().getFullYear()
-    );
     contact.value = student.value.contacts.find(
       (c) => c.type === "Principal" && c.owner === "Estudante"
     );
   } catch (error) {
-    notifyError("Erro ao carregar estudante");
+    // notifyError("Erro ao carregar estudante");
   }
 };
 
 const fetchSchedule = async () => {
   try {
-    await scheduleStores.list({ classId: enrollment.value.classId });
-    scheduleOfDay.value = scheduleStores.schecules.filter(
-      (sche) => sche.dayWeek === todayObj.name
-    );
+    await scheduleStores.list({ classId: enrollment.value?.classId });
+    schedule.value = scheduleStores.schecules;
   } catch (error) {}
 };
 
@@ -149,10 +63,32 @@ const fetchNotifications = async () => {
     notifications.value = notificacaoStores.notifications;
   } catch (error) {}
 };
+
+const fetchEnrrolment = async () => {
+  try {
+    await enrollmentStores.findByStudent(user.value?.studentId);
+    enrollment.value = enrollmentStores.enrollment;
+  } catch (error) {
+    console.log(error);
+  }
+};
 onMounted(async () => {
   await fetchStudent();
+  await fetchEnrrolment();
   await fetchSchedule();
-  await fetchNotifications();
+
+  if (scheduleRef.value?.generatePeriods) {
+    scheduleRef.value.generatePeriods();
+    schedule.value.forEach(({ dayWeek, period, discipline, classe }) => {
+      const colIndex = scheduleRef.value.days.indexOf(dayWeek);
+      if (colIndex !== -1 && period < scheduleRef.value.schedule.length) {
+        scheduleRef.value.schedule[period].slots[colIndex] = {
+          disciplineName: discipline.name,
+          className: classe.name,
+        };
+      }
+    });
+  }
 });
 
 // // Notificações

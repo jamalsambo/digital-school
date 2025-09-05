@@ -42,7 +42,7 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGroupStores } from "../store";
-import { useUserStores } from "src/pages/user/store";
+import { useAuthStore } from "src/pages/auth/store";
 import Tables from "src/components/Tables.vue";
 import GroupColumns from "../components/columns/GroupColumns";
 import useNotify from "src/composables/UseNotify";
@@ -52,7 +52,7 @@ const route = useRoute();
 const router = useRouter();
 
 /* setup store */
-const userStores = useUserStores();
+const authStore = useAuthStore();
 const groupStores = useGroupStores();
 const { notifyError, notifySuccess } = useNotify();
 
@@ -65,7 +65,7 @@ const createGroup = async () => {
   const payload = {
     classId: classe,
     activityId: disciplineId,
-    teacherId: userStores.user.employee?.id,
+    teacherId: authStore.user?.employeeId,
   };
   try {
     await groupStores.create(payload);
@@ -89,7 +89,10 @@ const handleGroupDistribution = () => {
 /* fetch data */
 const fetchGroups = async () => {
   try {
-    await groupStores.list();
+    await groupStores.list({
+      classId: classe,
+activityId:disciplineId
+    });
     groups.value = groupStores.groups;
   } catch (error) {
     console.error(error);

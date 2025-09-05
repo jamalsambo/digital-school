@@ -9,7 +9,7 @@
         <div class="row items-center justify-between">
           <div class="text-h6 text-primary">Matriculas</div>
           <q-btn
-           v-if="!actualEnrollment && hasCreateEnrrolment"
+           v-if="!actualEnrollment && authStore.hasCreateEnrrolment"
             color="primary"
             icon="edit"
             label="Nova Matricula"
@@ -224,77 +224,6 @@
         </div>
       </q-card>
     </q-card>
-
-    <!-- Sessão de Configuracoes de acesso -->
-    <q-card flat bordered class="q-mb-md">
-      <q-card flat bordered class="q-pa-md shadow-2">
-        <div class="row items-center justify-between">
-          <div class="text-h6 text-primary">Configurações de acesso</div>
-        </div>
-      </q-card>
-      <div class="q-gutter-y-md">
-        <q-card>
-          <q-tabs
-            v-model="tab"
-            dense
-            class="text-grey"
-            active-color="primary"
-            indicator-color="primary"
-            align="justify"
-            narrow-indicator
-          >
-            <q-tab name="student" label="Estudante" />
-            <q-tab name="guardian" label="Encarregado" />
-          </q-tabs>
-
-          <q-separator />
-
-          <q-tab-panels v-model="tab" animated>
-            <q-tab-panel name="student">
-              <UserComponent
-                ref="userChild"
-                :data="student"
-                :entity="entity"
-                :userTypeId="studentTypeID"
-              >
-                <template #actions>
-                  <div class="row justify-end q-gutter-sm">
-                    <q-btn
-                      label="Guardar"
-                      color="positive"
-                      icon="save"
-                      type="submit"
-                      flat
-                    />
-                  </div>
-                </template>
-              </UserComponent>
-            </q-tab-panel>
-
-            <q-tab-panel name="guardian">
-              <UserComponent
-                ref="userChild"
-                :data="contacts"
-                :entity="'guardian'"
-                :userTypeId="guardianTypeID"
-              >
-                <template #actions>
-                  <div class="row justify-end q-gutter-sm">
-                    <q-btn
-                      label="Guardar"
-                      color="positive"
-                      icon="save"
-                      type="submit"
-                      flat
-                    />
-                  </div>
-                </template>
-              </UserComponent>
-            </q-tab-panel>
-          </q-tab-panels>
-        </q-card>
-      </div>
-    </q-card>
   </q-page>
 </template>
 
@@ -305,20 +234,16 @@ import { useRoute, useRouter } from "vue-router";
 import { useStudentStores } from "../store";
 import { usePaymentStores } from "src/pages/finance/payments/stores";
 import { useBasicStores } from "src/components/register/personal_information/store";
-import { useUserStores } from "src/pages/user/store";
+import { useAuthStore } from "src/pages/auth/store";
 import useNotify from "src/composables/UseNotify";
 import PersonalInformationComponent from "src/components/register/personal_information/view.vue";
 import PaternityComponent from "src/components/register/personal_information/paternity.vue";
 import ContactComponent from "src/components/register/contact/View.vue";
 import DocumentsComponent from "src/components/register/documents/View.vue";
-import UserComponent from "src/components/register/user/View.vue";
 import Tables from "src/components/Tables.vue";
 import ColumnsStudentPaymentType from "../components/ColumnsStudentsPaymentTypes.js";
 import ColumnsEnrollments from "../components/ColumnsEnrolments";
 import scripts from "src/composables/Scripts";
-const studentTypeID = import.meta.env.VITE_STUDENT_ID;
-const guardianTypeID = import.meta.env.VITE_GUARDIAN_ID;
-
 
 // use store
 const route = useRoute();
@@ -326,15 +251,13 @@ const router = useRouter();
 const studentStores = useStudentStores();
 const paymentStores = usePaymentStores();
 const basicStores = useBasicStores();
-const userStores = useUserStores();
+const authStore = useAuthStore();
 const { notifySuccess, notifyError } = useNotify();
 const { getActiveClass } = scripts();
 
 /* setup computed */
-const hasCreateEnrrolment = computed(() => userStores.hasCreateEnrrolment)
 // data
 const isLoading = ref(true);
-const tab = ref("student");
 const personalInformation = ref(null);
 const entity = ref("student");
 const student = ref();

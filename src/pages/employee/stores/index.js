@@ -14,9 +14,7 @@ export const useEmployeeStores = defineStore("employee", {
     // doubleCount: (state) => state.counter * 2,
   },
   actions: {
-    async list() {
-      const authStore = useAuthStore();
-      const { institutionId } = authStore.user;
+    async list(institutionId) {
       const { data, error } = await api.get("/employee",{params: {institutionId: institutionId}});
       if (error) throw error;
       this.employees = data;

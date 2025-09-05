@@ -68,5 +68,11 @@ export const useCourseStores = defineStore("course", {
       if (error) throw error;
       return data;
     },
+    /* Evolution Type */
+    async createEvolutionType(params){
+      const { data, error } = await api.post("/course/evolution-type", params);
+      if (error) throw error;
+      return data;
+    }
   },
 });

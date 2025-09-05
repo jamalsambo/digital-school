@@ -10,7 +10,6 @@
             individualmente e vice-versa.
           </div>
         </q-card-section>
-
         <q-separator />
 
         <q-card-section class="q-gutter-md">
@@ -237,7 +236,7 @@ const fetchTask = async () => {
 
 const fetchGroups = async () => {
   try {
-    await groupStores.list({ classe: task.value.classId });
+    await groupStores.list({ classId: task.value.classId, activityId: task.value.activityId });
     allGroups.value = groupStores.groups.map((group) => {
       return {
         id: group.id,
@@ -253,6 +252,7 @@ const fetchGroups = async () => {
 
 const fetchStudent = async () => {
   try {
+    console.log('olha', task.value.classId)
     await studentStores.list({ classId: task.value.classId });
     allStudents.value = studentStores.students.map((student) => ({
       id: student.id,
@@ -260,6 +260,7 @@ const fetchStudent = async () => {
     }));
     task.value.students.forEach((student) => assignStudent(student.studentId));
   } catch (error) {
+    console.log(error)
     notifyError("Ocorreu um erro ao carregar os estudantes");
   }
 };

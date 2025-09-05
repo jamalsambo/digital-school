@@ -16,8 +16,8 @@ export const useGroupStores = defineStore("work-group", {
   actions: {
     async list(params) {
       const { data, error } = await api.get("/work-group", {
-        params: params,
-        institutionId: institutionId,
+        params: {...params,  institutionId: institutionId,},
+
       });
       if (error) throw error;
       this.groups = data;

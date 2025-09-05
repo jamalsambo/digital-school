@@ -139,6 +139,7 @@ const fetchEmployeeTeachings = async () => {
     teachings.value = groupDataByClass(employeeStores.teachings);
   } catch (error) {
     console.log(error);
+    console.log(error)
     notifyError("Falha ao carregar os disciplinas.");
   }
 };
@@ -188,7 +189,7 @@ const groupDataByClass = (data) => {
 
   data.forEach((item) => {
     const className = item.classEntity.name;
-    const activity = item.developmentAreaActivy;
+    const activity = item.developmentAreaActivity;
 
     if (!grouped[className]) {
       grouped[className] = {

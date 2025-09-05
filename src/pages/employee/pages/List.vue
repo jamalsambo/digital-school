@@ -43,13 +43,16 @@
                   icon="edit"
                   @click="editEmployee(props.row)"
                   color="primary"
+                  title="Editar Funcionario"
+                  dense
                 />
                 <q-btn
                   flat
                   round
-                  icon="cast_for_education"
-                  @click="addTeachings(props.row)"
+                  icon="manage_accounts"
+                  @click="addUser(props.row)"
                   color="primary"
+                  title="Configurar Acesso"
                 />
               </template>
             </q-table>
@@ -61,11 +64,16 @@
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useEmployeeStores } from "../stores";
 import { useAuthStore } from "src/pages/auth/store";
+import { useUserStores } from "src/pages/user/store";
 import columns from "src/pages/employee/components/ColumnsEmployeesList";
 import useNotify from "src/composables/UseNotify";
+const employeeTypeID = import.meta.env.VITE_EMPLOYEE_ID;
+
+/* use stores */
+const route = useRoute();
 
 // Referências e variáveis reativas
 const filter = ref("");
@@ -73,17 +81,18 @@ const pagination = ref({
   rowsPerPage: 10,
 });
 const employees = ref([]);
+const userStores = useUserStores();
 
 // Acessos aos stores e router
 const router = useRouter();
 const employeeStores = useEmployeeStores();
 const authStores = useAuthStore();
+const { institutionId } = authStores.user;
 const { notifyError } = useNotify();
 
 // Funções
 const addEmployee = async () => {
-  const {institutionId} = authStores.user
-  await employeeStores.create({institutionId: institutionId});
+  await employeeStores.create({ institutionId: institutionId });
   router.push({
     name: "create-employee",
     params: { id: employeeStores.employee.id, created: "create" },
@@ -97,17 +106,35 @@ const editEmployee = async (employee) => {
   });
 };
 
-const addTeachings = async (employee) => {
-  router.push({
-    name: "employee-teachings",
-    params: { id: employee.id },
-  });
+const addUser = async (employee) => {
+  if (employee.userId) {
+     router.push({
+      name: "manage-account",
+      params: { userId: employee.userId },
+    });
+  } else {
+   await userStores.create({
+        displayName: employee.basicInformation?.fullName,
+        username: employee.number,
+        password: '1234',
+        userTypeId: employeeTypeID,
+        institutionId: employee?.institutionId
+   })
+   await employeeStores.update(employee.id, {userId: userStores.user.id})
+    router.push({
+      name: "manage-account",
+      params: { userId: userStores.user.id },
+    });
+  }
 };
 // Função para buscar os planos curriculares
 const fetchEmployees = async () => {
   try {
-
-    await employeeStores.list();
+    if (route.params.institutionId) {
+      await employeeStores.list(route.params.institutionId);
+    } else {
+      await employeeStores.list(institutionId);
+    }
     employees.value = employeeStores.employees;
   } catch (error) {
     notifyError("Falha ao carregar os funcionarios.");

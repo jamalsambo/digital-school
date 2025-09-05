@@ -27,7 +27,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAttendanceStores } from "../store";
-import { useUserStores } from "src/pages/user/store";
+import { useAuthStore } from "src/pages/auth/store";
 import Tables from "src/components/Tables.vue";
 import columns from "../components/columns/ClassAttendanceColumns";
 
@@ -35,8 +35,7 @@ import columns from "../components/columns/ClassAttendanceColumns";
 const route = useRoute();
 const router = useRouter();
 const attendanceStores = useAttendanceStores();
-const userStores = useUserStores()
-const user = computed(() => userStores.user)
+const authSore = useAuthStore()
 
 /* data */
 const { classe, discipline } = route.params;
@@ -49,7 +48,7 @@ const newAttendance = async () => {
     await attendanceStores.createClassAttendance({
       classId: classe,
       disciplineId: discipline,
-      teacherId: user?.value.employee?.id,
+      teacherId: authSore.user.employeeId,
       classDate: new Date()
     });
     classAttendance.value = attendanceStores.classAttendance;
@@ -76,7 +75,7 @@ const editAttendance = (row) => {
 
 const fetchClassAttendances = async () => {
   try {
-    await attendanceStores.fetchClassAttendances();
+    await attendanceStores.fetchClassAttendances({classId: classe, disciplineId: discipline});
     classAttendances.value = attendanceStores.classAttendances;
   } catch (error) {
     console.error(error);

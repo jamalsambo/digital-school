@@ -9,11 +9,11 @@
           no-caps
           @click="addRoom"
           class="q-ml-sm"
-          v-if="userStores.hasCreateRooms"
+          v-if="authStore.hasCreateRooms"
         />
       </template>
       <template #actions>
-        <q-btn color="primary" icon="edit" no-caps class="q-ml-sm" flat="" v-if="userStores.hasEditRooms"/>
+        <q-btn color="primary" icon="edit" no-caps class="q-ml-sm" flat="" v-if="authStore.hasEditRooms"/>
       </template>
     </Tables>
   </q-page>
@@ -22,14 +22,14 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import Tables from "src/components/Tables.vue";
+import { useAuthStore } from "src/pages/auth/store";
 import { useRoomStores } from "../store";
-import { useUserStores } from "src/pages/user/store";
 import Columns from "../components/columns/Classe";
 
 /* Use store */
 const router = useRouter();
 const roomStores = useRoomStores();
-const userStores = useUserStores();
+const authStore = useAuthStore();
 
 /* Data */
 const rooms = ref([]);

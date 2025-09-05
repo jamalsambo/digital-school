@@ -8,6 +8,11 @@ const bulletinRoutes = [
     component: List,
   },
   {
+    path: "academic-control/teste",
+    name: "academic control 77",
+    component: View,
+  },
+  {
     path: "bulletin/student/:studentId/classe/:classId/issue",
     name: "bulletin-issue",
     component: View,

@@ -239,9 +239,9 @@ const form = ref({
   tax: "",
 });
 const regimeOptions = ref([
-  { label: "Semestral", value: 6 },
+  { label: "Semestral", value:  2},
   { label: "Trimestral", value: 3 },
-  { label: "Livre", value: 0 },
+  { label: "Livre", value:  1},
 ]);
 
 const province = ref("");

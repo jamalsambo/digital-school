@@ -6,7 +6,6 @@
         <div class="text-subtitle1">Gerir e controlar as recibos emitidas.</div>
         <q-separator spaced />
       </q-card-section>
-
       <q-card-section>
         <div class="text-subtitle1">Informações de pesquisa</div>
         <q-card flat bordered class="q-pa-md shadow-2">
@@ -164,11 +163,11 @@
                     </div>
 
                     <!-- Multas -->
-                    <div class="q-mt-sm" v-if="props.row.penalts?.length">
+                    <div class="q-mt-sm" v-if="props.row.penalties?.length">
                       <div class="text-subtitle2 q-mb-sm">Multas Aplicadas</div>
                       <q-list dense bordered>
                         <q-item
-                          v-for="(fine, idx) in props.row.penalts"
+                          v-for="(fine, idx) in props.row.penalties"
                           :key="idx"
                         >
                           <q-item-section>
@@ -252,9 +251,9 @@
                     </div>
 
                     <div class="text-h6 q-mb-md">Multas Aplicadas</div>
-                    <q-list bordered v-if="props.row.penalts?.length">
+                    <q-list bordered v-if="props.row.penalties?.length">
                       <q-item
-                        v-for="(fine, index) in props.row.penalts"
+                        v-for="(fine, index) in props.row.penalties"
                         :key="index"
                       >
                         <q-item-section>
@@ -293,16 +292,21 @@
             <template v-slot:bottom>
               <div class="q-pa-md bg-grey-2 text-right">
                 <div>
-                  Total facturas pagos: <strong>{{ invoices.length }}</strong>
+                  Total facturas pagos:
+                  <strong>{{ summary.totalInvoices }}</strong>
                 </div>
                 <div>
-                  Total de multas: <strong>{{ totalPenalty }}</strong>
+                  Total de items da factura:
+                  <strong>{{ summary.totalItems }}</strong>
                 </div>
                 <div>
-                  Total de mensalidades: <strong>{{ totalMonthFees }}</strong>
+                  Total de multas: <strong>{{ summary.totalPenalties }}</strong>
                 </div>
                 <div>
-                  Total Geral: <strong>{{ totalPayments }}</strong>
+                  Total Sub Total: <strong>{{ summary.totalOriginal }}</strong>
+                </div>
+                <div>
+                  Total Geral: <strong>{{ summary.totalFinal }}</strong>
                 </div>
               </div>
             </template>
@@ -368,7 +372,8 @@
 </template>
 
 <script setup>
-import { cloneVNode, computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useAuthStore } from "src/pages/auth/store";
 import { useStudentStores } from "src/pages/student/store";
 import { usePaymentStores } from "../../payments/stores";
 import { useInvoiceStores } from "../../invoice/stores";
@@ -382,6 +387,7 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 /* setup stores */
+const authStore = useAuthStore();
 const studentStores = useStudentStores();
 const paymentStores = usePaymentStores();
 const invoiceStores = useInvoiceStores();
@@ -393,7 +399,6 @@ const { formatDate, formatToMZN } = scripts();
 const students = ref([]);
 const student = ref(null);
 const classe = ref();
-const amount = ref(null);
 const options = ref(students.value);
 const stages = ref([]);
 const invoices = ref([]);
@@ -401,8 +406,9 @@ const paymentTypes = ref([]);
 const paymentTypeSelected = ref(null);
 const code = ref(null);
 const method = ref(null);
-const receiptId = ref();
+const receipt = ref();
 const paymentTypeFind = ref();
+const summary = ref(null);
 
 /* setup methods */
 const fetchInvoices = async () => {
@@ -413,9 +419,10 @@ const fetchInvoices = async () => {
       studentId: student.value.id,
     });
 
-    invoices.value = invoiceStores.invoices.filter((value) =>
+    invoices.value = invoiceStores.invoices.invoices.filter((value) =>
       ["Pendente", "Parcial"].includes(value.status)
     );
+    summary.value = invoiceStores.invoices.summary;
   } catch (error) {
     notifyError("Erro ao buscar facturas");
   }
@@ -423,110 +430,31 @@ const fetchInvoices = async () => {
 
 const handlePaid = async () => {
   try {
-    const payloadReceipt = {
+    const payload = {
       transactionCode: code.value || "",
       paymentMethod: method.value,
       studentId: student.value.id,
       note: "",
+      institutionId: authStore.user.institutionId,
     };
-    const monthFristPay = new Date(
-      classe.value.classe?.startDate
-    ).toLocaleString("pt-BR", { month: "long" });
-
-    if (method.value === "Mpesa") {
-      const responseMpesa = await paymentStores.payMpsa({
-        amount: parseInt(classe.value.classe.monthlyFee),
-        msisdn: 258845751142,
-        transactionRef: "T12344C",
-        thirdPartyRef: `ref4`,
-      });
-      if (responseMpesa.output_ResponseCode === "INS-0") {
-        await receiptStores.create(payloadReceipt);
-        receiptId.value = receiptStores.receipt.id;
-      }
-    }else{
-       await receiptStores.create(payloadReceipt);
-        receiptId.value = receiptStores.receipt.id;
-    }
-    if (receiptId.value) {
-      const requests = invoices.value.map(async (invoice) => {
-        const totalPenalty =
-          invoice.penalts?.reduce((sum, p) => sum + parseInt(p.amount), 0) || 0;
-
-        if (invoice.status === "Parcial") {
-          await paymentStores.create({
-            invoiceId: invoice.id,
-            receiptId: receiptId.value,
-            amount: totalPenalty, // Mantém valores decimais
-            paymentDate: new Date(),
-          });
-          const paid = parseInt(invoice.paidAmount) + totalPenalty;
-
-          if (paymentStores.payment.id) {
-            await invoiceStores.update(invoice.id, {
-              status: "Pago",
-              paidAmount: paid,
-            });
-            await paymentStores.updateInvoicePenalts(invoice.id, {
-              status: true,
-            });
-          }
-        } else {
-          const paid = parseInt(invoice.amount) + totalPenalty;
-
-          if (paid >= parseInt(invoice.total)) invoice.status = "Pago";
-          else if (paid > 0) invoice.status = "Parcial";
-          else invoice.status = "Pendente";
-
-          await paymentStores.create({
-            invoiceId: invoice.id,
-            receiptId: receiptId.value,
-            amount: parseInt(paid), // Mantém valores decimais
-            paymentDate: new Date(),
-          });
-
-          if (paymentStores.payment.id) {
-            await invoiceStores.update(invoice.id, {
-              status: invoice.status,
-              paidAmount: paid,
-            });
-            if (invoice.status === "Pago") {
-              if (totalPenalty > 0) {
-                await paymentStores.updateInvoicePenalts(invoice.id, {
-                  status: true,
-                });
-              }
-              if (
-                classe.value.classe.monthlyFeeIncluse &&
-                paymentTypeSelected.value.name === "Matricula"
-              ) {
-                const payload = {
-                  paymentTypeId: paymentTypeFind.value.id,
-                  classId: classe.value.classe.id,
-                  studentId: student.value.id,
-                  issueDate: new Date(),
-                  dueDate: classe.value.classe.endDate,
-                  month: monthFristPay,
-                  amount: parseInt(classe.value.classe.monthlyFee),
-                  paidAmount: parseInt(classe.value.classe.monthlyFee),
-                  total: parseInt(classe.value.classe.monthlyFee),
-                  status: "Pago",
-                  year: new Date().getFullYear(),
-                  note: `Factura de Mensalidade referente o mes de ${monthFristPay}`,
-                };
-                await invoiceStores.create(payload);
-              }
-            }
-          }
-        }
-      });
-
-      await Promise.all(requests);
-      notifySuccess("Pagamento realizado com sucesso!");
+    const invoice = invoices.value.map((invoice) => {
+      return {
+        id: invoice.id,
+        originalTotal: invoice.originalTotal,
+        items: invoice.items,
+        penalties: invoice.penalties,
+      };
+    });
+    await receiptStores.create({
+      receiptData: payload,
+      invoice: invoice,
+    });
+     receipt.value = receiptStores.receipt
+    if (!receipt.value) {
+      notifyError("Ocorreu um erro no pagamento da factura");
     }
 
-    // Recarregar as facturas
-    await fetchInvoices();
+    notifySuccess("Pagamento efetuado com sucesso");
   } catch (error) {
     console.log(error);
     notifyError("Erro ao realizar o pagamento");
@@ -535,10 +463,11 @@ const handlePaid = async () => {
 
 const handlePaidPrint = async () => {
   await handlePaid();
-  router.push({
-    name: "print-receipt",
-    params: { receiptId: receiptId.value },
-  });
+  if (receipt.value)
+    router.push({
+      name: "print-receipt",
+      params: { receiptId: receipt.value },
+    });
 };
 
 const deleteInvoice = (invoice) => {

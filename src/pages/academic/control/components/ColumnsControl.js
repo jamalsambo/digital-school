@@ -6,10 +6,11 @@ export default function getColumns() {
   const istechnical = institutionStore.istechnical;
   const isInfantil = institutionStore.isInfantil;
   const isHigh = institutionStore.isHigh;
+  const isFree = institutionStore.isFree
 
   return [
     { name: "name", label: "Disciplina", field: "name", align: "left" },
-    istechnical && {
+    istechnical || isFree && {
       name: "notas",
       label: "Notas",
       field: "notas",
@@ -25,14 +26,14 @@ export default function getColumns() {
     },
     istechnical && {
       name: "situacao",
-      label: "Situação",
+      label: "Media",
       field: "situacao",
       align: "left",
     },
-    isHigh && {
-      name: "situacao",
-      label: "Situação",
-      field: "situacao",
+    isHigh || isFree && {
+      name: " ",
+      label: "Media",
+      field: "media",
       align: "left",
     },
 
@@ -42,8 +43,13 @@ export default function getColumns() {
       field: "exame",
       align: "left",
     },
-    isHigh && { name: "exame", label: "Exame", field: "exame", align: "left" },
-
+   
+    {
+      name: "situacao",
+      label: "Situaçao",
+      field: "situacao",
+      align: "left",
+    },
     { name: "actions", label: "Acções", field: "actions", align: "left" },
   ].filter(Boolean);
 }

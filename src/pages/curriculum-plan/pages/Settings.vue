@@ -114,6 +114,7 @@
                   class="q-mb-sm"
                 />
                 <q-input
+                 v-if="!institutionStores.isFree"
                   v-model="formState[area.id].credit"
                   label="Créditos"
                   type="number"
@@ -161,6 +162,7 @@
                   map-options
                 />
                 <q-input
+                
                   v-model="formState[area.id].year"
                   label="Ano"
                   dense
@@ -168,6 +170,7 @@
                   class="q-mb-sm"
                 />
                 <q-select
+                 
                   class="q-mb-sm"
                   v-model="formState[area.id].cicle"
                   :options="cicles"
@@ -262,8 +265,8 @@ function onDisciplineSelected(areaValue) {
     exame: false,
     critical: false,
     participation: false,
-    year: "",
-    cicle: [],
+    year: 1,
+    cicle: [{value: 1, label: '1º'}],
   };
 }
 
@@ -287,8 +290,8 @@ function allocateDiscipline(areaValue) {
       exame: formState[areaValue].exame.value || false,
       critical: formState[areaValue].critical.value || false,
       participation: formState[areaValue].participation.value || false,
-      year: parseInt(formState[areaValue].year),
-      cicle: cicle.value,
+      year: parseInt(formState[areaValue].year) || 1,
+      cicle: cicle.value ||  1,
       hours: parseInt(formState[areaValue].hours),
       credit: parseInt(formState[areaValue].credit),
       activityId: discipline.id,

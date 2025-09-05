@@ -68,7 +68,6 @@ const form = ref({
 const handleLogin = async () => {
   try {
     await auth.Actionlogin(form.value)
-    await useStores.findPermissions(auth.user.sub)
 
     notifySuccess('Login efectuado com sucesso')
     router.push({ name: 'home' })

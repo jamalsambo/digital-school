@@ -13,74 +13,92 @@
                   no-caps
                   @click="createInstitution"
                   class="q-ml-sm"
-                  v-if="userStores.user.userType?.name === 'Super'"
+                  v-if="authStore.isSuper"
                 />
               </template>
 
               <template #actions="{ props }">
                 <q-btn
-                 v-if="userStores.user.userType?.name === 'Super'"
+                  v-if="authStore.isSuper"
                   flat
                   round
                   icon="settings"
                   color="secondary"
                   @click="settingsInstitution(props.row)"
+                  title="Configurar instituição"
                 >
-                  <q-tooltip> Configurar instituição</q-tooltip>
                 </q-btn>
 
                 <q-btn
-                  v-if="props.row.status === 'Activo' && userStores.hasEditInstitution"
+                  v-if="
+                    props.row.status === 'Activo' &&
+                    authStore.hasEditInstitution
+                  "
                   flat
                   round
                   icon="edit"
                   color="primary"
                   @click="editInstitution(props.row)"
+                  title="Editar de instituição"
                 >
-                  <q-tooltip> Editar de instituição </q-tooltip>
                 </q-btn>
 
                 <q-btn
-                   v-if="userStores.user.userType?.name === 'Super'"
+                  v-if="authStore.isSuper"
                   flat
                   round
                   icon="delete"
                   color="negative"
                   @click="deleteInstitution(props.row)"
+                  title="Deletar instituição"
                 >
-                  <q-tooltip> Deletar instituição </q-tooltip>
                 </q-btn>
 
                 <q-btn
-                  v-if="!props.row.parentId && userStores.user.userType?.name === 'Super'"
+                  v-if="!props.row.parentId && authStore.isSuper"
                   flat
                   round
                   icon="escalator_warning"
                   color="primary"
                   @click="createSucursal(props.row)"
+                  title="Criar sucursal"
                 >
-                  <q-tooltip> Criar sucursal </q-tooltip>
                 </q-btn>
 
                 <q-btn
-                v-if="userStores.hasSettingsSiteInstitution || userStores.user.userType?.name === 'Super'"
+                  v-if="
+                    props.row.status === 'Activo' &&
+                    authStore.hasEditInstitution
+                  "
                   flat
                   round
                   icon="language"
                   color="primary"
                   @click="handleSettingsSite(props.row)"
+                  title="Configurar o site"
                 >
-                  <q-tooltip> Configurar o site </q-tooltip>
                 </q-btn>
                 <q-btn
-                 v-if="userStores.hasCreateEmployees  || userStores.user.userType?.name === 'Super'"
+                  v-if="authStore.isSuper"
                   flat
                   round
                   icon="person"
                   color="primary"
                   @click="createEmployee(props.row)"
+                  title="Criar usuario"
+                  dense
                 >
-                  <q-tooltip> Criar usuario </q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="authStore.isSuper"
+                  flat
+                  round
+                  icon="group"
+                  color="primary"
+                  @click="handleLisEmployees(props.row)"
+                  title="Funcionarios"
+                  dense
+                >
                 </q-btn>
               </template>
             </Tables>
@@ -96,7 +114,6 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useInstitutionStores } from "../store";
 import { useAuthStore } from "src/pages/auth/store";
-import { useUserStores } from "src/pages/user/store";
 import useNotify from "src/composables/UseNotify";
 import Tables from "src/components/Tables.vue";
 import columns from "../components/InstitutionColumns";
@@ -109,14 +126,11 @@ const router = useRouter();
 const institutuinStores = useInstitutionStores();
 const authStore = useAuthStore();
 const employeeStores = useEmployeeStores();
-const userStores = useUserStores();
 const { notifyError, notifySuccess } = useNotify();
 
 /* setup data */
-const { institutionId } = authStore.user
+const { institutionId } = authStore.user;
 const institutions = ref([]);
-
-const user = computed(() => userStores)
 
 /* methods */
 const createInstitution = () => {
@@ -150,7 +164,10 @@ const deleteInstitution = async (institution) => {
 
 const createEmployee = async (institution) => {
   try {
-    await employeeStores.create({institutionId: institution.id, teacher: 'Sim'});
+    await employeeStores.create({
+      institutionId: institution.id,
+      teacher: "Sim",
+    });
     router.push({
       name: "create-employee",
       params: { id: employeeStores.employee.id, created: "create" },
@@ -174,16 +191,22 @@ const handleSettingsSite = (row) => {
   });
 };
 
+const handleLisEmployees = (row) => {
+  router.push({
+    name: "institution-employees",
+    params: { institutionId: row.id },
+  });
+};
+
 /* fetch data */
 const fetchInstitutions = async () => {
   try {
-    if (user.value.isSuper) {
-    await institutuinStores.list();
-    institutions.value = institutuinStores.institutions;
-    }else {
-      await institutuinStores.list({institutionId:institutionId});
-      institutions.value = institutuinStores.institutions;
+    if (authStore?.isSuper) {
+      await institutuinStores.list();
+    } else {
+      await institutuinStores.list({ institutionId: institutionId });
     }
+    institutions.value = institutuinStores.institutions;
   } catch (error) {
     notifyError("Erro ao carregar Instituições");
   }

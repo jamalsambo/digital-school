@@ -55,7 +55,7 @@ const tasks = ref([]);
 /* fetch data */
 const fetchTasks = async () => {
   try {
-    await taskStores.list();
+    await taskStores.list({disciplineId: disciplineId, classId: classeId});
     tasks.value = taskStores.tasks;
   } catch (error) {
     console.error(error);

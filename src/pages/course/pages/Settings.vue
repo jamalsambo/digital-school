@@ -48,6 +48,36 @@
       <q-card-section>
         <div class="border q-pa-md shadow-2">
           <div class="row items-center justify-between">
+            <span class="text-weight-bold">Tipos de avaliacoes</span>
+            <q-btn
+              color="primary"
+              icon="add"
+              label="Adicionar"
+              class="q-mr-sm"
+              @click="addEvolutionType"
+              flat
+            />
+          </div>
+
+          <Tables :rows="evolutionTypes" :columns="EvolutionTypeColumns">
+            <template #actions="{ props }">
+              <q-btn
+                color="primary"
+                icon="edit"
+                no-caps
+                @click="editClasse(props)"
+                flat
+                dense
+                title="Editar"
+              />
+            </template>
+          </Tables>
+        </div>
+      </q-card-section>
+
+      <q-card-section>
+        <div class="border q-pa-md shadow-2">
+          <div class="row items-center justify-between">
             <span class="text-weight-bold">Turmas</span>
             <q-btn
               color="primary"
@@ -104,6 +134,7 @@ import Tables from "src/components/Tables.vue";
 import useNotify from "src/composables/UseNotify";
 import ClasseColumns from "../components/ClasseColumns";
 import ColumnsCurriculum from "../components/ColumnsCurriculum";
+import EvolutionTypeColumns from "../components/EvolutionTypesColumns"
 
 /* setup route */
 const route = useRoute();
@@ -117,6 +148,7 @@ const { notifyError } = useNotify();
 const { educationId, internshipId, program } = route.params;
 const curriculuns = ref([]);
 const classes = ref([]);
+const evolutionTypes = ref([]);
 
 /* methods */
 
@@ -129,23 +161,23 @@ const addClasse = () => {
 
 const addCurriculum = () => {
   router.push({
-    name: 'create-curriculum',
+    name: "create-curriculum",
     params: {
       educationId: educationId,
-      courseId: internshipId
-    }
-  })
-}
+      courseId: internshipId,
+    },
+  });
+};
 
 const settingsCurriculum = (props) => {
   router.push({
-    name: 'settings-curriculum',
+    name: "settings-curriculum",
     params: {
       educationId: educationId,
-      curriculumId: props.key
-    }
-  })
-}
+      curriculumId: props.key,
+    },
+  });
+};
 
 const editClasse = (row) => {
   router.push({
@@ -169,12 +201,20 @@ const te = (row) => {
   });
 };
 
+const addEvolutionType = (row) => {
+  router.push({
+    name: "course-evolution-type-create",
+    params: { courseId: internshipId },
+  });
+};
+
 /* fetch data */
 const fetchCourse = async () => {
   try {
     await courseStores.findOne(internshipId);
-      classes.value = courseStores.course.classes
-      curriculuns.value =  courseStores.course.curriculums
+    classes.value = courseStores.course.classes;
+    curriculuns.value = courseStores.course.curriculums;
+    evolutionTypes.value = courseStores.course.evolutionTypes;
   } catch (error) {
     notifyError("Erro no carregamento");
   }
@@ -182,6 +222,5 @@ const fetchCourse = async () => {
 
 onMounted(async () => {
   await fetchCourse();
-
 });
 </script>

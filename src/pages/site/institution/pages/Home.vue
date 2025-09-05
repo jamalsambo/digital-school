@@ -9,7 +9,7 @@
     <div class="row items-center">
       <div class="col-12 col-md-6 q-pa-md">
         <div class="text-h4 text-primary q-mb-md">Nossa História</div>
-        <div v-html="institution?.aboutUs" class="preview-content" />
+        <div v-html="institution?.aboutUs" style="font-size: 21px;" class="preview-content" />
       </div>
       <div class="col-12 col-md-6 q-pa-md text-center">
         <CarouselSite :carrosel-imagens="aboutUsCarroselImagens" />
@@ -20,7 +20,7 @@
   <!-- Seção de "Por que escolher" e "Programas" -->
   <div class="row q-col-gutter-md q-py-lg">
     <div class="col-12 col-md-6">
-      <ChooseMe />
+      <ChooseMe :institution="institution?.name " />
     </div>
     <div class="col-12 col-md-6">
       <Programs />
@@ -30,7 +30,7 @@
   <div class="q-pa-md q-my-md bg-grey-2">
     <div class="text-h4 text-primary q-mb-md">Notícias & Eventos</div>
     <div class="row q-col-gutter-md q-py-lg">
-      <div class="col-12 col-md-4 ">
+      <div class="col-12 col-md-4">
         <EventCard
           day="28"
           month="Agosto"
@@ -39,7 +39,6 @@
         />
 
         <EventCard
-
           day="05"
           month="Setembro"
           title="Formação de Professores"
@@ -62,15 +61,15 @@
     </div>
   </div>
 
-    <div class="q-pa-md q-my-md bg-grey-2">
-      <div class="text-h5 text-primary q-mb-md">Estudantes em Ação</div>
+  <div class="q-pa-md q-my-md bg-grey-2">
+    <div class="text-h5 text-primary q-mb-md">Estudantes em Ação</div>
 
     <q-carousel
       v-model="slide"
       animated
       control-color="primary"
       arrows
-       :autoplay="true"
+      :autoplay="true"
       swipeable
       infinite
       height="500px"
@@ -96,11 +95,10 @@
         </div>
       </q-carousel-slide>
     </q-carousel>
-
-    </div>
+  </div>
 </template>
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useSiteStores } from "../../store";
 import CarouselSite from "../../components/CarouselSite.vue";
 import ChooseMe from "../../components/ChooseMe.vue";
@@ -108,60 +106,75 @@ import Programs from "../../components/Programs.vue";
 import Events from "../../components/NewsCard.vue";
 import EventCard from "../../components/EventCard.vue";
 
-
 /* setup stores */
 const siteStores = useSiteStores();
 
 /* setup data */
 
 const institution = computed(() => siteStores.institution);
-const mainCarroselImagens = computed(
-  () => siteStores.institution.mainCarroselImagens
-);
-const aboutUsCarroselImagens = computed(
-  () => siteStores.institution.aboutUsCarroselImagens
-);
-const slide = ref(0)
+const mainCarroselImagens = ref([]);
+const aboutUsCarroselImagens = ref([]);
+const slide = ref(0);
 const atividades = [
   {
-    titulo: 'Feira de Ciências',
-    descricao: 'Alunos apresentando projetos científicos com criatividade.',
-    imagem: 'https://cdn.quasar.dev/img/parallax2.jpg'
+    titulo: "Feira de Ciências",
+    descricao: "Alunos apresentando projetos científicos com criatividade.",
+    imagem: "https://cdn.quasar.dev/img/parallax2.jpg",
   },
   {
-    titulo: 'Educação Física',
-    descricao: 'Momentos de esporte e lazer.',
-    imagem: 'https://cdn.quasar.dev/img/parallax2.jpg'
+    titulo: "Educação Física",
+    descricao: "Momentos de esporte e lazer.",
+    imagem: "https://cdn.quasar.dev/img/parallax2.jpg",
   },
   {
-    titulo: 'Robótica',
-    descricao: 'Tecnologia e inovação desde cedo.',
-    imagem: 'https://cdn.quasar.dev/img/parallax2.jpg'
+    titulo: "Robótica",
+    descricao: "Tecnologia e inovação desde cedo.",
+    imagem: "https://cdn.quasar.dev/img/parallax2.jpg",
   },
   {
-    titulo: 'Pintura Criativa',
-    descricao: 'Expressando ideias com arte.',
-    imagem: 'https://cdn.quasar.dev/img/parallax2.jpg'
+    titulo: "Pintura Criativa",
+    descricao: "Expressando ideias com arte.",
+    imagem: "https://cdn.quasar.dev/img/parallax2.jpg",
   },
   {
-    titulo: 'Teatro Escolar',
-    descricao: 'Desenvolvendo expressão e trabalho em grupo.',
-    imagem: 'https://cdn.quasar.dev/img/parallax2.jpg'
+    titulo: "Teatro Escolar",
+    descricao: "Desenvolvendo expressão e trabalho em grupo.",
+    imagem: "https://cdn.quasar.dev/img/parallax2.jpg",
   },
   {
-    titulo: 'Feira do Livro',
-    descricao: 'Incentivando a leitura.',
-    imagem: 'https://cdn.quasar.dev/img/parallax2.jpg'
+    titulo: "Feira do Livro",
+    descricao: "Incentivando a leitura.",
+    imagem: "https://cdn.quasar.dev/img/parallax2.jpg",
+  },
+];
+
+const fetchData = async () => {
+  try {
+    await siteStores.findMainCarroselImagens(
+      "8d0c4213-9c7a-4ec8-b790-ba916275e9ee"
+    );
+    mainCarroselImagens.value = siteStores.mainCarroselImagens;
+
+    await siteStores.findAboutUsCarroselImagens(
+      "8d0c4213-9c7a-4ec8-b790-ba916275e9ee"
+    );
+    aboutUsCarroselImagens.value = siteStores.aboutUsCarroselImagens;
+  } catch (error) {
+    console.log(error);
   }
-]
+};
 
 // Agrupa em blocos de 3
 const groupedAtividades = computed(() => {
-  const chunkSize = 3
-  const result = []
+  const chunkSize = 3;
+  const result = [];
   for (let i = 0; i < atividades.length; i += chunkSize) {
-    result.push(atividades.slice(i, i + chunkSize))
+    result.push(atividades.slice(i, i + chunkSize));
   }
-  return result
-})
+  return result;
+});
+
+onMounted(async () => {
+  await fetchData();
+});
 </script>

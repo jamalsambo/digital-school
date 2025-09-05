@@ -1,13 +1,29 @@
 <template>
   <q-page padding>
+{{ selectedDate }}
     <q-card>
       <q-card-section>
-        <div class="text-h5">Gestão de Facturas</div>
-        <div class="text-subtitle1">
-          Gerir e controlar as facturas emitidas.
+        <div class="row items-center justify-between">
+          <div>
+            <div class="text-h5">Gestão de Facturas</div>
+            <div class="text-subtitle1">
+              Gerir e controlar as facturas emitidas.
+            </div>
+          </div>
+
+          <q-btn
+          v-if="student && classe && paymentTypeSelected"
+            label="Gerar Factura"
+            color="primary"
+            icon="receipt_long"
+            @click="generateInvoice = true"
+            class="q-ml-md"
+          />
         </div>
+
         <q-separator spaced />
       </q-card-section>
+
       <q-card-section>
         <div class="text-subtitle1">Informações de pesquisa</div>
         <q-card flat bordered class="q-pa-md shadow-2">
@@ -95,10 +111,49 @@
         </q-card>
       </q-card-section>
     </q-card>
+
+    <q-card class="q-mt-lg" v-if="generateInvoice">
+      <q-card-section>
+        <div class="text-h5">Gerar Facturas</div>
+        <q-select
+          class="col-md-grow col-sm-12 col-xs-12"
+          label="Selecione o mes"
+          option-label="label"
+          option-value="id"
+          v-model="selectedMonth"
+          :options="months"
+          map-options
+          outlined
+          dense
+          clearable=""
+        />
+        <div class="row justify-end q-gutter-sm q-mt-sm">
+          <q-btn
+            label="Cancelar"
+            color="negative"
+            flat
+            icon="cancel"
+            @click="generateInvoice= false"
+          />
+          <q-btn
+          v-if="selectedMonth"
+            label="Gerar"
+            color="primary"
+            icon="save"
+            flat
+            @click="handleRowClick"
+          />
+        </div>
+      </q-card-section>
+    </q-card>
+
     <q-card class="q-mt-lg">
       <q-card-section>
         <q-card flat bordered class="q-pa-md shadow-2">
-          <InvoiceTable :invoices="invoices" :handle-row-click="handleRowClick"/>
+          <InvoiceTable
+            :invoices="invoices"
+            :handle-row-click="handleRowClick"
+          />
         </q-card>
       </q-card-section>
     </q-card>
@@ -106,14 +161,18 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useAuthStore } from "src/pages/auth/store";
 import { useStudentStores } from "src/pages/student/store";
 import { usePaymentStores } from "../../payments/stores";
 import { useInvoiceStores } from "../stores";
 import useNotify from "src/composables/UseNotify";
 import InvoiceTable from "../components/InvoiceTable.vue";
+import * as moment from 'moment';
+
 
 /* setup stores */
+const authStore = useAuthStore()
 const studentStores = useStudentStores();
 const paymentStores = usePaymentStores();
 const invoiceStores = useInvoiceStores();
@@ -130,52 +189,41 @@ const invoices = ref([]);
 const paymentTypes = ref([]);
 const paymentTypeSelected = ref(null);
 const year = ref(parseInt(new Date().getFullYear()));
-const months = ref([
-  { id: 0, month: "Janeiro" },
-  { id: 1, month: "Fevereiro" },
-  { id: 2, month: "Março" },
-  { id: 3, month: "Abril" },
-  { id: 4, month: "Maio" },
-  { id: 5, month: "Junho" },
-  { id: 6, month: "Julho" },
-  { id: 7, month: "Agosto" },
-  { id: 8, month: "Setembro" },
-  { id: 9, month: "Outubro" },
-  { id: 10, month: "Novembro" },
-  { id: 11, month: "Dezembro" },
-]);
+const selectedMonth = ref(null);
+const generateInvoice = ref(false)
+
 
 /* setup methods */
-const handleRowClick = async (month,amount) => {
-  const startDate = new Date(year.value);
-  const endDate = new Date(startDate);
-  endDate.setMonth(endDate.getMonth() + 1);
+const handleRowClick = async () => {
+  const issueDate = moment({ year: year.value, month: selectedMonth.value.value, day: 1 })
+const dueDate = issueDate.clone().add(1, 'month')
+
 
   const payload = {
     paymentTypeId: paymentTypeSelected.value.id,
     classId: classe.value.classe.id,
     studentId: student.value.id,
-    issueDate: new Date(),
-    dueDate: endDate,
-    month: month,
-    amount: parseInt(amount),
+    issueDate: issueDate.toDate(),
+    dueDate: dueDate.toDate(),
+    month: selectedMonth.value.label,
+    amount: parseInt(classe.value.classe.monthlyFee),
     status: "Pendente",
-    total: parseInt(amount),
-    note: `Factura referente ao de ${month}`,
-    year: parseInt(new Date().getFullYear())
+    total: parseInt(classe.value.classe.monthlyFee),
+    note: `Factura de ${paymentTypeSelected.value.name} referente ao mes de ${selectedMonth.value.label}`,
+    year: parseInt(new Date().getFullYear()),
+    employeeId: authStore.user.employeeId
   };
 
   try {
     await invoiceStores.create(payload);
     await fetchInvoices();
-    notifySuccess(
-      `Factura referente ao de ${month} gerado com sucesso!`
-    );
+    notifySuccess(`Factura referente ao mes de ${selectedMonth.value} gerado com sucesso!`);
+    generateInvoice.value = false
   } catch (error) {
-    notifyError(
-      `Erro a gerar factura referente ao de ${month}!`
-    );
+    notifyError(`Erro a gerar factura referente ao de ${selectedMonth.value}!`);
   }
+
+
 };
 
 const fetchInvoices = async () => {
@@ -186,20 +234,7 @@ const fetchInvoices = async () => {
       studentId: student.value.id,
     });
 
-    if (paymentTypeSelected.value.name === "Matricula") {
-        invoices.value = invoiceStores.invoices;
-    } else {
-      invoices.value = months.value.map((month) => {
-        const invoice = invoiceStores.invoices.find(
-          (inv) => inv.month.toLowerCase() === month.month.toLowerCase()
-        );
-        return {
-          ...month,
-          ...invoice,
-          amount: invoice ? invoice.amount : amount,
-        };
-      });
-    }
+    invoices.value = invoiceStores.invoices.invoices;
   } catch (error) {
     console.log(error);
   }
@@ -246,6 +281,17 @@ const filterFn = (val, update, abort) => {
     );
   });
 };
+
+const months = [];
+
+for (let i = 0; i < 12; i++) {
+  const date = new Date(2025, i, 1)
+  const monthName = date.toLocaleString('pt-BR', { month: 'long' })
+  months.push({
+    label: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+    value: i // mês de 1 a 12
+  })
+}
 
 onMounted(async () => {
   await fetchStudents();

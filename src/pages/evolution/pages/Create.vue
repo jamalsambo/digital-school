@@ -1,29 +1,9 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page padding>
     <q-card class="q-pa-lg shadow-2 rounded-borders">
-      <!-- Cabeçalho -->
-      <q-card-section class="row items-center q-gutter-sm">
-        <q-icon name="grading" size="md" color="primary" />
-        <div class="text-h6 text-primary">Lançamento de Notas</div>
-      </q-card-section>
-
-      <!-- Seleção de Avaliação -->
       <q-card-section>
         <div class="row q-col-gutter-md">
-          <q-select
-            class="col-md-4 col-sm-12"
-            v-model="evolutionType"
-            :options="evolutionTypes"
-            label="Tipo de Avaliação"
-            option-value="id"
-            option-label="name"
-            outlined
-            dense
-            clearable
-          />
-
           <q-input
-            v-if="!activity?.participation"
             class="col-md-4 col-sm-6"
             v-model="dateCompletion"
             type="date"
@@ -33,130 +13,174 @@
             clearable
             :rules="[(val) => !!val || 'Obrigatório']"
           />
-
-          <q-input
-            v-if="!activity?.participation && !isInfantil"
-            class="col-md-4 col-sm-6"
-            v-model="perception"
-            type="number"
-            label="Percentagem"
-            outlined
-            dense
-            clearable
-            placeholder="0 - 100"
-            :rules="[{ required: true, min: 0, max: 100 }]"
-          />
         </div>
       </q-card-section>
-
-      <!-- Tabela de Estudantes -->
+      <q-card-section class="row items-center q-gutter-sm">
+        <q-icon name="grading" size="md" color="primary" />
+        <div class="text-h6 text-primary">Lançamento de Notas</div>
+      </q-card-section>
       <q-card-section>
         <q-table
+          title="Registro de Notas"
           :rows="students"
           :columns="columns"
           row-key="id"
-          dense
-          flat
-          bordered
-          hide-bottom
+          :loading="loading"
         >
-          <template v-slot:body="props">
-            <q-tr :props="props">
-              <!-- Nome -->
-              <q-td>
-                <strong class="text-body1">{{ props.row.name }}</strong>
-              </q-td>
+          <template v-slot:body-cell="props">
+            <q-td :props="props" class="q-pa-sm">
+              <!-- Para o campo de nome -->
+              <span v-if="props.col.field === 'name'">
+                {{ props.row.name }}
+              </span>
 
-              <!-- Evoluções -->
-              <q-td>
-                <q-list separator dense>
-                  <q-item
-                    v-for="ev in props.row.evolutions"
-                    :key="ev.id"
-                    class="bg-grey-1 q-pa-sm q-mb-sm rounded-borders"
+              <!-- Para os campos de nota -->
+              <div v-else class="column">
+                <div v-if="!discipline.participation">
+                  <div class="row items-center no-wrap">
+                    <q-input
+                      v-model.number="
+                        (
+                          props.row.grades[props.col.field] ?? {
+                            note: 0,
+                            items: {},
+                          }
+                        ).note
+                      "
+                      type="number"
+                      outlined
+                      dense
+                      :min="0"
+                      :max="20"
+                      class="col"
+                      @focus="
+                        if (!props.row.grades[props.col.field]) {
+                          props.row.grades[props.col.field] = {
+                            note: 0,
+                            items: {},
+                          };
+                        }
+                      "
+                      @blur="
+                        updateGrade(
+                          props.row.id,
+                          props.col,
+                         {note:  props.row.grades[props.col.field].note}
+                        )
+                      "
+                    />
+
+                    <q-btn
+                      flat
+                      dense
+                      round
+                      icon="expand_more"
+                      class="q-ml-sm"
+                      @click="toggleExpanded(props.row.id, props.col.field)"
+                    />
+                  </div>
+
+                  <!-- Conteúdo expandido -->
+                  <div
+                    v-if="isExpanded(props.row.id, props.col.field)"
+                    class="q-mt-sm bg-grey-2 q-pa-sm rounded-borders"
                   >
-                    <q-item-section class="text-left">
-                      <div class="text-subtitle2 text-primary">
-                        {{ ev.evolutionType.name }} - {{ ev.perception }}%
-                      </div>
+                    <div class="q-mt-sm">
                       <div
-                        class="text-caption text-secondary"
-                        v-if="!isInfantil"
+                        v-for="(item, index) in props.col.items"
+                        :key="index"
                       >
-                        Nota:
-                        <span class="text-bold" v-if="!activity.participation">
-                          {{ ev.note }}
-                        </span>
-                        <span class="text-bold" v-else>
-                          {{ ev.observations }}
-                        </span>
+                        <div class="row items-center no-wrap">
+                          <q-input
+                            v-model.number="
+                              (
+                                props.row.grades[props.col.field].items[
+                                  item.id
+                                ] ?? { note: 0 }
+                              ).note
+                            "
+                            type="number"
+                            outlined
+                            :label="`${item.name} - ${item.weight}%`"
+                            dense
+                            :min="0"
+                            :max="20"
+                            class="col-md-grow"
+                            @blur="
+                              updateGradeItem(
+                                props.row.grades[props.col.field].id,
+                                item.id,
+                                props.row.grades[props.col.field].items[item.id]
+                                  .note,
+                                props.row.grades[props.col.field].items[item.id]
+                                  .id
+                              )
+                            "
+                          />
+                        </div>
                       </div>
-                      <div v-else>
-                        <span class="text-bold">
-                          {{ ev.observations }}
-                        </span>
-                      </div>
-                    </q-item-section>
-
-                    <q-item-section side>
-                      <q-btn
-                        icon="delete"
-                        flat
-                        round
-                        dense
-                        size="sm"
-                        color="negative"
-                        @click="removeEvolution(ev)"
-                      />
-                    </q-item-section>
-                  </q-item>
-                </q-list>
-              </q-td>
-
-              <!-- Campo de Nota / Participação -->
-              <q-td>
-                <div>
-                  <q-input
-                    v-if="
-                      !isInfantil &&
-                      ((evolutionType && perception) ||
-                        !activity?.participation)
-                    "
-                    v-model="props.row.newNote"
-                    type="number"
-                    dense
-                    outlined
-                    clearable
-                    label="Nova Nota"
-                    class="q-mb-sm"
-                    :rules="[{ required: true, min: 0, max: 20 }]"
-                    @blur="saveGrades(props.row, props.row.newNote)"
-                  />
-
+                    </div>
+                  </div>
+                </div>
+                <div v-else>
                   <q-select
-                    v-if="!isInfantil && activity?.participation"
-                    v-model="participationModel"
-                    :options="['Bom', 'Razoável']"
-                    label="Desempenho"
+                    v-if="props.col.label.includes('Participativa')"
+                    v-model="
+                      (
+                        props.row.grades[props.col.field] ?? {
+                          participation: 'NA',
+                        }
+                      ).participation
+                    "
+                    :options="['Sim', 'Não']"
+                    label="Standard"
                     outlined
                     dense
-                    clearable
-                    @update:model-value="saveGradesParticipation(props.row)"
+                    @focus="
+                      if (!props.row.grades[props.col.field]) {
+                        props.row.grades[props.col.field] = {
+                          participation: 'NA',
+                        };
+                      }
+                    "
+                    @update:model-value="
+                        updateGrade(
+                          props.row.id,
+                          props.col,
+                          props.row.grades[props.col.field]
+                        )
+                      "
                   />
 
+                  <!-- Mostrar campo de observação apenas se for a coluna 'Observação' -->
                   <q-input
-                    v-if="isInfantil"
-                    v-model="participationModel"
+                    v-else-if="props.col.name === 'observation'"
+                    v-model="(
+                        props.row.grades[props.col.field] ?? {
+                          observations: 'NA',
+                        }
+                      ).observations"
                     dense
                     outlined
-                    clearable
-                    label="Nova observação"
-                    class="q-mb-sm"
-                    @blur="saveGradesParticipation(props.row)"
+                    placeholder="Observação"
+                     @focus="
+                        if (!props.row.grades[props.col.field]) {
+                          props.row.grades[props.col.field] = {
+                          observations: 'NA',
+                          };
+                        }
+                      "
+                      @blur="
+                        updateGrade(
+                          props.row.id,
+                          props.col,
+                         props.row.grades[props.col.field]
+                        )
+                      "
                   />
                 </div>
-              </q-td>
-            </q-tr>
+              </div>
+            </q-td>
           </template>
         </q-table>
       </q-card-section>
@@ -165,173 +189,217 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted } from "vue";
+import { useClassStores } from "src/pages/class/store";
 import { useStudentStores } from "src/pages/student/store";
 import { useEvolutionStores } from "../stores";
 import { useDevelopmentAreaStores } from "src/pages/development-area/stores";
-import { useInstitutionStores } from "src/pages/institution/store";
+import { useRoute, useRouter } from "vue-router";
 import useNotify from "src/composables/UseNotify";
 
-// use store
+/* setup stores */
 const route = useRoute();
+const router = useRouter();
+
+/* setup stores */
+const classStores = useClassStores();
 const studentStores = useStudentStores();
 const evolutionStores = useEvolutionStores();
-const developmentArea = useDevelopmentAreaStores();
-const institutionStore = useInstitutionStores();
-
-const { notifyError, notifySuccess, notifyInfo } = useNotify();
-const { classe, discipline, studentId } = route.params;
+const developmentAreaStores = useDevelopmentAreaStores();
+const discipline = ref();
+const { notifyInfo } = useNotify();
 
 /* setup data */
+const { classe: classId, studentId, discipline: disciplineId } = route.params;
+const assessmentTypesData = ref();
 const students = ref([]);
-const evolutionTypes = ref([]);
-const evolutionType = ref(null);
-const dateCompletion = ref(null);
-const activity = ref(null);
-const perception = ref(null);
-const participationModel = ref();
-const istechnical = computed(() => institutionStore.istechnical);
-const isInfantil = computed(() => institutionStore.isInfantil);
+const columns = ref();
+const expandedRows = ref({});
+const evolution = ref();
+const dateCompletion = ref();
 
-const columns = ref([
-  { name: "number", label: "Estudante", align: "left", field: "number" },
-  {
-    name: "test",
-    label: "Avaliação",
-    align: "center",
-    field: "id",
-    style: "width: 50px",
-  },
-]);
+const fetchData = async () => {
+  try {
+    await classStores.findOne(classId);
 
-// Função para salvar as notas
-const saveGrades = async (value, note) => {
-  const payload = {
-    studentId: value.id,
-    developmentAreaActivityId: discipline,
-    classId: classe,
-    testTypeId: evolutionType.value.id,
-    note: note,
-    perception: parseInt(perception.value) || 100,
-    dateCompletion: dateCompletion.value,
-    cicle: activity.value?.exame === true ? activity.value?.cicle : null,
-    year: activity.value?.year,
-  };
-  const findStudent = students.value.find((student) => student.id === value.id);
-  const evolutionExists = findStudent.evolutions.find(
-    (evolution) =>
-      evolution.testTypeId === evolutionType.value.id &&
-      evolution.studentId === value.id &&
-      evolution.developmentAreaActivityId === discipline &&
-      evolution.cicle === activity.value?.cicle
-  );
+    const evolutionTypes = classStores.classe?.course?.evolutionTypes ?? [];
+    assessmentTypesData.value = evolutionTypes.map((e) => ({
+      name: e.evolutionType.name,
+      key: e.id,
+      weight: e.weight,
+      items: e.items,
+    }));
 
-  if (!evolutionExists) {
-    try {
-      await evolutionStores.create(payload);
-      fetchStudents();
-      notifySuccess("Nota adicionada com sucesso");
-    } catch (error) {
-      notifyError("Erro ao adicionar nota");
-    }
-  } else {
-    notifyInfo("O estudante ja foi alocada nota");
+    // Define as colunas dinamicamente
+    columns.value = [
+      {
+        name: "name",
+        required: true,
+        label: "Aluno",
+        align: "left",
+        field: "name",
+      },
+      ...(discipline.value.participation
+        ? assessmentTypesData.value.filter(
+            (type) => type.name === "Participativa"
+          )
+        : assessmentTypesData.value
+      ).map((type) => ({
+        name: type.key,
+        required: true,
+        label: `${type.name} - ${type.weight}%`,
+        align: "center",
+        field: type.key,
+      })),
+      ...(discipline.value.participation
+        ? [
+            {
+              name: "observation",
+              label: "Observação",
+              align: "left",
+           
+            },
+          ]
+        : []),
+    ];
+  } catch (error) {
+    console.error("Erro ao buscar dados:", error);
   }
 };
 
-const saveGradesParticipation = async (value) => {
+const fetchDiscipline = async () => {
   try {
-    const payload = {
-      studentId: value.id,
-      developmentAreaActivityId: discipline,
-      classId: classe,
-      testTypeId: evolutionType.value.id,
-      cicle: parseInt(activity.value?.cicle),
-      year: activity.value?.year,
-      observations: participationModel.value,
-      perception: 100,
-    };
-
-    await evolutionStores.create(payload);
-    await fetchStudents();
-    notifySuccess("Nota adicionada com sucesso");
+    await developmentAreaStores.findOneDevepmentActivity(disciplineId);
+    discipline.value = developmentAreaStores.developmentAreaActivity;
   } catch (error) {
-    console.log(error);
-  }
-};
-
-const removeEvolution = async (ev) => {
-  try {
-    evolutionStores.delete(ev.id);
-     fetchStudents();
-  } catch (error) {
-    console.log(error)
+    console.log();
   }
 };
 
 const fetchStudents = async () => {
   try {
-    await studentStores.list({ classId: classe });
+    await studentStores.list({ classId: classId });
     students.value = studentStores.students
       .filter((student) => {
-        // Se studentId estiver definido, filtra apenas esse estudante
         return !studentId || student.id === studentId;
       })
       .map((student) => {
         const evolutions = student.evolutions.filter(
-          (d) => d.developmentAreaActivityId === discipline
+          (d) => d.developmentAreaActivityId === disciplineId
         );
 
         return {
           id: student.id,
           name: student.basicInformation?.fullName,
-          evolutions,
+          grades: evolutions.reduce((acc, evo) => {
+            acc[evo.courseEvolutionTypeId] = {
+              id: evo.id ?? null,
+              note: Number(evo.note ?? 0),
+              participation: evo.participation ?? "NA",
+              observations: evo.observations ?? "NA",
+              items: {},
+            };
+
+            for (const item of evo.items ?? []) {
+              acc[evo.courseEvolutionTypeId].items[
+                item.courseEvolutionTypeItemId
+              ] = {
+                id: item.id,
+                note: Number(item.note ?? 0),
+              };
+            }
+
+            return acc;
+          }, {}),
         };
       });
   } catch (error) {
-    notifyError("Erroa ao carregar avaliaçoes ");
+    console.log(error);
   }
 };
 
-const fetchEvolutionType = async () => {
-  try {
-    await evolutionStores.list();
+function toggleExpanded(rowId, field) {
+  console.log(field);
+  const key = `${rowId}_${field}`;
+  expandedRows.value[key] = !expandedRows.value[key];
+}
 
-    if (istechnical) {
-      evolutionTypes.value = evolutionStores.evolutionTypes;
+function isExpanded(rowId, field) {
+  const key = `${rowId}_${field}`;
+  return !!expandedRows.value[key];
+}
+
+const loading = ref(false);
+
+// Função para atualizar a nota (simulação de chamada à API)
+const updateGrade = async (studentId, assessmentType, grade) => {
+  // Aqui você faria a chamada à sua API para salvar a nota
+
+  try {
+    if (!dateCompletion.value) {
+      notifyInfo("Por favor, selecione a data de realização da avaliação.");
+      return;
+    }
+    const payload = {
+      studentId: studentId,
+      disciplineId: disciplineId,
+      courseEvolutionTypeId: assessmentType.field,
+    };
+    // await api.put(`/grades/${studentId}/${assessmentType}`, { grade })
+    await evolutionStores.findOne(payload);
+    evolution.value = evolutionStores.evolution;
+    if (evolution.value) {
+      await evolutionStores.update(evolution.value.id, {
+        ...grade,
+      });
     } else {
-      if (activity.value?.exame === true) {
-        evolutionTypes.value = evolutionStores.evolutionTypes.filter(
-          (e) => e.type === "Exame"
-        );
-      } else {
-        evolutionTypes.value =
-          activity.value?.participation === true
-            ? evolutionStores.evolutionTypes.filter(
-                (e) => e.name === "Participou" && e.type === "Normal"
-              )
-            : evolutionStores.evolutionTypes.filter(
-                (e) => e.name !== "Participou" && e.type === "Normal"
-              );
-      }
+      const payloadGrade = {
+        studentId: studentId,
+        developmentAreaActivityId: disciplineId,
+        classId: classId,
+        courseEvolutionTypeId: assessmentType.field,
+        ...grade,
+        dateCompletion: dateCompletion.value,
+      };
+
+      await evolutionStores.create(payloadGrade);
     }
   } catch (error) {
-    console.error(error);
+    // Lógica de erro
+    console.error("Erro ao atualizar a nota:", error);
+    // Exibir mensagem de erro ao usuário
   }
 };
 
-const fetchActivity = async () => {
+const updateGradeItem = async (
+  evolutionId,
+  courseEvolutionTypeItemId,
+  grade,
+  evolutionItemId
+) => {
   try {
-    await developmentArea.findOneDevepmentActivity(discipline);
-    activity.value = developmentArea.developmentAreaActivity;
+    if (!dateCompletion.value) {
+      notifyInfo("Por favor, selecione a data de realização da avaliação.");
+      return;
+    }
+    if (evolutionItemId) {
+      await evolutionStores.updateItem(evolutionItemId, { note: grade });
+    } else {
+      const payload = {
+        evolutionId: evolutionId,
+        courseEvolutionTypeItemId: courseEvolutionTypeItemId,
+        note: grade,
+        dateCompletion: dateCompletion.value,
+      };
+      await evolutionStores.createItem(payload);
+    }
   } catch (error) {
-    notifyError("Erro ao carregar actividade");
+    console.log(error);
   }
 };
 onMounted(async () => {
-  await fetchActivity();
+  await fetchDiscipline();
   await fetchStudents();
-  await fetchEvolutionType();
+  await fetchData();
 });
 </script>
