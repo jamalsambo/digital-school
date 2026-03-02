@@ -1,111 +1,143 @@
 <template>
-  <q-page padding>
-    <q-dialog v-model="medium" persistent>
-      <q-card style="width: 900px; max-width: 80vw">
-        <q-card-section>
-          <div class="text-h6">Criar novo evento</div>
-        </q-card-section>
-        <q-separator spaced />
-        <q-card-section>
-          <q-form @submit.prevent="onSubmit">
-            <div class="row q-col-gutter-sm">
-              <q-input
-                class="col-md-12 col-sm-12 col-xs-12"
-                v-model="form.eventName"
-                label="Nome do evento"
-                :rules="[(val) => !!val || 'Campo obrigatória']"
-                outlined
-                dense
-              />
-              <q-input
-                class="col-md-12 col-sm-12 col-xs-12"
-                v-model="form.description"
-                label="Descrição  "
-                :rules="[(val) => !!val || 'Campo obrigatória']"
-                outlined
-                dense
-              />
-              <q-input
-                class="col-md-6 col-sm-6 col-xs-12"
-                v-model="form.date"
-                type="date"
-                label="Data do evento"
-                outlined
-                :rules="[(val) => !!val || 'Campo obrigatória.']"
-                dense
-              />
-              <q-select
-              class="col-md-6 col-sm-12 col-xs-12"
-              v-model="form.eventType"
-              :options="['Aula', 'Avaliação']"
-              label="Tipo de evento"
-              option-label="name"
-              option-value="id"
-              map-options
-              outlined
-              emit-value
-              :rules="[(val) => !!val || 'Campo obrigatória.']"
-              dense=""
-              clearable=""
-            />
-            </div>
-            <div class="row justify-end q-gutter-sm">
-              <q-btn
-                label="Cancelar"
-                color="negative"
-                icon="close"
-                outline
-                @click="toggleModal"
-                class="q-mr-sm"
-                flat
-              />
-              <q-btn
-                label="Guardar"
-                color="positive"
-                icon="save"
-                type="submit"
-                flat
-              />
-            </div>
-          </q-form>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-    <q-card flat bordered class="q-mb-md">
-      <q-card flat bordered class="q-pa-md shadow-2">
-        <div class="row items-center justify-between">
-          <div class="text-h6 text-primary">
-            Calendario academico - {{ currentYear }}
-          </div>
-          <q-btn
-            color="primary"
-            icon="add"
-            label="Novo Evento"
-            class="q-mr-sm"
-            @click="toggleModal"
-            flat
-          />
+  <q-page class="edigital-page">
+
+    <!-- 🔷 Topbar -->
+    <div class="page-topbar">
+      <div>
+        <div class="page-title">
+          Calendário Académico
         </div>
-        <q-separator spaced />
+        <div class="page-subtitle">
+          Gestão de eventos do ano lectivo {{ currentYear }}
+        </div>
+      </div>
+
+      <q-btn
+        class="tbl-btn"
+        icon="add"
+        label="Novo Evento"
+        no-caps
+        @click="toggleModal"
+      />
+    </div>
+
+    <!-- 🔷 Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value">{{ events.length }}</div>
+        <div class="stat-label">Total de Eventos</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-value">
+          {{ upcomingEvents }}
+        </div>
+        <div class="stat-label">Próximos Eventos</div>
+      </div>
+    </div>
+
+    <!-- 🔷 Timeline Card -->
+    <q-card flat bordered class="edigital-card">
+      <q-card-section>
+
         <q-timeline color="primary">
           <q-timeline-entry
             v-for="event in events"
             :key="event.id"
             :title="event.title"
             :subtitle="formatDate(event.date)"
-            :icon="event.icon"
-            :color="event.color"
+            icon="event"
           >
             {{ event.description }}
           </q-timeline-entry>
         </q-timeline>
-      </q-card>
+
+      </q-card-section>
     </q-card>
+
+    <!-- 🔷 Modal -->
+    <q-dialog v-model="medium" persistent>
+      <q-card class="edigital-modal">
+
+        <q-card-section>
+          <div class="modal-title">
+            Criar Novo Evento
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section>
+          <q-form @submit.prevent="onSubmit">
+            <div class="row q-col-gutter-md">
+
+              <q-input
+                class="col-12"
+                v-model="form.eventName"
+                label="Nome do evento"
+                outlined
+                dense
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+              />
+
+              <q-input
+                class="col-12"
+                v-model="form.description"
+                label="Descrição"
+                outlined
+                dense
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+              />
+
+              <q-input
+                class="col-md-6 col-12"
+                v-model="form.date"
+                type="date"
+                label="Data"
+                outlined
+                dense
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+              />
+
+              <q-select
+                class="col-md-6 col-12"
+                v-model="form.eventType"
+                :options="['Aula', 'Avaliação']"
+                label="Tipo"
+                outlined
+                dense
+                clearable
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+              />
+
+            </div>
+
+            <div class="modal-actions">
+              <q-btn
+                label="Cancelar"
+                flat
+                class="tbl-btn-secondary"
+                @click="toggleModal"
+              />
+
+              <q-btn
+                label="Guardar"
+                type="submit"
+                class="tbl-btn"
+              />
+            </div>
+
+          </q-form>
+        </q-card-section>
+
+      </q-card>
+    </q-dialog>
+
   </q-page>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useCalendarStores } from "../store";
 import useNotify from "src/composables/UseNotify";
 
@@ -123,6 +155,11 @@ const form = ref({
   description: null,
   date: "",
   year: currentYear,
+});
+
+const upcomingEvents = computed(() => {
+  const today = new Date();
+  return events.value.filter(e => new Date(e.date) >= today).length;
 });
 
 /* methods */
@@ -170,3 +207,72 @@ onMounted(async () => {
   await fetchCalendar();
 });
 </script>
+
+<style scoped>
+
+
+.edigital-page {
+  padding: 24px;
+}
+
+.page-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #f9fafb;
+  padding: 16px 24px;
+  border-radius: 12px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.edigital-card {
+  border-radius: 16px;
+}
+
+.edigital-modal {
+  width: 850px;
+  max-width: 90vw;
+  border-radius: 16px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+</style>
