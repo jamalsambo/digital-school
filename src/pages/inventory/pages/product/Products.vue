@@ -1,96 +1,429 @@
 <template>
-  <q-page padding>
-    <q-card>
-      <q-card-section>
-        <div class="text-h5">
-      Produtos</div>
-        <q-separator spaced />
-      </q-card-section>
+  <q-page class="edigital-page">
+    <!-- Top Bar -->
+    <div class="page-topbar row items-center q-px-xl q-py-md">
+      <q-btn
+        flat round dense
+        icon="arrow_back_ios_new"
+        class="back-btn q-mr-md"
+        @click="$router.back()"
+      />
 
-    </q-card>
+      <div class="col">
+        <q-breadcrumbs class="breadcrumb-nav" active-color="primary" separator="›">
+          <q-breadcrumbs-el label="Dashboard" icon="home" to="/" class="breadcrumb-link" />
+          <q-breadcrumbs-el label="Inventário" class="breadcrumb-link" />
+          <q-breadcrumbs-el label="Produtos" class="breadcrumb-active" />
+        </q-breadcrumbs>
 
-    <q-card class="q-mt-lg">
-      <q-card-section>
-        <q-card flat bordered class="q-pa-md shadow-2">
+        <div class="page-title row items-center q-mt-xs">
+          <div class="title-icon-wrap q-mr-sm">
+            <q-icon name="inventory_2" size="1.3rem" color="white" />
+          </div>
+          <span>Produtos</span>
+        </div>
+      </div>
+
+      <div class="col-auto row items-center q-gutter-sm">
+        <!-- Search -->
+        <q-input
+          v-model="filter"
+          dense outlined
+          placeholder="Pesquisar produtos..."
+          class="search-input"
+          debounce="300"
+          clearable
+        >
+          <template #prepend>
+            <q-icon name="search" color="grey-5" size="1.1rem" />
+          </template>
+        </q-input>
+
+        <!-- Refresh -->
+        <q-btn flat round dense icon="refresh" class="action-icon-btn" @click="fetchProducts" />
+
+        <!-- Add -->
+        <q-btn
+          unelevated icon="add"
+          label="Adicionar Produto"
+          class="new-btn"
+          no-caps
+          @click="newProduct"
+        />
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row q-px-xl q-mb-lg row q-gutter-md">
+      <div class="stat-card col" v-for="stat in stats" :key="stat.label">
+        <div class="stat-icon" :style="`background:${stat.color}18`">
+          <q-icon :name="stat.icon" size="1.3rem" :style="`color:${stat.color}`" />
+        </div>
+        <div>
+          <div class="stat-value">{{ stat.value }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="q-px-xl q-pb-xl">
+      <q-card class="table-card" flat>
+        <q-card-section class="q-pa-none">
+
+          <!-- Toolbar -->
+          <div class="table-toolbar row items-center justify-between q-px-lg q-py-md">
+            <div class="row items-center q-gutter-xs">
+              <span class="table-count">{{ filteredProducts.length }}</span>
+              <span class="table-count-label">produtos encontrados</span>
+            </div>
+            <div class="row items-center q-gutter-xs">
+              <q-btn
+                flat round dense icon="view_list"
+                :color="viewMode === 'list' ? 'primary' : 'grey-5'"
+                size="sm" @click="viewMode = 'list'"
+              />
+              <q-btn
+                flat round dense icon="grid_view"
+                :color="viewMode === 'grid' ? 'primary' : 'grey-5'"
+                size="sm" @click="viewMode = 'grid'"
+              />
+            </div>
+          </div>
+
+          <q-separator />
+
+          <!-- LIST VIEW -->
           <q-table
-            title="Productos"
+            v-if="viewMode === 'list'"
+            class="edigital-table no-shadow"
             :rows="products"
             :columns="columns"
             row-key="id"
-            flat
             :filter="filter"
-            bordered
-            :pagination="{ rowsPerPage: 10 }"
+            v-model:pagination="pagination"
+            flat
           >
-         <template v-slot:top-right="">
-              <q-input
-                borderless
-                dense
-                debounce="300"
-                v-model="filter"
-                placeholder="Pesquisar"
-              >
-                <template v-slot:append>
-                  <q-icon name="search" />
-                </template>
-              </q-input>
+            <template #body-cell-actions="props">
+              <q-td :props="props">
+                <div class="row no-wrap items-center q-gutter-xs">
+                  <q-btn
+                    flat round dense icon="edit"
+                    class="tbl-btn tbl-btn-primary"
+                    @click="editProduct(props.row)"
+                  >
+                    <q-tooltip>Editar</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    flat round dense icon="delete"
+                    class="tbl-btn" color="negative"
+                    @click="deleteProduct(props.row)"
+                  >
+                    <q-tooltip>Eliminar</q-tooltip>
+                  </q-btn>
+                </div>
+              </q-td>
+            </template>
+          </q-table>
 
-              <q-btn
-                color="primary"
-                icon="add"
-                label="Adicionar"
-                no-caps
-                class="q-ml-sm"
-                @click="newProduct"
-              />
-            </template>
-            <template v-slot:body-cell-actions="props">
-              <q-btn
-                flat
-                round
-                icon="edit"
-                color="primary"
-                @click="editCategory(props.row)"
-              />
-            </template>
-        </q-table>
-        </q-card>
-      </q-card-section>
-    </q-card>
+          <!-- GRID VIEW -->
+          <div v-else class="grid-view q-pa-lg row q-gutter-md">
+            <div
+              v-for="product in filteredProducts"
+              :key="product.id"
+              class="grid-card col-12 col-sm-6 col-md-4 col-lg-3"
+            >
+              <div class="grid-card-header">
+                <q-avatar size="48px" class="product-avatar">
+                  <q-icon name="inventory_2" color="white" />
+                </q-avatar>
+              </div>
+
+              <div class="grid-card-body">
+                <div class="grid-name">{{ product.name }}</div>
+                <div class="grid-info row items-center q-gutter-xs q-mt-xs">
+                  <q-icon name="label" size="0.9rem" color="grey-5" />
+                  <span>{{ product.category ?? 'Sem categoria' }}</span>
+                </div>
+              </div>
+
+              <div class="grid-card-actions row q-gutter-xs">
+                <q-btn
+                  flat dense no-caps icon="edit" label="Editar"
+                  class="grid-action-btn grid-action-primary"
+                  @click="editProduct(product)"
+                />
+                <q-btn
+                  flat dense no-caps icon="delete" label="Eliminar"
+                  class="grid-action-btn" color="negative"
+                  @click="deleteProduct(product)"
+                />
+              </div>
+            </div>
+          </div>
+
+        </q-card-section>
+      </q-card>
+    </div>
   </q-page>
 </template>
+
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useInventoryStores } from '../../stores';
-import columns from './components/TableProductsColumns';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useInventoryStores } from "../../stores";
+import columns from "./components/TableProductsColumns";
+import useNotify from "src/composables/UseNotify";
 
-/* setup router */
-const router = useRouter()
+/* ── Router / Store ── */
+const router = useRouter();
+const inventoryStores = useInventoryStores();
+const { notifyError } = useNotify();
 
-/* setup stores */
-const inventoryStores = useInventoryStores()
+/* ── State ── */
+const products = ref([]);
+const filter = ref("");
+const viewMode = ref("list");
+const pagination = ref({ rowsPerPage: 10 });
 
-/* setup data */
-const products = ref([])
-const filter = ref()
+/* ── Computed ── */
+const filteredProducts = computed(() => {
+  if (!filter.value) return products.value;
+  const q = filter.value.toLowerCase();
+  return products.value.filter((p) =>
+    p.name?.toLowerCase().includes(q) ||
+    p.category?.toLowerCase().includes(q)
+  );
+});
 
-/* methods */
+const stats = computed(() => [
+  {
+    label: "Total",
+    value: products.value.length,
+    icon: "inventory_2",
+    color: "#1a3fa6",
+  },
+  {
+    label: "Em Stock",
+    value: products.value.filter((p) => p.quantity > 0).length,
+    icon: "check_circle",
+    color: "#21b573",
+  },
+  {
+    label: "Sem Stock",
+    value: products.value.filter((p) => !p.quantity || p.quantity === 0).length,
+    icon: "warning",
+    color: "#ef4444",
+  },
+]);
+
+/* ── Methods ── */
 const newProduct = () => {
-  router.push({name: "stock-product-create"})
-}
+  router.push({ name: "stock-product-create" });
+};
 
-/* fetcth data */
-const fetcthProducts = async () => {
+const editProduct = (product) => {
+  router.push({ name: "stock-product-edit", params: { id: product.id } });
+};
+
+const deleteProduct = async (product) => {
+  // TODO: implementar lógica de eliminação
+};
+
+const fetchProducts = async () => {
   try {
-    await inventoryStores.findProducts()
-    products.value = inventoryStores.products
+    await inventoryStores.findProducts();
+    products.value = inventoryStores.products;
   } catch (error) {
-    console.log(error)
+    notifyError("Erro ao carregar produtos");
   }
+};
+
+/* ── Lifecycle ── */
+onMounted(async () => {
+  await fetchProducts();
+});
+</script>
+
+<style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap");
+
+.edigital-page {
+  min-height: 100vh;
+  background: #f0f4f8;
+  font-family: "DM Sans", sans-serif;
 }
 
-onMounted( async() => {
-  await fetcthProducts()
-})
-</script>
+/* ── Top Bar ── */
+.page-topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e8edf3;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 12px rgba(15, 40, 98, 0.06);
+}
+.back-btn {
+  background: #f0f4f8;
+  color: #1a3fa6 !important;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  transition: background 0.2s;
+}
+.back-btn:hover { background: #e0e8f7; }
+
+.breadcrumb-nav { font-size: 0.78rem; }
+.breadcrumb-link { color: #9ca3af !important; }
+.breadcrumb-active { color: #1a3fa6 !important; font-weight: 600; }
+
+.page-title {
+  font-family: "Sora", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0f2862;
+}
+.title-icon-wrap {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #1a3fa6, #0f2862);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-input { width: 220px; }
+.search-input :deep(.q-field__control) {
+  border-radius: 10px;
+  background: #f8fafc;
+  height: 38px;
+}
+
+.action-icon-btn {
+  background: #f0f4f8;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  transition: background 0.2s;
+}
+.action-icon-btn:hover { background: #e0e8f7; }
+
+.new-btn {
+  background: linear-gradient(135deg, #1a3fa6 0%, #0f2862 100%);
+  color: white;
+  border-radius: 10px;
+  padding: 0 18px;
+  height: 38px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: "Sora", sans-serif;
+  letter-spacing: 0.01em;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.new-btn:hover {
+  box-shadow: 0 6px 18px rgba(26, 63, 166, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ── Stats ── */
+.stats-row { padding-top: 1.2rem; }
+.stat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  box-shadow: 0 2px 12px rgba(15, 40, 98, 0.05);
+  border: 1px solid #edf0f5;
+  transition: box-shadow 0.2s;
+}
+.stat-card:hover { box-shadow: 0 4px 20px rgba(15, 40, 98, 0.1); }
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.stat-value {
+  font-family: "Sora", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f2862;
+  line-height: 1;
+}
+.stat-label { font-size: 0.78rem; color: #9ca3af; margin-top: 2px; font-weight: 500; }
+
+/* ── Table Card ── */
+.table-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 20px rgba(15, 40, 98, 0.07);
+  border: 1px solid #edf0f5;
+}
+.table-toolbar {
+  background: #fafbfd;
+  border-bottom: 1px solid #f0f0f0;
+}
+.table-count { font-family: "Sora", sans-serif; font-weight: 700; font-size: 1rem; color: #0f2862; }
+.table-count-label { font-size: 0.82rem; color: #9ca3af; }
+
+/* ── Quasar Table overrides ── */
+.edigital-table :deep(thead tr th) {
+  font-family: "Sora", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  background: #fafbfd;
+  border-bottom: 2px solid #edf0f5;
+  padding: 14px 16px;
+}
+.edigital-table :deep(tbody tr) { transition: background 0.15s; }
+.edigital-table :deep(tbody tr:hover) { background: #f5f8ff !important; }
+.edigital-table :deep(tbody tr td) {
+  font-size: 0.875rem;
+  color: #374151;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* ── Table Buttons ── */
+.tbl-btn { border-radius: 8px !important; width: 32px; height: 32px; transition: background 0.15s; }
+.tbl-btn-primary { color: #1a3fa6 !important; }
+.tbl-btn-primary:hover { background: #e8f0fe !important; }
+
+/* ── Grid View ── */
+.grid-card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid #edf0f5;
+  padding: 1.2rem;
+  box-shadow: 0 2px 12px rgba(15, 40, 98, 0.05);
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.grid-card:hover { box-shadow: 0 6px 24px rgba(15, 40, 98, 0.12); transform: translateY(-2px); }
+.grid-card-header { display: flex; align-items: center; margin-bottom: 1rem; }
+.product-avatar {
+  background: linear-gradient(135deg, #1a3fa6, #0f2862);
+  border-radius: 12px;
+}
+.grid-name { font-family: "Sora", sans-serif; font-weight: 600; font-size: 0.95rem; color: #0f2862; }
+.grid-info { font-size: 0.8rem; color: #9ca3af; }
+.grid-card-actions { margin-top: 1rem; border-top: 1px solid #f0f4f8; padding-top: 0.8rem; }
+.grid-action-btn { border-radius: 8px; font-size: 0.78rem; color: #6b7280 !important; background: #f8fafc; padding: 0 10px; }
+.grid-action-primary { color: #1a3fa6 !important; background: #eff6ff !important; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .page-topbar { padding: 0.75rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+  .search-input { width: 100%; order: 3; }
+  .stats-row { padding: 1rem; }
+  .edigital-page .q-px-xl { padding-left: 1rem !important; padding-right: 1rem !important; }
+}
+</style>
